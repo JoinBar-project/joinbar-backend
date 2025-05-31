@@ -1,0 +1,38 @@
+{
+  "name": "joinbar-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "fake": "forker generate"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoinBar-project/joinbar-backend.git"
+  },
+  "author": "卓訢妤,戎彬,陳紫婷,紀雅馨,蔡昌成,鄭婉君,竇孝武",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JoinBar-project/joinbar-backend/issues"
+  },
+  "homepage": "https://github.com/JoinBar-project/joinbar-backend#readme",
+  "dependencies": {
+    "biguint-format": "^1.0.2",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.0",
+    "express": "^5.1.0",
+    "flake-idgen": "^1.4.0",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.1",
+    "drizzle-seed": "^0.3.1",
+    "forker": "^3.0.0",
+    "nodemon": "^3.1.10"
+  }
+}
