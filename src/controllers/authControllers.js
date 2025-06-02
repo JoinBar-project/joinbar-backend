@@ -8,6 +8,11 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
+if (!JWT_SECRET || !REFRESH_SECRET) {
+  console.error("Missing required environment variables: JWT_SECRET, REFRESH_SECRET");
+  process.exit(1); // 沒有環境變數則直接終止程式
+}
+
 const signup = async (req, res) => {
   const { username, nickname, email, password, birthday } = req.body;
 
