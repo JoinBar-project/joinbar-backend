@@ -9,7 +9,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
 if (!JWT_SECRET || !REFRESH_SECRET) {
-  console.error("Missing required environment variables: JWT_SECRET, REFRESH_SECRET");
+  console.error(
+    "Missing required environment variables: JWT_SECRET, REFRESH_SECRET"
+  );
   process.exit(1); // 沒有環境變數則直接終止程式
 }
 
@@ -56,7 +58,8 @@ const login = async (req, res) => {
     const users = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.email, email));
+      .where(eq(usersTable.email, email))
+      .limit(1);
 
     if (users.length == 0) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
