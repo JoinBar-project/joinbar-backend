@@ -12,14 +12,15 @@ const signup = async (req, res) => {
   const { username, nickname, email, password, birthday } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ error: "請填寫所有欄位" })
+    return res.status(400).json({ error: "請填寫所有欄位" });
   }
 
   try {
     const userResult = await db
       .select({ email: usersTable.email })
       .from(usersTable)
-      .where(eq(usersTable.email, email));
+      .where(eq(usersTable.email, email))
+      .limit(1); // 查到第一筆符合條件的資料就停止查詢
 
     if (userResult.length > 0) {
       return res.status(409).json({ error: "此信箱已被註冊" });
@@ -38,7 +39,6 @@ const signup = async (req, res) => {
     });
 
     return res.status(201).json({ message: "註冊成功" });
-
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -65,21 +65,25 @@ const login = async (req, res) => {
     // 產生 token
     const accessToken = jwt.sign(
       {
-        id: users[0].id, email: users[0].email
+        id: users[0].id,
+        email: users[0].email,
       },
       JWT_SECRET,
       {
-        expiresIn: "15m"
-      });
+        expiresIn: "15m",
+      }
+    );
     // 更新 token
     const refreshToken = jwt.sign(
       {
-        id: users[0].id, username: users[0].username
+        id: users[0].id,
+        username: users[0].username,
       },
       REFRESH_SECRET,
       {
-        expiresIn: "7d"
-      })
+        expiresIn: "7d",
+      }
+    );
 
     return res.status(200).json({
       message: "登入成功",
@@ -95,6 +99,6 @@ const login = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 module.exports = { signup, login };
