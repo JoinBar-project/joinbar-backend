@@ -66,7 +66,7 @@ const login = async (req, res) => {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
     // 比對密碼是否一樣
-    const isMatch = await bcrypt.compare(password, users[0].password);
+    const isMatch = await bcrypt.compare(password, userResult.password);
 
     if (!isMatch) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
@@ -74,8 +74,8 @@ const login = async (req, res) => {
     // 產生 token
     const accessToken = jwt.sign(
       {
-        id: users[0].id,
-        email: users[0].email,
+        id: userResult.id,
+        email: userResult.email,
       },
       JWT_SECRET,
       {
@@ -85,8 +85,8 @@ const login = async (req, res) => {
     // 更新 token
     const refreshToken = jwt.sign(
       {
-        id: users[0].id,
-        username: users[0].username,
+        id: userResult.id,
+        username: userResult.username,
       },
       REFRESH_SECRET,
       {
@@ -99,10 +99,10 @@ const login = async (req, res) => {
       accessToken,
       refreshToken,
       user: {
-        id: users[0].id,
-        username: users[0].username,
-        email: users[0].email,
-        role: users[0].role,
+        id: userResult.id,
+        username: userResult.username,
+        email: userResult.email,
+        role: userResult.role,
       },
     });
   } catch (err) {
