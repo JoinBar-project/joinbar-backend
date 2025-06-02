@@ -31,7 +31,7 @@ const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.insert(usersTable).values({
+    const newUser = await db.insert(usersTable).values({
       username,
       nickname,
       email,
@@ -39,9 +39,14 @@ const signup = async (req, res) => {
       birthday: birthday ? new Date(birthday) : null,
       isVerifiedEmail: false,
       providerType: "email",
+    }).returning({
+      id: usersTable.id,
+      username: usersTable.username,
+      email: usersTable.email,
+      role: usersTable.role
     });
 
-    return res.status(201).json({ message: "註冊成功" });
+    return res.status(201).json({ message: "註冊成功", user: newUser });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -51,13 +56,13 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const users = await db
+    const [userResult] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.email, email))
       .limit(1);
 
-    if (users.length == 0) {
+    if (!userResult) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
     // 比對密碼是否一樣
