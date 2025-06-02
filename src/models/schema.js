@@ -45,7 +45,10 @@ const userBarFoldersTable = pgTable("user_bar_folders", {
   userId: integer("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   folderName: varchar("folder_name", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userBarFolderUnique: unique().on(table.userId, table.folderName)
+})
+);
 
 const userBarCollectionTable = pgTable("user_bar_collection", {
   id: serial().primaryKey(),
@@ -75,14 +78,20 @@ const userEventParticipationTable = pgTable("user_event_participation", {
   eventId: bigint("event_id", { mode: "string" }).references(() => events.id, { onDelete: "cascade", }),
   joinedAt: timestamp("joined_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userEventParticipationUnique: unique().on(table.userId, table.eventId)
+})
+);
 
 const userEventFoldersTable = pgTable("user_event_folders", {
   id: serial().primaryKey(),
   userId: integer("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   folderName: varchar("folder_name", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userEventFolderUnique: unique().on(table.userId, table.folderName)
+})
+);
 
 const events = pgTable('events', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
