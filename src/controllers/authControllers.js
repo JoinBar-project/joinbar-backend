@@ -18,10 +18,6 @@ if (!JWT_SECRET || !REFRESH_SECRET) {
 const signup = async (req, res) => {
   const { username, nickname, email, password, birthday } = req.body;
 
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: "請填寫所有欄位" });
-  }
-
   try {
     const userResult = await db
       .select({ email: usersTable.email })
