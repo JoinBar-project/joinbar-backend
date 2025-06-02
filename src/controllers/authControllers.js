@@ -75,7 +75,9 @@ const login = async (req, res) => {
     const accessToken = jwt.sign(
       {
         id: userResult.id,
+        username: userResult.username,
         email: userResult.email,
+        type: "access" // token 型別
       },
       JWT_SECRET,
       {
@@ -86,7 +88,7 @@ const login = async (req, res) => {
     const refreshToken = jwt.sign(
       {
         id: userResult.id,
-        username: userResult.username,
+        type: "refresh", // token 型別
       },
       REFRESH_SECRET,
       {

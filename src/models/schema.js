@@ -103,7 +103,7 @@ const events = pgTable('events', {
   maxPeople: integer('max_people'),
   imageUrl: varchar('image_url', { length: 255 }),
   price: integer('price'),
-  hostUser: integer('host_user').notNull(),
+  hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   createdAt: timestamp('created_at').notNull(),
   modifyAt: timestamp('modify_at').notNull(),
   status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除
