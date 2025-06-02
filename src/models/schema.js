@@ -34,7 +34,7 @@ const barsTable = pgTable("bars", {
   address: varchar({ length: 255 }),
   phone: varchar({ length: 20 }),
   description: text(),
-  rating: numeric("rating", { precision: 3, scale: 1 }), // 計算至小數點後一位
+  rating: numeric("rating", { precision: 2, scale: 1 }), // 計算至小數點後一位
   openHours: varchar("open_hours", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
