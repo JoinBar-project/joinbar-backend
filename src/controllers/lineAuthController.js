@@ -52,14 +52,14 @@ const getLineAuthUrl = async (req, res) => {
 // 處理 LINE callback  LINE 登入的最後階段，用戶在 LINE 授權頁面同意後，會被重導向回這個 callback 端點
 const lineCallback = async (req, res) => {
   try {
-    const { code } = req.query; // LINE 回傳的授權碼，用來換取 access token
+    const { code, state } = req.query; // LINE 回傳的授權碼，用來換取 access token
 
     if (!code) {
       return res.status(400).json({ error: '授權碼不存在' });
     }
 
     // 1. 用授權碼換取 access token
-    const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',   // 這是 LINE 官方的 Token 端點
+    const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',    // 這是 LINE 官方的 Token 端點
       new URLSearchParams({ // 瀏覽器和 Node.js 的內建 API，專門用來處理 URL 查詢字串和表單數據
         grant_type: 'authorization_code',   // OAuth 2.0 的授權類型
         code: code,    // LINE 重導向回來時帶的一次性代碼
@@ -69,7 +69,8 @@ const lineCallback = async (req, res) => {
       }), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded' // 設定請求的內容類型為表單數據 LINE API 要求的格式
-        }
+        },
+        timeout: 5000 // 設定請求超時時間為 5 秒
       }
     );
 
@@ -151,16 +152,16 @@ const lineCallback = async (req, res) => {
 
 		// 5. 產生 JWT tokens
     const accessToken = jwt.sign({
-      id: user.id,
-      username: user.username,
-      email: user.email,
+      id: userResult.id,
+      username: userResult.username,
+      email: userResult.email,
       type: 'access'
     }, JWT_SECRET, { 
       expiresIn: "15m" 
     });
 
     const refreshToken = jwt.sign({
-      id: user.id,
+      id: userResult.id,
       type: 'refresh'
     }, REFRESH_SECRET, { 
       expiresIn: "7d" 
@@ -172,11 +173,11 @@ const lineCallback = async (req, res) => {
     const redirectUrl = `${frontendUrl}/auth/line/success?` +
       `access_token=${accessToken}&` +
       `refresh_token=${refreshToken}&` +
-      `user=${encodeURIComponent(JSON.stringify(user))}`;
+      `user=${encodeURIComponent(JSON.stringify(userResult))}`; // 將用戶資料轉成 JSON 字串並編碼
 
     res.redirect(redirectUrl);
 	} catch(err) {
-		console.error('LINE callback error:', error);
+		console.error('LINE callback error:', err);
     
     // 重導向到前端錯誤頁面
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
