@@ -1,4 +1,5 @@
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 dotenv.config();
 
@@ -69,3 +70,15 @@ const lineCallback = async (req, res) => {
     );
 
     const { access_token } = tokenResponse.data;
+
+		 // 2. 使用剛取得的 access token 向 LINE API 請求用戶的基本資料
+    const profileResponse = await axios.get('https://api.line.me/v2/profile', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+
+    const lineProfile = profileResponse.data;
+    console.log('LINE Profile:', lineProfile);
+	} catch(err) {}
+}
