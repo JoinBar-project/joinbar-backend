@@ -43,3 +43,29 @@ const getLineAuthUrl = async (req, res) => {
     res.status(500).json({ error: '產生 LINE 授權連結失敗' });
   }
 };
+
+// 處理 LINE callback  LINE 登入的最後階段，用戶在 LINE 授權頁面同意後，會被重導向回這個 callback 端點
+const lineCallback = async (req, res) => {
+  try {
+    const { code, state } = req.query; // LINE 回傳的授權碼，用來換取 access token
+
+    if (!code) {
+      return res.status(400).json({ error: '授權碼不存在' });
+    }
+
+    // 1. 用授權碼換取 access token
+    const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',   // 這是 LINE 官方的 Token 端點
+      new URLSearchParams({ // 瀏覽器和 Node.js 的內建 API，專門用來處理 URL 查詢字串和表單數據
+        grant_type: 'authorization_code',   // OAuth 2.0 的授權類型
+        code: code,    // LINE 重導向回來時帶的一次性代碼
+        redirect_uri: LINE_CALLBACK_URL, 
+        client_id: LINE_CHANNEL_ID,
+        client_secret: LINE_CHANNEL_SECRET
+      }), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded' // 設定請求的內容類型為表單數據 LINE API 要求的格式
+        }
+      }
+    );
+
+    const { access_token } = tokenResponse.data;
