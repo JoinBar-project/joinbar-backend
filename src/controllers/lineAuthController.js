@@ -95,5 +95,30 @@ const lineCallback = async (req, res) => {
         )
       )
       .limit(1);
+
+			let userResult;
+
+			if (existingUser) {
+      // 4a. 更新現有用戶的 LINE 資料
+      [userResult] = await db
+        .update(usersTable)
+        .set({
+          lineUserId: lineProfile.userId, // LINE 用戶 ID
+          lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
+          linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
+          lineStatusMessage: lineProfile.statusMessage, // LINE 狀態訊息
+          isLineUser: true, // 標記為 LINE 用戶
+          providerType: 'line', // 登入提供者類型
+          updatedAt: new Date() // 更新時間
+        })
+        .where(eq(usersTable.id, existingUser.id))
+        .returning({  // 回傳指定欄位 這些資料會用來產生 JWT token
+          id: usersTable.id,
+          username: usersTable.username,
+          email: usersTable.email,
+          role: usersTable.role,
+          lineDisplayName: usersTable.lineDisplayName
+        });
+    } else {}
 	} catch(err) {}
 }
