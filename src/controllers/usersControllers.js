@@ -1,11 +1,18 @@
-const db = reuqire('../config/db');
+const db = require('../config/db');
 const { usersTable } = require('../models/schema');
 const dotenv = require('dotenv');
 dotenv.config();
 
 const getAllUsers = async (req, res) => {
   try {
-    const userResult = await db.select().from(usersTable);
+    const userResult = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        nickname: usersTable.nickname,
+        email: usersTable.email,
+      })
+      .from(usersTable);
     res.status(200).json({
       success: true,
       data: userResult,
@@ -15,7 +22,6 @@ const getAllUsers = async (req, res) => {
       success: false,
       error: err.message,
     });
-    console.log(err);
   }
 };
 
