@@ -3,6 +3,7 @@ const axios = require('axios');
 const db = require("../config/db");
 const { usersTable } = require("../models/schema");
 const { eq, or } = require("drizzle-orm");
+const jwt = require("jsonwebtoken");
 
 dotenv.config();
 
@@ -147,5 +148,22 @@ const lineCallback = async (req, res) => {
           lineDisplayName: usersTable.lineDisplayName
         });
 		}
+
+		// 5. 產生 JWT tokens
+    const accessToken = jwt.sign({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      type: 'access'
+    }, JWT_SECRET, { 
+      expiresIn: "15m" 
+    });
+
+    const refreshToken = jwt.sign({
+      id: user.id,
+      type: 'refresh'
+    }, REFRESH_SECRET, { 
+      expiresIn: "7d" 
+    });
 	} catch(err) {}
 }
