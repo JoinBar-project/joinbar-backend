@@ -52,7 +52,7 @@ const getLineAuthUrl = async (req, res) => {
 // 處理 LINE callback  LINE 登入的最後階段，用戶在 LINE 授權頁面同意後，會被重導向回這個 callback 端點
 const lineCallback = async (req, res) => {
   try {
-    const { code, state } = req.query; // LINE 回傳的授權碼，用來換取 access token
+    const { code } = req.query; // LINE 回傳的授權碼，用來換取 access token
 
     if (!code) {
       return res.status(400).json({ error: '授權碼不存在' });
@@ -184,4 +184,39 @@ const lineCallback = async (req, res) => {
     
     res.redirect(errorUrl);
 	}
-}
+};
+
+// LINE 登出（撤銷 token）
+const lineLogout = async (req, res) => {
+  try {
+    const { lineAccessToken } = req.body; // 請求 body 中取得用戶的 LINE access token 之前登入時從 LINE 取得的
+    
+    if (lineAccessToken) {
+      // 撤銷 LINE access token
+      await axios.post('https://api.line.me/oauth2/v2.1/revoke',  // LINE 官方的 token 撤銷端點
+        new URLSearchParams({
+          access_token: lineAccessToken, // 要撤銷的 access token
+          client_id: LINE_CHANNEL_ID,
+          client_secret: LINE_CHANNEL_SECRET
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+    }
+
+    res.json({ message: 'LINE 登出成功' });
+  } catch (error) {
+    console.error('LINE logout error:', error);
+    // 即使撤銷失敗，也回傳成功（用戶端已登出）
+    res.json({ message: 'LINE 登出成功' });
+  }
+};
+
+module.exports = {
+  getLineAuthUrl,
+  lineCallback,
+  lineLogout
+};
