@@ -165,5 +165,23 @@ const lineCallback = async (req, res) => {
     }, REFRESH_SECRET, { 
       expiresIn: "7d" 
     });
-	} catch(err) {}
+
+		// 6. 重導向到前端並帶上 tokens
+    // 你可以選擇重導向到前端或是回傳 JSON
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const redirectUrl = `${frontendUrl}/auth/line/success?` +
+      `access_token=${accessToken}&` +
+      `refresh_token=${refreshToken}&` +
+      `user=${encodeURIComponent(JSON.stringify(user))}`;
+
+    res.redirect(redirectUrl);
+	} catch(err) {
+		console.error('LINE callback error:', error);
+    
+    // 重導向到前端錯誤頁面
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent('LINE 登入失敗')}`;
+    
+    res.redirect(errorUrl);
+	}
 }
