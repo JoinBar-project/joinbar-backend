@@ -1,5 +1,14 @@
 const { pgTable, varchar, bigint, timestamp, integer, index, smallint, serial, primaryKey  } = require('drizzle-orm/pg-core');
 
+const usersTable = pgTable("users", {
+  // LINE 登入相關欄位
+  lineUserId: varchar('line_user_id', { length: 255 }).unique(),
+  lineDisplayName: varchar('line_display_name', { length: 255 }),
+  linePictureUrl: text('line_picture_url'),
+  lineStatusMessage: text('line_status_message'),
+  isLineUser: boolean('is_line_user').default(false),
+});
+
 const events = pgTable('events', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   name: varchar('name', { length: 50 }).notNull(),
@@ -32,4 +41,4 @@ const eventTags  = pgTable('event_tags', {
 
 
 
-module.exports = { events, tags, eventTags };
+module.exports = { usersTable, events, tags, eventTags };
