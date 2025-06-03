@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const authRoutes = require('./src/routes/authRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 app.use("/api/auth/line", lineAuthRoutes);
+app.use("/api/auth", authRoutes);
 app.use('/event', eventRoutes);
 app.use('/tags', tagsRoutes);
 
