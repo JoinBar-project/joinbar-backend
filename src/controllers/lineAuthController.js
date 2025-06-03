@@ -1,5 +1,8 @@
 const dotenv = require('dotenv');
 const axios = require('axios');
+const db = require("../config/db");
+const { usersTable } = require("../models/schema");
+const { eq, or } = require("drizzle-orm");
 
 dotenv.config();
 
@@ -80,5 +83,17 @@ const lineCallback = async (req, res) => {
 
     const lineProfile = profileResponse.data;
     console.log('LINE Profile:', lineProfile);
+
+		// 3. 透過 LINE User ID 或 email 檢查用戶是否已存在
+    const [existingUser] = await db
+      .select()
+      .from(usersTable)
+      .where(
+        or(
+          eq(usersTable.lineUserId, lineProfile.userId),
+          eq(usersTable.email, lineProfile.email || '') // LINE 用戶可能沒有 email
+        )
+      )
+      .limit(1);
 	} catch(err) {}
 }
