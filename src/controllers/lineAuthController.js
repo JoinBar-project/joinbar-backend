@@ -119,6 +119,33 @@ const lineCallback = async (req, res) => {
           role: usersTable.role,
           lineDisplayName: usersTable.lineDisplayName
         });
-    } else {}
+    } else {
+			// 4b. 建立新用戶
+      [userResult] = await db
+        .insert(usersTable)
+        .values({
+          username: lineProfile.displayName,
+          nickname: lineProfile.displayName,
+          email: null, // LINE 用戶可能沒有提供 email
+          password: null, // LINE 用戶不需要密碼
+          lineUserId: lineProfile.userId, // LINE 的唯一識別碼
+          lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
+          linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
+          lineStatusMessage: lineProfile.statusMessage, // LINE 個簽
+          isLineUser: true, // 標記為 LINE 用戶
+          isVerifiedEmail: false,
+          providerType: 'line', // 第三方登入提供者
+          providerId: lineProfile.userId, // 第三方提供者的用戶 ID
+          avatarUrl: lineProfile.pictureUrl,  // 頭像 URL（使用 LINE 大頭照）
+          role: 'user'
+        })
+        .returning({ // 回傳指定欄位 這些資料會用來產生 JWT token
+          id: usersTable.id,
+          username: usersTable.username,
+          email: usersTable.email,
+          role: usersTable.role,
+          lineDisplayName: usersTable.lineDisplayName
+        });
+		}
 	} catch(err) {}
 }
