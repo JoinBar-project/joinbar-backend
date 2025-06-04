@@ -8,7 +8,7 @@
     "start": "nodemon index.js",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "fake": "forker generate"
+    "seed": "node src/seeds/seed.js"
   },
   "repository": {
     "type": "git",
