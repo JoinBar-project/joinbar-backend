@@ -343,22 +343,16 @@ const lineCallback = async (req, res) => {
 // LINE 登出（撤銷 token）
 const lineLogout = async (req, res) => {
   try {
-    const { lineAccessToken } = req.body; // 請求 body 中取得用戶的 LINE access token 之前登入時從 LINE 取得的
+    // 從 cookies 中取得用戶資訊
+    const userInfo = req.cookies.user_info;
     
-    if (lineAccessToken) {
-      // 撤銷 LINE access token
-      await axios.post('https://api.line.me/oauth2/v2.1/revoke',  // LINE 官方的 token 撤銷端點
-        new URLSearchParams({
-          access_token: lineAccessToken, // 要撤銷的 access token
-          client_id: LINE_CHANNEL_ID,
-          client_secret: LINE_CHANNEL_SECRET
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo);
+        console.log('正在登出用戶:', user.username);
+      } catch (err) {
+        console.log('無法解析用戶資訊,跳過額外處理');
+      }
     }
 
     // 清除所有相關的 cookies
