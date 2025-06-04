@@ -37,14 +37,22 @@ const corsOptions = {
   'Content-Type',     // 內容類型 (application/json)
   'Accept',           // 接受的響應格式 Accept: application/json, text/plain, */* 告訴伺服器客戶端能接受什麼格式的回應
   'Authorization',    // 認證令牌 (Bearer token) JWT token, API key
-  'Cache-Control'     // 緩存控制
+  'Cache-Control',    // 緩存控制
+  'Cookie',           // 新增：允許 Cookie 頭
+  'Set-Cookie'      // 新增：允許設定 Cookie
   ],
 
 	// 允許發送認證信息 (cookies, Authorization header)
   credentials: true,
 
 	// 預檢請求緩存時間
-  maxAge: 86400 // 24 hours
+  maxAge: 86400, // 24 hours
+
+  // 新增：允許前端讀取的響應頭
+  exposedHeaders: [
+    'Set-Cookie',
+    'Authorization'
+  ]
 };
 
 module.exports = { corsOptions };
