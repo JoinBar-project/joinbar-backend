@@ -25,6 +25,9 @@ if (!LINE_CHANNEL_ID || !LINE_CHANNEL_SECRET || !LINE_CALLBACK_URL) {
   process.exit(1);
 }
 
+// 儲存 state 的記憶體快取
+const stateCache = new Map();
+
 const testLineChannelId = async (channelId) => {
   try {
     // 嘗試使用 Channel ID 和 Secret 取得 access token
@@ -38,7 +41,7 @@ const testLineChannelId = async (channelId) => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        timeout: 10000 // 10 秒逾時
+        timeout: 15000 // 15 秒逾時
       }
     );
     
@@ -57,6 +60,16 @@ const validateState = (state) => {
     throw new Error('Invalid state parameter');
   }
   return true;
+};
+
+// 清理過期的 state
+const cleanupExpiredStates = () => {
+  const now = Date.now();
+  for (const [state, data] of stateCache.entries()) {
+    if (now > data.expires) {
+      stateCache.delete(state);
+    }
+  }
 };
 
 // 產生 LINE Login 的 OAuth 2.0 授權 URL
@@ -84,6 +97,15 @@ const getLineAuthUrl = async (req, res) => {
         code: 'STATE_GENERATION_ERROR'
       });
     }
+
+    // 儲存 state 到快取，設定 10 分鐘過期
+    stateCache.set(state, {
+      timestamp: Date.now(),
+      expires: Date.now() + (10 * 60 * 1000) // 10 分鐘後過期
+    });
+
+    // 定期清理過期的 state
+    cleanupExpiredStates();
 
 		// 建立 LINE 授權 URL
     const lineAuthUrl = 'https://access.line.me/oauth2/v2.1/authorize?' +
