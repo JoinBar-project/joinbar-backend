@@ -25,9 +25,45 @@ if (!LINE_CHANNEL_ID || !LINE_CHANNEL_SECRET || !LINE_CALLBACK_URL) {
   process.exit(1);
 }
 
-// 產生 LINE Login 的 OAuth 2.0 授權 UR
+const testLineChannelId = async (channelId) => {
+  try {
+    // 嘗試使用 Channel ID 和 Secret 取得 access token
+    const response = await axios.post('https://api.line.me/v2/oauth/accessToken', 
+      new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: channelId,
+        client_secret: LINE_CHANNEL_SECRET
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        timeout: 10000 // 10 秒逾時
+      }
+    );
+    
+    if (response.data.access_token) {
+      console.log('LINE_CHANNEL_ID is valid and active');
+      return true;
+    }
+  } catch (error) {
+    console.error('LINE_CHANNEL_ID validation failed:', error.response?.data || error.message);
+    return false;
+  }
+};
+
+// 產生 LINE Login 的 OAuth 2.0 授權 URL
 const getLineAuthUrl = async (req, res) => {
   try {
+    // 先驗證 LINE 設定是否有效
+    const isValid = await testLineChannelId(LINE_CHANNEL_ID);
+    if (!isValid) {
+      console.error('❌ LINE Channel validation failed');
+      return res.status(503).json({ 
+        error: 'LINE 登入服務暫時無法使用，請稍後再試或使用其他登入方式',
+        code: 'LINE_SERVICE_UNAVAILABLE'
+      });
+    }
     // 產生隨機 state 參數防止 CSRF 攻擊
     const state = crypto.randomBytes(16).toString('hex');
     
