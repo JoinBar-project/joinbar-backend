@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/JoinBar-project/joinbar-backend#readme",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "biguint-format": "^1.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.0",
     "express": "^5.1.0",
@@ -36,5 +38,8 @@
     "drizzle-seed": "^0.3.1",
     "forker": "^3.0.0",
     "nodemon": "^3.1.10"
+  },
+  "overrides": {
+    "esbuild": "^0.25.5"
   }
 }
