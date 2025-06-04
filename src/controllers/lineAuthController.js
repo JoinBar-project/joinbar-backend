@@ -301,15 +301,40 @@ const lineCallback = async (req, res) => {
       expiresIn: "7d" 
     });
 
-		// 7. 重導向到前端並帶上 tokens
-    // 你可以選擇重導向到前端或是回傳 JSON
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const redirectUrl = `${frontendUrl}/auth/line/success?` +
-      `access_token=${accessToken}&` +
-      `refresh_token=${refreshToken}&` +
-      `user=${encodeURIComponent(JSON.stringify(userResult))}`; // 將用戶資料轉成 JSON 字串並編碼
+		// 7. 重導向到前端並帶上 tokens 使用 HTTP-only cookies 設定 access token cookie
+    res.cookie('access_token', accessToken, {
+      httpOnly: true, // 防止 JavaScript 存取
+      secure: process.env.NODE_ENV === 'production', // HTTPS 環境才設定 secure
+      sameSite: 'lax', // CSRF 保護
+      maxAge: 15 * 60 * 1000, // 15 分鐘 (毫秒)
+      path: '/' // 整個網站都可以使用
+    });
 
-    res.redirect(redirectUrl);
+    // 設定 refresh token cookie
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true, // 防止 JavaScript 存取
+      secure: process.env.NODE_ENV === 'production', // HTTPS 環境才設定 secure
+      sameSite: 'lax', // CSRF 保護
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天 (毫秒)
+      path: '/' // 整個網站都可以使用
+    });
+
+    // 用戶資料也可以用 cookie 傳遞（非敏感資料）
+    res.cookie('user_info', JSON.stringify({
+      id: userResult.id,
+      username: userResult.username,
+      email: userResult.email,
+      role: userResult.role,
+      lineDisplayName: userResult.lineDisplayName
+    }), {
+      httpOnly: false, // 允許前端讀取用戶資料
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
+      path: '/'
+    });
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/auth/line/success`);
 	} catch(err) {
 		return handleError(err, 'LINE 登入處理過程發生錯誤，請重新登入', res);
 	}
