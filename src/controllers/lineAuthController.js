@@ -52,6 +52,13 @@ const testLineChannelId = async (channelId) => {
   }
 };
 
+const validateState = (state) => {
+  if (!state || state.length < 16) {
+    throw new Error('Invalid state parameter');
+  }
+  return true;
+};
+
 // 產生 LINE Login 的 OAuth 2.0 授權 URL
 const getLineAuthUrl = async (req, res) => {
   try {
@@ -66,13 +73,24 @@ const getLineAuthUrl = async (req, res) => {
     }
     // 產生隨機 state 參數防止 CSRF 攻擊
     const state = crypto.randomBytes(16).toString('hex');
-    
+
+    // 簡單驗證 state
+    try {
+      validateState(state);
+    } catch (error) {
+      console.error('❌ State generation failed:', error.message);
+      return res.status(500).json({ 
+        error: '安全參數生成失敗',
+        code: 'STATE_GENERATION_ERROR'
+      });
+    }
+
 		// 建立 LINE 授權 URL
     const lineAuthUrl = 'https://access.line.me/oauth2/v2.1/authorize?' +
       new URLSearchParams({
         response_type: 'code', // 授權類型，這裡是授權碼
         client_id: LINE_CHANNEL_ID, // LINE Channel ID
-        redirect_uri: LINE_CALLBACK_URL, // 回調 URL，必須與 LINE 開發者控制台中設定的回調 URL 相同
+        redirect_uri: LINE_CALLBACK_URL, // 回調 URL，必須與 LINE 開發者控制台中設定的回調 URL 相同 URLSearchParams 會自動編碼 encodeURIComponent(LINE_CALLBACK_URL) 會造成雙重編碼
         state: state, // CSRF 保護的隨機字串 上面設的隨機 state 參數 會跟著一起送到Line的授權伺服器 回傳時會帶回來以證明是我發出的請求
         scope: 'profile openid' // 要求的權限範圍 這裡要求 profile 和 openid 權限
       }).toString();
