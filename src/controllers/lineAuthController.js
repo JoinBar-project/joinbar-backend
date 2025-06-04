@@ -361,9 +361,20 @@ const lineLogout = async (req, res) => {
       );
     }
 
+    // 清除所有相關的 cookies
+    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('user_info', { path: '/' });
+
     res.json({ message: 'LINE 登出成功' });
   } catch (error) {
     console.error('LINE logout error:', error);
+
+    // 即使撤銷失敗，也清除 cookies
+    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('user_info', { path: '/' });
+
     // 即使撤銷失敗，也回傳成功（用戶端已登出）
     res.json({ message: 'LINE 登出成功' });
   }
