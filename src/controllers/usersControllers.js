@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { usersTable } = require('../models/schema');
+const { eq } = require('drizzle-orm');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -8,7 +9,7 @@ const getAllUsers = async (req, res) => {
     if (req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        error: '你無權限查看',
+        message: '你無權限查看',
       });
     }
 
@@ -31,9 +32,42 @@ const getAllUsers = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      error: err.message,
+      message: '伺服器錯誤',
     });
   }
 };
 
-module.exports = getAllUsers;
+const getUserById = async (req, res) => {
+  try {
+    const userId = Number.parseInt(req.params.id); // 將 URL 裡的 id 從字串轉成整數
+    const [userResult] = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        nickname: usersTable.nickname,
+        email: usersTable.email,
+        role: usersTable.role,
+        birthday: usersTable.birthday,
+        avatarUrl: usersTable.avatarUrl,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+
+    if (!userResult) {
+      return res.status(404).json({
+        success: false,
+        message: '查無此使用者',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: userResult,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: '伺服器錯誤' });
+  }
+};
+
+module.exports = { getAllUsers, getUserById };
