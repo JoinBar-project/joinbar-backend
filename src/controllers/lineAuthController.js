@@ -1,9 +1,10 @@
 const dotenv = require('dotenv');
 const axios = require('axios');
-const db = require("../config/db");
-const { usersTable } = require("../models/schema");
-const { eq, or } = require("drizzle-orm");
-const jwt = require("jsonwebtoken");
+const db = require('../config/db');
+const { usersTable } = require('../models/schema');
+const { eq, or } = require('drizzle-orm');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 dotenv.config();
 
@@ -27,8 +28,8 @@ if (!LINE_CHANNEL_ID || !LINE_CHANNEL_SECRET || !LINE_CALLBACK_URL) {
 // 產生 LINE Login 的 OAuth 2.0 授權 UR
 const getLineAuthUrl = async (req, res) => {
   try {
-    // 產生隨機 state 參數防止 CSRF 攻擊 產生一個介於0~1之間的數 再用36進位制轉換成字串 從索引2開始取15個字元也就是去掉"0."
-    const state = Math.random().toString(36).substring(2, 15);
+    // 產生隨機 state 參數防止 CSRF 攻擊
+    const state = crypto.randomBytes(16).toString('hex');
     
 		// 建立 LINE 授權 URL
     const lineAuthUrl = 'https://access.line.me/oauth2/v2.1/authorize?' +
