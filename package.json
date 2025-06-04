@@ -29,9 +29,7 @@
     "drizzle-orm": "^0.44.0",
     "express": "^5.1.0",
     "flake-idgen": "^1.4.0",
-    "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
-    "npm": "^11.4.1",
     "pg": "^8.16.0",
     "zod": "^3.25.42"
   },
