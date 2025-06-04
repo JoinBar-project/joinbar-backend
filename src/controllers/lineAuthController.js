@@ -148,8 +148,11 @@ const lineCallback = async (req, res) => {
     // 驗證通過後從快取中移除 state
     stateCache.delete(state);
 
-    // 1. 用授權碼換取 access token
-    const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',    // 這是 LINE 官方的 Token 端點
+    // 2. 用授權碼換取 access token
+    let tokenResponse;
+    // 使用 axios 發送 POST 請求到 LINE 的 token 端點 這裡使用 try-catch 處理可能的錯誤
+    try {
+      tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',    // 這是 LINE 官方的 Token 端點
       new URLSearchParams({ // 瀏覽器和 Node.js 的內建 API，專門用來處理 URL 查詢字串和表單數據
         grant_type: 'authorization_code',   // OAuth 2.0 的授權類型
         code: code,    // LINE 重導向回來時帶的一次性代碼
@@ -160,9 +163,13 @@ const lineCallback = async (req, res) => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded' // 設定請求的內容類型為表單數據 LINE API 要求的格式
         },
-        timeout: 5000 // 設定請求超時時間為 5 秒
+        timeout: 10000 // 設定請求超時時間為 10 秒
       }
     );
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ err: 'Error fetching access token' });
+    }
 
     const { access_token } = tokenResponse.data;
 
