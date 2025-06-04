@@ -6,11 +6,12 @@ const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
-
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
 const app = express();
+app.use(cookieParser()); 
 app.use(express.json());
 app.use(cors(corsOptions));
 
