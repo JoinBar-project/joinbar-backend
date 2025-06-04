@@ -9,10 +9,6 @@ router.get('/url', getLineAuthUrl);
 // LINE callback 處理 (公開路由)
 router.get('/callback', lineCallback);
 
-// 後續所有路由都需要認證
-router.use(authenticateToken);
-
-// LINE 登出 (需要認證)
 router.post('/logout', lineLogout);
 
 module.exports = router;
