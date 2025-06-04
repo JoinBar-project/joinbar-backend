@@ -77,6 +77,7 @@ const login = async (req, res) => {
         id: userResult.id,
         username: userResult.username,
         email: userResult.email,
+        role: userResult.role,
         type: "access" // token 型別
       },
       JWT_SECRET,
