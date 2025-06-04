@@ -229,14 +229,15 @@ const lineCallback = async (req, res) => {
       .limit(1);
 
 			let userResult;
-			if (existingUser) {
+      try {
+        if (existingUser) {
       // 5a. 更新現有用戶的 LINE 資料
       [userResult] = await db
         .update(usersTable)
         .set({
           lineUserId: lineProfile.userId, // LINE 用戶 ID
           lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
-          linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
+          linePictureUrl: lineProfile.pictureUrl || null, // 處理可能的 undefined LINE 大頭照 URL
           lineStatusMessage: lineProfile.statusMessage || null, // LINE 狀態訊息
           isLineUser: true, // 標記為 LINE 用戶
           providerType: 'line', // 登入提供者類型
@@ -261,13 +262,13 @@ const lineCallback = async (req, res) => {
           password: null, // LINE 用戶不需要密碼
           lineUserId: lineProfile.userId, // LINE 的唯一識別碼
           lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
-          linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
-          lineStatusMessage: lineProfile.statusMessage || null, // LINE 個簽
+          linePictureUrl: lineProfile.pictureUrl || null, // 處理可能的 undefined LINE 大頭照 URL
+          lineStatusMessage: lineProfile.statusMessage || null, // 處理可能的 undefined LINE 個簽
           isLineUser: true, // 標記為 LINE 用戶
           isVerifiedEmail: false,
           providerType: 'line', // 第三方登入提供者
           providerId: lineProfile.userId, // 第三方提供者的用戶 ID
-          avatarUrl: lineProfile.pictureUrl,  // 頭像 URL（使用 LINE 大頭照）
+          avatarUrl: lineProfile.pictureUrl || null,  // 處理可能的 undefined 頭像 URL（使用 LINE 大頭照）
           role: 'user'
         })
         .returning({ // 回傳指定欄位 這些資料會用來產生 JWT token
@@ -278,6 +279,10 @@ const lineCallback = async (req, res) => {
           lineDisplayName: usersTable.lineDisplayName
         });
 		}
+      } catch(err) {
+        console.error('Database operation failed:', err);
+        return handleError(err, '用戶資料處理失敗，請重新登入', res);
+      }
 
 		// 5. 產生 JWT tokens
     const accessToken = jwt.sign({
