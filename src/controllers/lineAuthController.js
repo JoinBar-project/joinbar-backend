@@ -137,6 +137,17 @@ const lineCallback = async (req, res) => {
       return res.status(400).json({ error: '授權碼不存在' });
     }
 
+    // 1. 驗證 state 參數是否匹配
+    if (!state || !stateCache.has(state)) {
+      console.error('❌ Invalid or expired state parameter:', state);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent('安全驗證失敗，請重新登入')}`;
+      return res.redirect(errorUrl);
+    }
+
+    // 驗證通過後從快取中移除 state
+    stateCache.delete(state);
+
     // 1. 用授權碼換取 access token
     const tokenResponse = await axios.post('https://api.line.me/oauth2/v2.1/token',    // 這是 LINE 官方的 Token 端點
       new URLSearchParams({ // 瀏覽器和 Node.js 的內建 API，專門用來處理 URL 查詢字串和表單數據
