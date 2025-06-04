@@ -213,7 +213,12 @@ const lineCallback = async (req, res) => {
     }
 
     const lineProfile = profileResponse.data;
-    console.log('LINE Profile:', lineProfile);
+    console.log('LINE Profile retrieved:', {
+      userId: lineProfile.userId,
+      displayName: lineProfile.displayName,
+      pictureUrl: lineProfile.pictureUrl,
+    });
+
 
 		// 4. 透過 LINE User ID 或 email 檢查用戶是否已存在
     const [existingUser] = await db
