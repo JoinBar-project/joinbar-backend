@@ -7,12 +7,12 @@
 - jsonwebtoken：JWT 身份驗證
 - flake-idgen：生成唯一識別碼
 - zod：資料驗證與型別檢查
-- forker：假資料產生工具（你用的是 forker generate）
+- forker：假資料產生工具（使用 forker generate）
 
 ---
 
 ### 安裝與執行
-執行前請確認有安裝Node.js
+執行前請確認有安裝 Node.js
 
 1. 將專案 clone 下來 與 安裝
 ```
