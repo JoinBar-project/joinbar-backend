@@ -32,11 +32,13 @@ const getLineAuthUrl = async (req, res) => {
     
 		// 建立 LINE 授權 URL
     const lineAuthUrl = 'https://access.line.me/oauth2/v2.1/authorize?' +
-      `response_type=code&` +      // 指定要取得授權碼
-      `client_id=${LINE_CHANNEL_ID}&` +   // 我設置的 LINE Channel ID
-      `redirect_uri=${encodeURIComponent(LINE_CALLBACK_URL)}&` +  // 回調 URL，必須與 LINE 開發者控制台中設定的回調 URL 相同
-      `state=${state}&` +  // CSRF 保護的隨機字串 上面設的隨機 state 參數 會跟著一起送到Line的授權伺服器 回傳時會帶回來以證明是我發出的請求
-      `scope=profile%20openid`; // 要求的權限範圍 這裡要求 profile 和 openid 權限
+      new URLSearchParams({
+        response_type: 'code', // 授權類型，這裡是授權碼
+        client_id: LINE_CHANNEL_ID, // LINE Channel ID
+        redirect_uri: LINE_CALLBACK_URL, // 回調 URL，必須與 LINE 開發者控制台中設定的回調 URL 相同
+        state: state, // CSRF 保護的隨機字串 上面設的隨機 state 參數 會跟著一起送到Line的授權伺服器 回傳時會帶回來以證明是我發出的請求
+        scope: 'profile openid' // 要求的權限範圍 這裡要求 profile 和 openid 權限
+      }).toString();
 
     res.json({ 
 			// 回傳授權 URL 和 state 給前端
