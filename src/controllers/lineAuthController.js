@@ -5,7 +5,6 @@ const { usersTable } = require('../models/schema');
 const { eq, or } = require('drizzle-orm');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { error } = require('console');
 
 dotenv.config();
 
@@ -28,6 +27,20 @@ if (!LINE_CHANNEL_ID || !LINE_CHANNEL_SECRET || !LINE_CALLBACK_URL) {
 
 // 儲存 state 的記憶體快取
 const stateCache = new Map();
+
+// 統一錯誤處理函數
+const handleError = (error, message, res) => {
+  // 如果有錯誤物件，則將其轉為字串
+  if (process.env.NODE_ENV === 'production') {
+    console.error(message);
+  } else {
+    console.error(message, error);
+  }
+  
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent(message)}`;
+  return res.redirect(errorUrl);
+};
 
 const testLineChannelId = async (channelId) => {
   try {
@@ -135,15 +148,20 @@ const lineCallback = async (req, res) => {
     const { code, state } = req.query; // LINE 回傳的授權碼，用來換取 access token
 
     if (!code) {
-      return res.status(400).json({ error: '授權碼不存在' });
+      return handleError(
+        new Error('Missing authorization code'), 
+        '授權碼不存在，請重新登入', 
+        res
+      );
     }
 
     // 1. 驗證 state 參數是否匹配
     if (!state || !stateCache.has(state)) {
-      console.error('❌ Invalid or expired state parameter:', state);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent('安全驗證失敗，請重新登入')}`;
-      return res.redirect(errorUrl);
+      return handleError(
+        new Error('Invalid state parameter'), 
+        '安全驗證失敗，請重新登入', 
+        res
+      );
     }
 
     // 驗證通過後從快取中移除 state
@@ -168,11 +186,17 @@ const lineCallback = async (req, res) => {
       }
     );
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Error fetching access token' });
+      return handleError(err, '取得存取權杖失敗，請重新登入', res);
     }
 
     const { access_token } = tokenResponse.data;
+    if (!access_token) {
+      return handleError(
+        new Error('Invalid token response'), 
+        '取得存取權杖失敗，請重新登入', 
+        res
+      );
+    }
 
 		 // 3. 使用剛取得的 access token 向 LINE API 請求用戶的基本資料
     let profileResponse;
@@ -185,14 +209,13 @@ const lineCallback = async (req, res) => {
       timeout: 10000 // 延長到 10 秒
     });
     } catch(err) {
-      console.error('Error fetching LINE profile:', err);
-      return res.status(500).json({ error: '無法取得 LINE 用戶資料' });
+      return handleError(err, '無法取得 LINE 用戶資料，請重新登入', res);
     }
 
     const lineProfile = profileResponse.data;
     console.log('LINE Profile:', lineProfile);
 
-		// 3. 透過 LINE User ID 或 email 檢查用戶是否已存在
+		// 4. 透過 LINE User ID 或 email 檢查用戶是否已存在
     const [existingUser] = await db
       .select()
       .from(usersTable)
@@ -205,9 +228,8 @@ const lineCallback = async (req, res) => {
       .limit(1);
 
 			let userResult;
-
 			if (existingUser) {
-      // 4a. 更新現有用戶的 LINE 資料
+      // 5a. 更新現有用戶的 LINE 資料
       [userResult] = await db
         .update(usersTable)
         .set({
@@ -228,7 +250,7 @@ const lineCallback = async (req, res) => {
           lineDisplayName: usersTable.lineDisplayName
         });
     } else {
-			// 4b. 建立新用戶
+			// 6b. 建立新用戶
       [userResult] = await db
         .insert(usersTable)
         .values({
@@ -273,7 +295,7 @@ const lineCallback = async (req, res) => {
       expiresIn: "7d" 
     });
 
-		// 6. 重導向到前端並帶上 tokens
+		// 7. 重導向到前端並帶上 tokens
     // 你可以選擇重導向到前端或是回傳 JSON
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const redirectUrl = `${frontendUrl}/auth/line/success?` +
@@ -283,13 +305,7 @@ const lineCallback = async (req, res) => {
 
     res.redirect(redirectUrl);
 	} catch(err) {
-		console.error('LINE callback error:', err);
-    
-    // 重導向到前端錯誤頁面
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent('LINE 登入失敗')}`;
-    
-    res.redirect(errorUrl);
+		return handleError(err, 'LINE 登入處理過程發生錯誤，請重新登入', res);
 	}
 };
 
