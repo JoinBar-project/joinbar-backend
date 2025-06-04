@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
+const barTagsRoutes = require('./src/routes/barTagsRoutes');
 
 
 dotenv.config();
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use('/event', eventRoutes);
 app.use('/tags', tagsRoutes);
+app.use('/barTags', barTagsRoutes);
 
 
 app.listen(3000, () => {
