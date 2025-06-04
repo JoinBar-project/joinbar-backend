@@ -5,6 +5,7 @@ const { usersTable } = require('../models/schema');
 const { eq, or } = require('drizzle-orm');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { error } = require('console');
 
 dotenv.config();
 
@@ -168,17 +169,25 @@ const lineCallback = async (req, res) => {
     );
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ err: 'Error fetching access token' });
+      return res.status(500).json({ error: 'Error fetching access token' });
     }
 
     const { access_token } = tokenResponse.data;
 
-		 // 2. 使用剛取得的 access token 向 LINE API 請求用戶的基本資料
-    const profileResponse = await axios.get('https://api.line.me/v2/profile', {
+		 // 3. 使用剛取得的 access token 向 LINE API 請求用戶的基本資料
+    let profileResponse;
+    // 使用 axios 發送 GET 請求到 LINE 的 profile 端點
+    try {
+      profileResponse = await axios.get('https://api.line.me/v2/profile', {
       headers: {
         'Authorization': `Bearer ${access_token}`
-      }
+      },
+      timeout: 10000 // 延長到 10 秒
     });
+    } catch(err) {
+      console.error('Error fetching LINE profile:', err);
+      return res.status(500).json({ error: '無法取得 LINE 用戶資料' });
+    }
 
     const lineProfile = profileResponse.data;
     console.log('LINE Profile:', lineProfile);
