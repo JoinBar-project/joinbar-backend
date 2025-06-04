@@ -217,6 +217,7 @@ const lineCallback = async (req, res) => {
       userId: lineProfile.userId,
       displayName: lineProfile.displayName,
       pictureUrl: lineProfile.pictureUrl,
+      statusMessage: lineProfile.statusMessage,
     });
 
 
@@ -224,12 +225,7 @@ const lineCallback = async (req, res) => {
     const [existingUser] = await db
       .select()
       .from(usersTable)
-      .where(
-        or(
-          eq(usersTable.lineUserId, lineProfile.userId),
-          eq(usersTable.email, lineProfile.email || '') // LINE 用戶可能沒有 email
-        )
-      )
+      .where(eq(usersTable.lineUserId, lineProfile.userId))
       .limit(1);
 
 			let userResult;
@@ -241,7 +237,7 @@ const lineCallback = async (req, res) => {
           lineUserId: lineProfile.userId, // LINE 用戶 ID
           lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
           linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
-          lineStatusMessage: lineProfile.statusMessage, // LINE 狀態訊息
+          lineStatusMessage: lineProfile.statusMessage || null, // LINE 狀態訊息
           isLineUser: true, // 標記為 LINE 用戶
           providerType: 'line', // 登入提供者類型
           updatedAt: new Date() // 更新時間
@@ -266,7 +262,7 @@ const lineCallback = async (req, res) => {
           lineUserId: lineProfile.userId, // LINE 的唯一識別碼
           lineDisplayName: lineProfile.displayName, // LINE 顯示名稱
           linePictureUrl: lineProfile.pictureUrl, // LINE 大頭照 URL
-          lineStatusMessage: lineProfile.statusMessage, // LINE 個簽
+          lineStatusMessage: lineProfile.statusMessage || null, // LINE 個簽
           isLineUser: true, // 標記為 LINE 用戶
           isVerifiedEmail: false,
           providerType: 'line', // 第三方登入提供者
