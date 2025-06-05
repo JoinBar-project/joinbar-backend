@@ -25,6 +25,7 @@ const getAllUsers = async (req, res) => {
       })
       .from(usersTable)
       .where(eq(usersTable.status, 1));
+
     res.status(200).json({
       success: true,
       data: userResult,
@@ -39,7 +40,7 @@ const getAllUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const userId = Number.parseInt(req.params.id); // 將 URL 裡的 id 從字串轉成整數
+    const userId = Number(req.params.id);
 
     if (req.user.id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -74,7 +75,10 @@ const getUserById = async (req, res) => {
       data: userResult,
     });
   } catch (err) {
-    return res.status(500).json({ message: '伺服器錯誤' });
+    return res.status(500).json({
+      success: false,
+      message: '伺服器錯誤',
+    });
   }
 };
 
