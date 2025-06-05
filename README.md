@@ -44,4 +44,16 @@ npm run fake
 ```
 npm run start
 ```
+---
+### 組員分工
+
+| 組員     | GitHub                                                 | 功能：會員 | 功能：地圖  | 功能：活動  | 功能：金流  |
+|----------|-------------------------------------------------------|------------|------------|------------|------------|
+| 卓訢妤   | [2xin15](https://github.com/2xin15)                    |            |            |            |            |
+| 鄭婉君   | [Bella-Cheng](https://github.com/Bella-Cheng)          |            |            |            |            |
+| 紀雅馨   | [rakku2code](https://github.com/rakku2code)            |            |            |            |            |
+| 陳紫婷   | [jasminecchen](https://github.com/jasminecchen)        |            |            |            |            |
+| 戎彬     | [Benjung1215](https://github.com/Benjung1215)          |            |            |            |            |
+| 蔡昌成   | [kirito489](https://github.com/kirito489)              |            |            |            |            |
+| 竇孝武   | [TouHsiaoWu](https://github.com/TouHsiaoWu)            |            |            |            |            |
 
