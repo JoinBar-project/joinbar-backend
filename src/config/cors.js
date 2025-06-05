@@ -14,18 +14,18 @@ const corsOptions = {
     return callback(null, true)
     };
 
-		// -1代表沒有符合我設定可以連線進來的網址
-		if(allowedOrigins.indexOf(origin) !== -1) {
-			// !== -1 表示「不等於 -1」，也就是「有找到符合的網址」
-      callback(null, true);
-			// 第一個參數：null (沒有錯誤)
+  // 檢查來源是否被允許
+    // !origin 是為了允許同源請求（如 Postman 或伺服器端請求）
+    if (allowedOrigins.includes(origin) || !origin) {
+      return callback(null, true);
+      // 第一個參數：null (沒有錯誤)
       // 第二個參數：true (允許這個請求)
     } else {
-      console.log('Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'))
-			// 這邊callback的false可以省略
+      console.log('❌ Blocked by CORS:', origin);
+      return callback(new Error(`CORS policy violation: ${origin} is not allowed`), false);
+      // 這邊callback的false可以省略
     }
-	},
+  },
 
 	// 允許的 HTTP 方法
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
