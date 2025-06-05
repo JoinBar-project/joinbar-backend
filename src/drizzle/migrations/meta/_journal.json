@@ -15,6 +15,13 @@
       "when": 1748706785440,
       "tag": "0001_empty_changeling",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749107459201,
+      "tag": "0002_flippant_killmonger",
+      "breakpoints": true
     }
   ]
 }
