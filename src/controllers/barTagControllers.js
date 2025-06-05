@@ -5,9 +5,9 @@ const { eq } = require('drizzle-orm');
 
 // 新增標籤到個人推薦
 const addTagsToUser = async (req, res) => {
-  const {UserId ,sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
 
-  console.log('user_id:', UserId); 
+  const UserId = Number(req.params.id);
+  const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
 
   try {
     const newUserTags = await db.insert(userTags).values({
@@ -24,18 +24,34 @@ const addTagsToUser = async (req, res) => {
       easy,
     });
 
-    return res.status(201).json({ message: "新增成功"});
+    return res.status(201).json({ message: "新增酒吧特色標籤成功"});
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
 
-// const getBarTags = async (req, res) => {
+const getBarTagsFromUser = async (req, res) => {
+  const UserId = Number(req.params.id);
+
+  try {
+    const result = await db
+      .select()
+      .from(userTags)
+      .where(eq(userTags.UserId, UserId));
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "找不到該使用者的標籤" });
+    }
+
+    return res.status(200).json(result[0]);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+// const UpdateTagFromUser = async (req, res) => {
   
 // }
 
-// const removeTagFromBar = async (req, res) => {
-  
-// }
-
-module.exports = { addTagsToUser };
+module.exports = { addTagsToUser, getBarTagsFromUser };
