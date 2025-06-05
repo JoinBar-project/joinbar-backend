@@ -40,6 +40,14 @@ const getAllUsers = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const userId = Number.parseInt(req.params.id); // 將 URL 裡的 id 從字串轉成整數
+
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: '你無權限查看',
+      });
+    }
+
     const [userResult] = await db
       .select({
         id: usersTable.id,
