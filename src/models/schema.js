@@ -123,6 +123,32 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
+const barTags = pgTable('bar_tags', {
+  barId: integer('bar_id').notNull().references(() => barsTable.id, { onDelete: 'cascade' }),
+  sport: integer('sport').notNull(),
+  music: integer('music').notNull(),
+  student: integer('student').notNull(),
+  bistro: integer('bistro').notNull(),
+  drink: integer('drink').notNull(),
+  joy: integer('joy').notNull(),
+  romantic: integer('romantic').notNull(),
+  oldschool: integer('oldschool').notNull(),
+  highlevel: integer('highlevel').notNull(),
+  easy: integer('easy').notNull(),
+}, );
 
+const userTags = pgTable('user_tags', {
+  UserId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  sport: integer('sport').notNull(),
+  music: integer('music').notNull(),
+  student: integer('student').notNull(),
+  bistro: integer('bistro').notNull(),
+  drink: integer('drink').notNull(),
+  joy: integer('joy').notNull(),
+  romantic: integer('romantic').notNull(),
+  oldschool: integer('oldschool').notNull(),
+  highlevel: integer('highlevel').notNull(),
+  easy: integer('easy').notNull(),
+}, );
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags };

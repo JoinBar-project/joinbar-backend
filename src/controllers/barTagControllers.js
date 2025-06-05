@@ -34,3 +34,5 @@ const getBarTags = async (req, res) => {
 const removeTagFromBar = async (req, res) => {
   
 }
+
+module.exports = { addTagsToBar, getBarTags, removeTagFromBar };
