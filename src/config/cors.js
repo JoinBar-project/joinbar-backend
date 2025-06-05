@@ -23,7 +23,6 @@ const corsOptions = {
     } else {
       console.log('❌ Blocked by CORS:', origin);
       return callback(new Error(`CORS policy violation: ${origin} is not allowed`), false);
-      // 這邊callback的false可以省略
     }
   },
 
