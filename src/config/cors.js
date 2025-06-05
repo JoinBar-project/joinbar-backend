@@ -9,11 +9,6 @@ const corsOptions = {
       'http://127.0.0.1:5173'  // 本地 Vite IP
 		];
 
-		// 允許沒有 origin 的請求 Postman、Insomnia 等工具發送的請求通常沒有 origin header
-		if(!origin) {
-    return callback(null, true)
-    };
-
   // 檢查來源是否被允許
     // !origin 是為了允許同源請求（如 Postman 或伺服器端請求）
     if (allowedOrigins.includes(origin) || !origin) {
