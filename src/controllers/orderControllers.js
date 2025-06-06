@@ -64,7 +64,7 @@ const createOrder = async (req, res) => {
     // 驗證所有活動並計算總金額
     console.log('開始驗證活動...');
     let totalAmount = 0;
-    const validatedItems = [];
+    const orderItemsData = [];
     
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -97,12 +97,21 @@ const createOrder = async (req, res) => {
       // 累計總金額
       totalAmount += event.price;
       
-      // 儲存驗證過的活動資料
-      validatedItems.push({
+      // 準備訂單項目資料
+      const itemId = intformat(flake.next(), 'dec');
+      orderItemsData.push({
+        id: itemId,
+        orderId: orderId,
         eventId: eventId,
         eventName: event.name,
-        price: event.price,
-        quantity: 1
+        barName: event.barName,
+        location: event.location,
+        eventStartDate: event.startDate,
+        eventEndDate: event.endDate,
+        hostUserId: event.hostUser,
+        price: event.price.toString(),
+        quantity: 1,
+        subtotal: event.price.toString()
       });
     }
     
@@ -128,15 +137,26 @@ const createOrder = async (req, res) => {
     await db.insert(orders).values(newOrder);
     console.log('✅ 訂單插入成功');
     
+    // 批量插入訂單項目
+    if (orderItemsData.length > 0) {
+      await db.insert(orderItems).values(orderItemsData);
+      console.log(`✅ ${orderItemsData.length} 個訂單項目插入成功`);
+    }
+    
     res.status(201).json({
-      message: '訂單創建成功（含活動驗證）',
+      message: '訂單創建成功',
       order: {
         orderId,
         orderNumber,
         totalAmount: totalAmount.toString(),
         status: 'pending',
-        itemCount: validatedItems.length,
-        items: validatedItems
+        itemCount: orderItemsData.length,
+        items: orderItemsData.map(item => ({
+          eventId: item.eventId,
+          eventName: item.eventName,
+          price: item.price,
+          quantity: item.quantity
+        }))
       }
     });
     
@@ -144,6 +164,56 @@ const createOrder = async (req, res) => {
     console.error('創建訂單錯誤:', err);
     res.status(500).json({ 
       message: '創建訂單失敗', 
+      error: err.message 
+    });
+  }
+};
+
+// 查詢訂單詳細資料
+const getOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    console.log('=== 查詢訂單詳細資料 ===');
+    console.log('訂單ID:', orderId);
+    
+    // 查詢訂單基本資料
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId));
+    
+    if (!order) {
+      return res.status(404).json({ 
+        message: '找不到訂單' 
+      });
+    }
+    
+    console.log('找到訂單:', order.orderNumber);
+    
+    // 查詢訂單項目
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, orderId));
+    
+    console.log('找到訂單項目數量:', items.length);
+    
+    // 組合完整訂單資料
+    const orderData = {
+      ...order,
+      items
+    };
+    
+    // 處理 BigInt 並回傳
+    res.status(200).json({
+      message: '查詢成功',
+      order: stringifyBigInts(orderData)
+    });
+    
+  } catch (err) {
+    console.error('查詢訂單錯誤:', err);
+    res.status(500).json({ 
+      message: '查詢訂單失敗', 
       error: err.message 
     });
   }
@@ -169,5 +239,6 @@ const testConnection = async (req, res) => {
 
 module.exports = { 
   createOrder,
+  getOrder,
   testConnection
 };

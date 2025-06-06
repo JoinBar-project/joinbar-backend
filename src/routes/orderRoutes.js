@@ -1,15 +1,14 @@
 const express = require('express');
 const { 
   createOrder,
+  getOrder,
   testConnection
 } = require('../controllers/orderControllers');
 
 const router = express.Router();
 
-// 測試連線
 router.get('/test', testConnection);
-
-// 創建訂單（基礎版本）
 router.post('/create', createOrder);
+router.get('/:id', getOrder);
 
 module.exports = router;
