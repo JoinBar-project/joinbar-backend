@@ -149,6 +149,36 @@ const createOrder = async (req, res) => {
   }
 };
 
+// 查詢訂單
+const getOrder = async (req, res) => {
+  try {
+    console.log('=== 查詢訂單 ===');
+    const orderId = req.params.id;
+    console.log('查詢訂單ID:', orderId);
+    
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId));
+    
+    if (!order) {
+      return res.status(404).json({ message: '找不到訂單' });
+    }
+    
+    console.log('✅ 訂單查詢成功');
+    res.status(200).json({
+      order: stringifyBigInts(order)
+    });
+    
+  } catch (err) {
+    console.error('查詢訂單錯誤:', err);
+    res.status(500).json({ 
+      message: '查詢失敗', 
+      error: err.message 
+    });
+  }
+};
+
 // 測試連線
 const testConnection = async (req, res) => {
   try {
@@ -169,5 +199,6 @@ const testConnection = async (req, res) => {
 
 module.exports = { 
   createOrder,
+  getOrder,
   testConnection
 };
