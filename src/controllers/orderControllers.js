@@ -13,10 +13,10 @@ function stringifyBigInts(obj) {
   ));
 }
 
-// 創建訂單 - 加入活動驗證和數量限制
+// 創建訂單 - 修正重複購買檢查
 const createOrder = async (req, res) => {
   try {
-    console.log('=== 創建訂單（活動驗證版本）===');
+    console.log('=== 創建訂單（修正重複購買檢查版本）===');
     console.log('請求資料:', req.body);
     
     const { 
@@ -106,6 +106,64 @@ const createOrder = async (req, res) => {
       });
     }
     
+    // ========== 修正：重複購買檢查 ==========
+    console.log('檢查重複購買...');
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const eventId = item.eventId.toString();
+      
+      console.log(`檢查重複購買 - 活動 ${i + 1}: ${eventId}`);
+      
+      // ✅ 修正：簡化檢查，只查詢 orders 表
+      // 檢查是否有該用戶針對該活動的未付款訂單
+      const existingPendingOrders = await db
+        .select({
+          orderId: orders.id,
+          orderNumber: orders.orderNumber
+        })
+        .from(orders)
+        .where(and(
+          eq(orders.userId, parseInt(userId)),
+          eq(orders.status, 'pending')
+        ));
+      
+      if (existingPendingOrders.length > 0) {
+        // 如果有未付款訂單，提醒用戶先完成付款
+        // 注意：這裡簡化處理，不檢查具體活動
+        // 完整的檢查會在 Commit 8 實作 orderItems 後進行
+        console.log(`⚠️ 用戶有 ${existingPendingOrders.length} 個未付款訂單`);
+        
+        return res.status(400).json({ 
+          message: `您有未付款的訂單，請先完成付款再建立新訂單`,
+          pendingOrderCount: existingPendingOrders.length,
+          suggestedAction: '請查看您的訂單列表並完成付款'
+        });
+      }
+      
+      // ✅ 檢查是否已經參加過活動（這個檢查是正確的）
+      const existingParticipation = await db
+        .select()
+        .from(userEventParticipationTable)
+        .where(and(
+          eq(userEventParticipationTable.userId, parseInt(userId)),
+          eq(userEventParticipationTable.eventId, eventId)
+        ))
+        .limit(1);
+      
+      if (existingParticipation.length > 0) {
+        const eventName = validatedItems.find(v => v.eventId === eventId)?.eventName || eventId;
+        return res.status(400).json({ 
+          message: `您已經參加過活動「${eventName}」，無法重複購票`,
+          conflictEventId: eventId
+        });
+      }
+      
+      console.log(`✅ 活動 ${eventId} 重複購買檢查通過`);
+    }
+    
+    console.log('✅ 所有活動重複購買檢查通過');
+    // ========== 重複購買檢查結束 ==========
+    
     console.log(`✅ 所有 ${items.length} 個活動驗證通過`);
     console.log('總金額:', totalAmount);
     
@@ -129,7 +187,7 @@ const createOrder = async (req, res) => {
     console.log('✅ 訂單插入成功');
     
     res.status(201).json({
-      message: '訂單創建成功（含活動驗證）',
+      message: '訂單創建成功（含重複購買檢查）',
       order: {
         orderId,
         orderNumber,
@@ -137,7 +195,8 @@ const createOrder = async (req, res) => {
         status: 'pending',
         itemCount: validatedItems.length,
         items: validatedItems
-      }
+      },
+      note: '完整的活動級重複檢查將在 orderItems 實作後加入'
     });
     
   } catch (err) {
