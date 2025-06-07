@@ -11,11 +11,10 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/event', eventRoutes);
 app.use('/tags', tagsRoutes);
-app.use('/barTags', barTagsRoutes);
-
+app.use('/api/users', barTagsRoutes);
 
 app.listen(3000, () => {
   console.log('伺服器已啟動 http://localhost:3000');

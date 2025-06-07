@@ -135,7 +135,7 @@ const barTags = pgTable('bar_tags', {
   oldschool: boolean('oldschool').notNull(),
   highlevel: boolean('highlevel').notNull(),
   easy: boolean('easy').notNull(),
-}, );
+},);
 
 const userTags = pgTable('user_tags', {
   UserId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
@@ -149,6 +149,6 @@ const userTags = pgTable('user_tags', {
   oldschool: boolean('oldschool').notNull(),
   highlevel: boolean('highlevel').notNull(),
   easy: boolean('easy').notNull(),
-}, );
+},);
 
 module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags };

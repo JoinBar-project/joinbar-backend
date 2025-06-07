@@ -24,12 +24,13 @@ const addTagsToUser = async (req, res) => {
       easy,
     });
 
-    return res.status(201).json({ message: "新增酒吧特色標籤成功"});
+    return res.status(201).json({ message: '新增酒吧特色標籤成功' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
 
+// 取得使用者偏好
 const getBarTagsFromUser = async (req, res) => {
   const UserId = Number(req.params.id);
 
@@ -40,7 +41,7 @@ const getBarTagsFromUser = async (req, res) => {
       .where(eq(userTags.UserId, UserId));
 
     if (result.length === 0) {
-      return res.status(404).json({ error: "找不到該使用者的標籤" });
+      return res.status(404).json({ error: '找不到該使用者的標籤' });
     }
 
     return res.status(200).json(result[0]);
@@ -49,9 +50,30 @@ const getBarTagsFromUser = async (req, res) => {
   }
 };
 
-
-// const UpdateTagFromUser = async (req, res) => {
+// 更新使用者的標籤偏好資料
+const UpdateTagFromUser = async (req, res) => {
+  const UserId = Number(req.params.id);
+  const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
   
-// }
+  try {
+    const updatedTag = await db.update(userTags).set({  
+      sport,
+      music,
+      student,
+      bistro,
+      drink,
+      joy,
+      romantic,
+      oldschool,
+      highlevel,
+      easy,
+    })
+    .where(eq(userTags.UserId, UserId));
 
-module.exports = { addTagsToUser, getBarTagsFromUser };
+    return res.status(200).json({ message: '更新酒吧類型偏好成功', data: updatedTag });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { addTagsToUser, getBarTagsFromUser, UpdateTagFromUser };

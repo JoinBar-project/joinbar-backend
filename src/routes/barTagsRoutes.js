@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const { addTagsToUser } = require("../controllers/barTagControllers.js");
+const { addTagsToUser, getBarTagsFromUser, UpdateTagFromUser } = require("../controllers/barTagControllers.js");
 
-
-router.post("/addTags", addTagsToUser);
-// router.get("/bars/:barId/tags", getBarTags);
-// router.delete("/bars/:barId/tags/:tagId", verifyToken, checkAdmin, removeTagFromBar);
+router.post("/:id/preferences", addTagsToUser);
+router.get("/:id/preferences", getBarTagsFromUser);
+router.put("/:id/preferences", UpdateTagFromUser);
 
 module.exports = router;
