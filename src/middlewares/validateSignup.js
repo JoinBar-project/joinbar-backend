@@ -1,13 +1,8 @@
 const { z } = require('zod');
 const signupSchema = z.object({
-  username: z
-    .string()
+  username: z.string()
     .min(2, '姓名不可少於 2 個字元')
-    .max(20, '姓名最多為 20 個字元')
-    .regex(
-      /^[a-zA-Z0-9_]*$/,
-      '只能包含英文、數字及底線，不可包含空白及特殊符號'
-    ),
+    .max(20, '姓名最多為 20 個字元'),
   nickname: z.union([
     z.string()
       .min(1, '使用者名稱至少需要 1 個字元') // 避免使用者輸入空字串
@@ -17,10 +12,7 @@ const signupSchema = z.object({
     .string()
     .min(8, '密碼至少需要 8 個字元')
     .max(100, '密碼不可超過 100 個字元')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
-      '密碼必須包含至少 1 個大寫字母、小寫字母和數字'
-    ),
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,'密碼必須包含至少 1 個大寫字母、小寫字母和數字'),
   email: z.string().email('email 格式不正確'),
   birthday: z.union([
     z.string()
