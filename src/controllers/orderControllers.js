@@ -187,6 +187,33 @@ const generateOrderSummary = (validatedItems) => {
   return summary;
 };
 
+// ========== 訂單項目處理函數 ==========
+const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
+  const orderItemsData = validatedItems.map(item => {
+    const itemId = intformat(flake.next(), 'dec');
+    return {
+      id: itemId,
+      orderId: orderId,
+      eventId: item.eventId,
+      eventName: item.eventName,
+      barName: item.barName,
+      location: item.location,
+      eventStartDate: item.startDate,
+      eventEndDate: item.endDate,
+      hostUserId: item.hostUserId,
+      price: item.price.toString(),
+      quantity: 1,
+      subtotal: item.price.toString()
+    };
+  });
+  
+  if (orderItemsData.length > 0) {
+    await tx.insert(orderItems).values(orderItemsData);
+  }
+  
+  return orderItemsData;
+};
+
 const findOrder = async (orderId) => {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
   if (!order) {
@@ -200,57 +227,68 @@ const createOrder = async (req, res) => {
   try {
     const { userId, items, paymentMethod, customerName, customerPhone, customerEmail } = req.body;
     
-    // 驗證輸入
-    const validationError = validateOrderInput(userId, items);
-    if (validationError) {
-      return res.status(400).json({ message: validationError });
-    }
-    
-    // 驗證活動並計算金額
-    const { totalAmount, validatedItems } = await validateAndGetEvents(items);
-    
-    // 檢查重複購買
-    await checkDuplicatePurchase(userId, items);
-    
-    // 生成訂單
-    const { orderId, orderNumber } = generateOrderId();
-    const now = new Date();
-    
-    const newOrder = {
-      id: orderId,
-      orderNumber,
-      userId: parseInt(userId),
-      totalAmount: totalAmount.toString(),
-      status: ORDER_STATUS.PENDING,
-      paymentMethod: paymentMethod || null,
-      customerName: customerName || null,
-      customerPhone: customerPhone || null,
-      customerEmail: customerEmail || null,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    await db.insert(orders).values(newOrder);
-    
-    // 生成訂單摘要
-    const summary = generateOrderSummary(validatedItems);
-    
-    res.status(201).json({
-      message: '訂單創建成功',
-      order: {
+    // 使用資料庫交易確保資料一致性
+    const result = await db.transaction(async (tx) => {
+      // 驗證輸入
+      const validationError = validateOrderInput(userId, items);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+      
+      // 驗證活動並計算金額
+      const { totalAmount, validatedItems } = await validateAndGetEvents(items);
+      
+      // 檢查重複購買
+      await checkDuplicatePurchase(userId, items);
+      
+      // 生成訂單
+      const { orderId, orderNumber } = generateOrderId();
+      const now = new Date();
+      
+      const newOrder = {
+        id: orderId,
+        orderNumber,
+        userId: parseInt(userId),
+        totalAmount: totalAmount.toString(),
+        status: ORDER_STATUS.PENDING,
+        paymentMethod: paymentMethod || null,
+        customerName: customerName || null,
+        customerPhone: customerPhone || null,
+        customerEmail: customerEmail || null,
+        createdAt: now,
+        updatedAt: now
+      };
+      
+      // 插入訂單主表
+      await tx.insert(orders).values(newOrder);
+      
+      // 批量插入訂單項目
+      const orderItemsCreated = await createOrderItemsBatch(tx, orderId, validatedItems);
+      
+      // 生成訂單摘要
+      const summary = generateOrderSummary(validatedItems);
+      
+      return {
         orderId,
         orderNumber,
         totalAmount: totalAmount.toString(),
         status: ORDER_STATUS.PENDING,
         itemCount: validatedItems.length,
         items: validatedItems,
+        orderItems: orderItemsCreated.map(item => stringifyBigInts(item)),
         summary,
         allowedNextStates: STATE_TRANSITIONS[ORDER_STATUS.PENDING],
         actions: { canPay: true, canCancel: true, canExpire: true }
-      }
+      };
+    });
+    
+    res.status(201).json({
+      message: '訂單創建成功',
+      order: result
     });
     
   } catch (err) {
+    console.error('創建訂單失敗:', err);
     const statusCode = err.message.includes('找不到') ? 404 : 
                       err.message.includes('已結束') || err.message.includes('重複') || err.message.includes('已滿員') ? 400 : 500;
     res.status(statusCode).json({ message: err.message });
