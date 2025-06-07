@@ -40,6 +40,26 @@ const generateOrderId = () => {
   return { orderId, orderNumber };
 };
 
+const generateOrderSummary = (validatedItems) => {
+  const summary = {
+    totalItems: validatedItems.length,
+    totalAmount: validatedItems.reduce((sum, item) => sum + item.price, 0),
+    events: validatedItems.map(item => ({
+      name: item.eventName,
+      barName: item.barName,
+      price: item.price,
+      date: item.startDate
+    })),
+    bars: [...new Set(validatedItems.map(item => item.barName))],
+    dateRange: {
+      earliest: new Date(Math.min(...validatedItems.map(item => new Date(item.startDate)))),
+      latest: new Date(Math.max(...validatedItems.map(item => new Date(item.endDate))))
+    }
+  };
+  
+  return summary;
+};
+
 // ========== 驗證函數 ==========
 const validateOrderInput = (userId, items) => {
   if (!userId || !items || !Array.isArray(items) || items.length === 0) {
@@ -167,27 +187,7 @@ const checkDuplicatePurchase = async (userId, items) => {
   }
 };
 
-const generateOrderSummary = (validatedItems) => {
-  const summary = {
-    totalItems: validatedItems.length,
-    totalAmount: validatedItems.reduce((sum, item) => sum + item.price, 0),
-    events: validatedItems.map(item => ({
-      name: item.eventName,
-      barName: item.barName,
-      price: item.price,
-      date: item.startDate
-    })),
-    bars: [...new Set(validatedItems.map(item => item.barName))],
-    dateRange: {
-      earliest: new Date(Math.min(...validatedItems.map(item => new Date(item.startDate)))),
-      latest: new Date(Math.max(...validatedItems.map(item => new Date(item.endDate))))
-    }
-  };
-  
-  return summary;
-};
-
-// ========== 訂單項目處理函數 ==========
+// ========== 資料庫操作函數 ==========
 const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
   const orderItemsData = validatedItems.map(item => {
     const itemId = intformat(flake.next(), 'dec');
@@ -212,6 +212,16 @@ const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
   }
   
   return orderItemsData;
+};
+
+const getOrderItemsByOrderId = async (orderId) => {
+  const items = await db
+    .select()
+    .from(orderItems)
+    .where(eq(orderItems.orderId, orderId))
+    .orderBy(orderItems.eventStartDate);
+  
+  return items.map(item => stringifyBigInts(item));
 };
 
 const findOrder = async (orderId) => {
@@ -307,6 +317,45 @@ const getOrder = async (req, res) => {
     };
     
     res.json({ order: stringifyBigInts({ ...order, allowedNextStates, actions }) });
+  } catch (err) {
+    const statusCode = err.message === '找不到訂單' ? 404 : 500;
+    res.status(statusCode).json({ message: err.message });
+  }
+};
+
+const getOrderWithDetails = async (req, res) => {
+  try {
+    const order = await findOrder(req.params.id);
+    const items = await getOrderItemsByOrderId(req.params.id);
+    
+    const allowedNextStates = STATE_TRANSITIONS[order.status] || [];
+    const actions = {
+      canPay: allowedNextStates.includes(ORDER_STATUS.PAID),
+      canCancel: allowedNextStates.includes(ORDER_STATUS.CANCELLED),
+      canConfirm: allowedNextStates.includes(ORDER_STATUS.CONFIRMED),
+      canRefund: allowedNextStates.includes(ORDER_STATUS.REFUNDED)
+    };
+    
+    // 基於實際儲存的項目重新生成摘要
+    const summary = items.length > 0 ? {
+      totalItems: items.length,
+      totalAmount: items.reduce((sum, item) => sum + parseFloat(item.price), 0),
+      bars: [...new Set(items.map(item => item.barName))],
+      dateRange: {
+        earliest: new Date(Math.min(...items.map(item => new Date(item.eventStartDate)))),
+        latest: new Date(Math.max(...items.map(item => new Date(item.eventEndDate))))
+      }
+    } : null;
+    
+    res.json({ 
+      order: stringifyBigInts({ 
+        ...order, 
+        items, 
+        summary,
+        allowedNextStates, 
+        actions 
+      }) 
+    });
   } catch (err) {
     const statusCode = err.message === '找不到訂單' ? 404 : 500;
     res.status(statusCode).json({ message: err.message });
@@ -457,6 +506,7 @@ const cancelOrder = async (req, res) => {
 module.exports = { 
   createOrder,
   getOrder,
+  getOrderWithDetails,
   updateOrderStatus,
   cancelOrder,
   ORDER_STATUS,
