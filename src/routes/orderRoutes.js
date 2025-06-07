@@ -7,12 +7,15 @@ const {
   cancelOrder
 } = require('../controllers/orderControllers');
 
+const { authenticateToken } = require('../middlewares/authenticateToken');
+const { checkOrderOwnership, checkAdminRole } = require('../middlewares/checkPermission');
+
 const router = express.Router();
 
-router.post('/create', createOrder);
-router.get('/:id', getOrder);
-router.get('/:id/details', getOrderWithDetails);
-router.put('/update-status/:id', updateOrderStatus);
-router.delete('/:id', cancelOrder);
+router.post('/create', authenticateToken, createOrder);
+router.get('/:id', authenticateToken, checkOrderOwnership, getOrder);
+router.get('/:id/details', authenticateToken, checkOrderOwnership, getOrderWithDetails);
+router.put('/update-status/:id', authenticateToken, checkAdminRole, updateOrderStatus);
+router.delete('/:id', authenticateToken, cancelOrder);
 
 module.exports = router;
