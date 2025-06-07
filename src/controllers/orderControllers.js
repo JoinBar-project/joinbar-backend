@@ -2,7 +2,7 @@ const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
 const { orders, orderItems, events, userEventParticipationTable } = require('../models/schema');
-const { eq, and } = require('drizzle-orm');
+const { eq, and, inArray, count } = require('drizzle-orm');
 
 const flake = new FlakeId({ id: 1 });
 
@@ -46,6 +46,18 @@ const validateOrderInput = (userId, items) => {
     return '缺少必要資料：userId 和 items 是必填的';
   }
   
+  // 檢查商品數量限制
+  if (items.length > 10) {
+    return '單次訂單最多只能購買 10 個活動的票券';
+  }
+  
+  // 檢查是否有重複的活動ID
+  const eventIds = items.map(item => item.eventId.toString());
+  const uniqueEventIds = new Set(eventIds);
+  if (eventIds.length !== uniqueEventIds.size) {
+    return '訂單中不能包含重複的活動';
+  }
+  
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (!item.eventId || !item.quantity) {
@@ -62,14 +74,27 @@ const validateAndGetEvents = async (items) => {
   const now = new Date();
   let totalAmount = 0;
   const validatedItems = [];
+  const eventIds = items.map(item => item.eventId.toString());
   
+  // 批量查詢所有活動（效能優化）
+  const eventList = await db
+    .select()
+    .from(events)
+    .where(and(
+      inArray(events.id, eventIds),
+      eq(events.status, 1)
+    ));
+  
+  // 建立活動查找映射
+  const eventMap = eventList.reduce((acc, event) => {
+    acc[event.id] = event;
+    return acc;
+  }, {});
+  
+  // 驗證每個活動
   for (const item of items) {
     const eventId = item.eventId.toString();
-    const [event] = await db
-      .select()
-      .from(events)
-      .where(and(eq(events.id, eventId), eq(events.status, 1)))
-      .limit(1);
+    const event = eventMap[eventId];
     
     if (!event) {
       throw new Error(`找不到活動 ID: ${eventId} 或活動已被刪除`);
@@ -79,10 +104,27 @@ const validateAndGetEvents = async (items) => {
       throw new Error(`活動「${event.name}」已結束，無法購買`);
     }
     
+    // 檢查活動人數限制
+    if (event.maxPeople) {
+      const [participantCount] = await db
+        .select({ count: count() })
+        .from(userEventParticipationTable)
+        .where(eq(userEventParticipationTable.eventId, eventId));
+      
+      if (participantCount.count >= event.maxPeople) {
+        throw new Error(`活動「${event.name}」已滿員，無法購買`);
+      }
+    }
+    
     totalAmount += event.price;
     validatedItems.push({
       eventId,
       eventName: event.name,
+      barName: event.barName,
+      location: event.location,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      hostUserId: event.hostUser,
       price: event.price,
       quantity: 1
     });
@@ -99,25 +141,50 @@ const checkDuplicatePurchase = async (userId, items) => {
     .where(and(eq(orders.userId, parseInt(userId)), eq(orders.status, ORDER_STATUS.PENDING)));
   
   if (existingPendingOrders.length > 0) {
-    throw new Error('您有未付款的訂單，請先完成付款或取消現有訂單');
+    throw new Error(`您有 ${existingPendingOrders.length} 個未付款訂單，請先完成付款或取消現有訂單`);
   }
   
-  // 檢查參加記錄
-  for (const item of items) {
-    const eventId = item.eventId.toString();
-    const existingParticipation = await db
-      .select()
-      .from(userEventParticipationTable)
-      .where(and(
-        eq(userEventParticipationTable.userId, parseInt(userId)),
-        eq(userEventParticipationTable.eventId, eventId)
-      ))
-      .limit(1);
+  // 批量檢查參加記錄
+  const eventIds = items.map(item => item.eventId.toString());
+  const existingParticipations = await db
+    .select({ eventId: userEventParticipationTable.eventId })
+    .from(userEventParticipationTable)
+    .where(and(
+      eq(userEventParticipationTable.userId, parseInt(userId)),
+      inArray(userEventParticipationTable.eventId, eventIds)
+    ));
+  
+  if (existingParticipations.length > 0) {
+    // 查詢重複活動的名稱
+    const duplicateEventIds = existingParticipations.map(p => p.eventId);
+    const duplicateEvents = await db
+      .select({ id: events.id, name: events.name })
+      .from(events)
+      .where(inArray(events.id, duplicateEventIds));
     
-    if (existingParticipation.length > 0) {
-      throw new Error(`您已經參加過此活動，無法重複購票`);
-    }
+    const eventNames = duplicateEvents.map(e => e.name).join('、');
+    throw new Error(`您已經參加過以下活動，無法重複購票：${eventNames}`);
   }
+};
+
+const generateOrderSummary = (validatedItems) => {
+  const summary = {
+    totalItems: validatedItems.length,
+    totalAmount: validatedItems.reduce((sum, item) => sum + item.price, 0),
+    events: validatedItems.map(item => ({
+      name: item.eventName,
+      barName: item.barName,
+      price: item.price,
+      date: item.startDate
+    })),
+    bars: [...new Set(validatedItems.map(item => item.barName))],
+    dateRange: {
+      earliest: new Date(Math.min(...validatedItems.map(item => new Date(item.startDate)))),
+      latest: new Date(Math.max(...validatedItems.map(item => new Date(item.endDate))))
+    }
+  };
+  
+  return summary;
 };
 
 const findOrder = async (orderId) => {
@@ -165,6 +232,9 @@ const createOrder = async (req, res) => {
     
     await db.insert(orders).values(newOrder);
     
+    // 生成訂單摘要
+    const summary = generateOrderSummary(validatedItems);
+    
     res.status(201).json({
       message: '訂單創建成功',
       order: {
@@ -174,6 +244,7 @@ const createOrder = async (req, res) => {
         status: ORDER_STATUS.PENDING,
         itemCount: validatedItems.length,
         items: validatedItems,
+        summary,
         allowedNextStates: STATE_TRANSITIONS[ORDER_STATUS.PENDING],
         actions: { canPay: true, canCancel: true, canExpire: true }
       }
@@ -181,7 +252,7 @@ const createOrder = async (req, res) => {
     
   } catch (err) {
     const statusCode = err.message.includes('找不到') ? 404 : 
-                      err.message.includes('已結束') || err.message.includes('重複') ? 400 : 500;
+                      err.message.includes('已結束') || err.message.includes('重複') || err.message.includes('已滿員') ? 400 : 500;
     res.status(statusCode).json({ message: err.message });
   }
 };
@@ -237,14 +308,12 @@ const updateOrderStatus = async (req, res) => {
       updateData.confirmedAt = new Date();
       
     } else if (newStatus === ORDER_STATUS.REFUNDED) {
-      // 可以加入退款邏輯
       updateData.refundedAt = new Date();
       
     } else if (newStatus === ORDER_STATUS.EXPIRED) {
       updateData.expiredAt = new Date();
       
     } else if (newStatus === ORDER_STATUS.CANCELLED) {
-      // 重導向到 DELETE 方法
       return res.status(400).json({
         message: '請使用 DELETE 方法取消訂單',
         correctMethod: 'DELETE /api/orders/:id',
@@ -347,33 +416,11 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-const testConnection = async (req, res) => {
-  try {
-    res.json({
-      message: '訂單 API 連線成功！（壓縮優化版）',
-      timestamp: new Date(),
-      env: process.env.NODE_ENV || 'development',
-      availableStatuses: Object.values(ORDER_STATUS),
-      features: ['狀態機驗證', '重複購買檢查', '活動驗證', '付款狀態管理', '訂單取消功能', '權限檢查'],
-      endpoints: [
-        'POST /create - 創建訂單',
-        'GET /:id - 查詢訂單', 
-        'PUT /update-status/:id - 更新狀態',
-        'PUT /cancel/:id - 取消訂單'
-      ]
-    });
-  } catch (err) {
-    console.error('連線測試失敗:', err);
-    res.status(500).json({ message: '連線失敗', error: err.message });
-  }
-};
-
 module.exports = { 
   createOrder,
   getOrder,
   updateOrderStatus,
   cancelOrder,
-  testConnection,
   ORDER_STATUS,
   validateStatusTransition
 };
