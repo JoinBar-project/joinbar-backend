@@ -172,4 +172,16 @@ const softDeleteEvent  = async( req, res) => {
   }
 }
 
-module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent };
+const getAllEvents = async (req, res) => {
+  try {
+    const eventsList = await db.select().from(events);
+    // 將每一筆活動的 BigInt 欄位轉為 string
+    const result = eventsList.map(event => stringifyBigInts(event));
+    res.status(200).json(result);
+  } catch (err) {
+    console.error('取得全部活動失敗:', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
+}
+
+module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent, getAllEvents };
