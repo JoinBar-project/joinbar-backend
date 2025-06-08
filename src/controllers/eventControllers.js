@@ -175,8 +175,19 @@ const softDeleteEvent  = async( req, res) => {
 const getAllEvents = async (req, res) => {
   try {
     const eventsList = await db.select().from(events);
-    // 將每一筆活動的 BigInt 欄位轉為 string
-    const result = eventsList.map(event => stringifyBigInts(event));
+
+    const result = await Promise.all(eventsList.map(async (event) => {
+      const eventTag = await db
+        .select({ tagId: eventTags.tagId })
+        .from(eventTags)
+        .where(eq(eventTags.eventId, event.id));
+      const tagIds = eventTag.map(item => Number(item.tagId));
+      return {
+        ...stringifyBigInts(event),
+        tagIds
+      }
+    }));
+
     res.status(200).json(result);
   } catch (err) {
     console.error('取得全部活動失敗:', err);
