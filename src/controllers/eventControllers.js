@@ -1,27 +1,46 @@
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
-const { events, eventTags } = require('../models/schema');
+const { events, eventTags, tags } = require('../models/schema');
 const { eq } = require('drizzle-orm');
+
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+const tz = 'Asia/Taipei'
 
 const flake = new FlakeId({ id: 1 });
 
 const createEvent = async (req, res) => {
+  const parsedStart = dayjs(req.body.startDate);
+  const parsedEnd = dayjs(req.body.endDate);
+
+  if (!parsedStart.isValid()) {
+    return res.status(400).json({ message: '開始時間格式錯誤' });
+  }
+
+  if (!parsedEnd.isValid()) {
+    return res.status(400).json({ message: '結束時間格式錯誤' });
+  }
+
   const id = intformat(flake.next(), 'dec');
-  const now = new Date();
+ 
   const newEvent = {
     id,
     name: req.body.name,
     barName: req.body.barName,
     location: req.body.location,
-    startDate: new Date(req.body.startDate),
-    endDate: new Date(req.body.endDate),
+    startDate: dayjs(req.body.startDate).tz(tz).toDate(),
+    endDate: dayjs(req.body.endDate).tz(tz).toDate(),
     maxPeople: req.body.maxPeople,
     imageUrl: req.body.imageUrl,
     price: req.body.price,
     hostUser: req.body.hostUser,
-    createdAt: now,
-    modifyAt: now,
+    createdAt: dayjs().tz(tz).toDate(),
+    modifyAt: dayjs().tz(tz).toDate(),
   };
   
   try {
@@ -64,26 +83,21 @@ const getEvent = async (req, res) => {
     }
 
     // 撈取活動標籤
-    const eventTag  = await db
-    .select({ tagId: eventTags.tagId })
+    const getEventTags  = await db
+    .select({ 
+      id: tags.id,
+      name: tags.name,
+    })
     .from(eventTags)
+    .innerJoin(tags, eq(eventTags.tagId, tags.id))
     .where(eq(eventTags.eventId, eventId));
 
-    const tagIds = eventTag.map(item => Number(item.tagId));
-    const stringModel = stringifyBigInts(event)
-
-    res.status(200).json({stringModel, tagIds});
+    res.status(200).json({ event, tags: getEventTags });
   }catch(err){
     console.log(err)
     
     return res.status(500).json({ message: '伺服器錯誤' });
   }
-}
-
-function stringifyBigInts(obj) {
-  return JSON.parse(JSON.stringify(obj, (_, value) =>
-    typeof value === 'bigint' ? value.toString() : value
-  ));
 }
 
 const updateEvent = async( req, res) => {
@@ -103,13 +117,13 @@ const updateEvent = async( req, res) => {
       name: req.body.name,
       barName: req.body.barName,
       location: req.body.location,
-      startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate),
+      startDate: dayjs(req.body.startDate).tz(tz).toDate(),
+      endDate: dayjs(req.body.endDate).tz(tz).toDate(),
       maxPeople: req.body.maxPeople,
       imageUrl: req.body.imageUrl,
       price: req.body.price,
       hostUser: req.body.hostUser,
-      modifyAt: new Date()
+      modifyAt: dayjs().tz(tz).toDate()
     };
     
     await db
@@ -123,7 +137,6 @@ const updateEvent = async( req, res) => {
       await db
       .delete(eventTags)
       .where(eq(eventTags.eventId, eventId));
-
 
       const tagsList = []
 
