@@ -8,6 +8,14 @@ const usersTable = pgTable("users", {
   password: varchar({ length: 100 }),
   role: varchar({ length: 20 }).default("user"), // 身分類型: 一般使用者 / 管理員
   birthday: date(),
+
+  // LINE 登入相關欄位
+  lineUserId: varchar('line_user_id', { length: 255 }).unique(),
+  lineDisplayName: varchar('line_display_name', { length: 255 }),
+  linePictureUrl: text('line_picture_url'),
+  lineStatusMessage: text('line_status_message'),
+  isLineUser: boolean('is_line_user').default(false),
+
   isVerifiedEmail: boolean("is_verified_email").default(false),
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),
