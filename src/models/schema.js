@@ -132,7 +132,7 @@ const eventTags = pgTable('event_tags', {
 }));
 
 const barTags = pgTable('bar_tags', {
-  barId: integer('bar_id').notNull().references(() => barsTable.id, { onDelete: 'cascade' }),
+  barId: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
   sport: boolean('sport').notNull(),
   music: boolean('music').notNull(),
   student: boolean('student').notNull(),
@@ -146,7 +146,7 @@ const barTags = pgTable('bar_tags', {
 },);
 
 const userTags = pgTable('user_tags', {
-  UserId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  user_id: integer('user_id').notNull().primaryKey().references(() => usersTable.id, { onDelete: 'cascade' }),
   sport: boolean('sport').notNull(),
   music: boolean('music').notNull(),
   student: boolean('student').notNull(),

@@ -6,12 +6,12 @@ const { eq } = require('drizzle-orm');
 // 新增標籤到個人推薦
 const addTagsToUser = async (req, res) => {
 
-  const UserId = Number(req.params.id);
+  const user_id = Number(req.params.id);
   const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
 
   try {
     const newUserTags = await db.insert(userTags).values({
-      UserId,  
+      user_id,  
       sport,
       music,
       student,
