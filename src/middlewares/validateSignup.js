@@ -8,8 +8,7 @@ const signupSchema = z.object({
       .min(1, '使用者名稱至少需要 1 個字元') // 避免使用者輸入空字串
       .max(100, '使用者名稱不可超過 100 個字元'),
     z.undefined()]),
-  password: z
-    .string()
+  password: z.string()
     .min(8, '密碼至少需要 8 個字元')
     .max(100, '密碼不可超過 100 個字元')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,'密碼必須包含至少 1 個大寫字母、小寫字母和數字'),
