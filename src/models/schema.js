@@ -114,7 +114,7 @@ const events = pgTable('events', {
   hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
-  status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除
+  status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除， 3: 活動結束(程式判斷沒存DB)
 }, (table) => ({
   hostUserIdx: index('idx_host_user').on(table.hostUser),
 }));

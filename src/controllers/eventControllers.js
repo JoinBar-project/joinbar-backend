@@ -81,7 +81,10 @@ const getEvent = async (req, res) => {
     if( !event ){
       return res.status(404).json({ message: '找不到活動'})
     }
-
+    
+    if( event.status == 1 && event.endDate < dayjs().tz(tz).toDate()){
+      event.status = 3
+    }
     // 撈取活動標籤
     const getEventTags  = await db
     .select({ 
@@ -175,7 +178,10 @@ const softDeleteEvent  = async( req, res) => {
     };
 
     await db.update(events)
-    .set({ status : 2, modifyAt: new Date() })
+    .set({ 
+      status : 2, 
+      modifyAt: dayjs().tz(tz).toDate() 
+    })
     .where(eq(events.id, eventId));
     return res.status(200).json({ message: '活動已刪除'})
 
@@ -184,5 +190,7 @@ const softDeleteEvent  = async( req, res) => {
     return res.status(500).json({ message: '伺服器錯誤'})
   }
 }
+
+
 
 module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent };
