@@ -2,13 +2,20 @@ const express = require('express');
 const { 
   createOrder,
   getOrder,
-  testConnection
+  getOrderWithDetails,
+  updateOrderStatus,
+  cancelOrder
 } = require('../controllers/orderControllers');
+
+const { authenticateToken } = require('../middlewares/authenticateToken');
+const { checkOrderOwnership, checkAdminRole } = require('../middlewares/checkPermission');
 
 const router = express.Router();
 
-router.get('/test', testConnection);
-router.post('/create', createOrder);
-router.get('/:id', getOrder);
+router.post('/create', authenticateToken, createOrder);
+router.get('/:id', authenticateToken, checkOrderOwnership, getOrder);
+router.get('/:id/details', authenticateToken, checkOrderOwnership, getOrderWithDetails);
+router.put('/update-status/:id', authenticateToken, checkAdminRole, updateOrderStatus);
+router.delete('/:id', authenticateToken, cancelOrder);
 
 module.exports = router;

@@ -133,9 +133,10 @@ const orders = pgTable('orders', {
   customerName: varchar('customer_name', { length: 100 }),
   customerPhone: varchar('customer_phone', { length: 20 }),
   customerEmail: varchar('customer_email', { length: 100 }),
-  notes: text('notes'),
   paymentId: varchar('payment_id', { length: 255 }),
   paidAt: timestamp('paid_at'),
+  cancelledAt: timestamp('cancelled_at'),
+  cancellationReason: varchar('cancellation_reason', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 });
