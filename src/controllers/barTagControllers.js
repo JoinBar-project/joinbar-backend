@@ -32,13 +32,13 @@ const addTagsToUser = async (req, res) => {
 
 // 取得使用者偏好
 const getBarTagsFromUser = async (req, res) => {
-  const UserId = Number(req.params.id);
+  const user_id = Number(req.params.id);
 
   try {
     const result = await db
       .select()
       .from(userTags)
-      .where(eq(userTags.UserId, UserId));
+      .where(eq(userTags.user_id, user_id));
 
     if (result.length === 0) {
       return res.status(404).json({ error: '找不到該使用者的標籤' });
@@ -52,7 +52,7 @@ const getBarTagsFromUser = async (req, res) => {
 
 // 更新使用者的標籤偏好資料
 const UpdateTagFromUser = async (req, res) => {
-  const UserId = Number(req.params.id);
+  const user_id = Number(req.params.id);
   const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
   
   try {
@@ -68,7 +68,7 @@ const UpdateTagFromUser = async (req, res) => {
       highlevel,
       easy,
     })
-    .where(eq(userTags.UserId, UserId));
+    .where(eq(userTags.user_id, user_id));
 
     return res.status(200).json({ message: '更新酒吧類型偏好成功', data: updatedTag });
   } catch (err) {
