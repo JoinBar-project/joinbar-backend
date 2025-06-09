@@ -17,8 +17,8 @@ app.use(cors(corsOptions));
 
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
-app.use('/event', eventRoutes);
-app.use('/tags', tagsRoutes);
+app.use('/api/event', eventRoutes);
+app.use('/api/tags', tagsRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
