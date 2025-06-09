@@ -106,14 +106,14 @@ const events = pgTable('events', {
   name: varchar('name', { length: 50 }).notNull(),
   barName: varchar('bar_name', { length: 100 }).notNull(),
   location: varchar('location', { length: 100 }).notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
+  startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+  endDate: timestamp('end_date', { withTimezone: true }).notNull(),
   maxPeople: integer('max_people'),
   imageUrl: varchar('image_url', { length: 255 }),
   price: integer('price'),
   hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  createdAt: timestamp('created_at').notNull(),
-  modifyAt: timestamp('modify_at').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除
 }, (table) => ({
   hostUserIdx: index('idx_host_user').on(table.hostUser),
