@@ -4,7 +4,8 @@ const {
   getOrder,
   getOrderWithDetails,
   updateOrderStatus,
-  cancelOrder
+  cancelOrder,
+  confirmPayment
 } = require('../controllers/orderControllers');
 
 const { authenticateToken } = require('../middlewares/authenticateToken');
@@ -16,6 +17,7 @@ router.post('/create', authenticateToken, createOrder);
 router.get('/:id', authenticateToken, checkOrderOwnership, getOrder);
 router.get('/:id/details', authenticateToken, checkOrderOwnership, getOrderWithDetails);
 router.put('/update-status/:id', authenticateToken, checkAdminRole, updateOrderStatus);
+router.put('/confirm-payment/:id', authenticateToken, checkOrderOwnership, confirmPayment);
 router.delete('/:id', authenticateToken, cancelOrder);
 
 module.exports = router;

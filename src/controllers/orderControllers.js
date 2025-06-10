@@ -42,16 +42,16 @@ const generateOrderId = () => {
   return { orderId, orderNumber };
 };
 
-// 簡化的錯誤處理
 const handleError = (err, res) => {
   console.error('訂單錯誤:', err);
   
+  // 根據錯誤類型返回不同的狀態碼
   if (err.message.includes('找不到')) return res.status(404).json({ message: err.message });
   if (err.message.includes('無權限')) return res.status(403).json({ message: err.message });
-  if (err.message.includes('重複') || err.message.includes('已滿員')) return res.status(409).json({ message: err.message });
-  if (err.message.includes('已結束') || err.message.includes('已停用')) return res.status(400).json({ message: err.message });
+  if (err.message.includes('重複')) return res.status(409).json({ message: err.message });
+  if (err.message.includes('已結束') || err.message.includes('狀態')) return res.status(400).json({ message: err.message });
   
-  return res.status(500).json({ message: '伺服器錯誤' });
+  return res.status(500).json({ message: '伺服器錯誤，請稍後再試' });
 };
 
 // 驗證訂單輸入
@@ -390,11 +390,72 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+const confirmPayment = async (req, res) => {
+  try {
+    const { paymentId, paymentMethod } = req.body;
+    const order = await findOrder(req.params.id);
+    
+    // 檢查訂單狀態
+    if (order.status !== ORDER_STATUS.PENDING) {
+      return res.status(400).json({ 
+        message: '只能對待付款訂單進行付款確認',
+        currentStatus: order.status 
+      });
+    }
+    
+    // 檢查必要參數
+    if (!paymentId) {
+      return res.status(400).json({ message: '缺少付款 ID' });
+    }
+    
+    await db.transaction(async (tx) => {
+      const updateData = { 
+        status: ORDER_STATUS.PAID,
+        paymentId,
+        paidAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // 如果有提供付款方式，也一併更新
+      if (paymentMethod) {
+        updateData.paymentMethod = paymentMethod;
+      }
+      
+      await tx.update(orders).set(updateData).where(eq(orders.id, req.params.id));
+      
+      // 自動加入參加記錄
+      const orderItemsList = await getOrderItemsByOrderId(req.params.id);
+      const participationData = orderItemsList.map(item => ({
+        userId: order.userId,
+        eventId: item.eventId,
+        joinedAt: new Date(),
+        updatedAt: new Date()
+      }));
+      
+      if (participationData.length > 0) {
+        await tx.insert(userEventParticipationTable).values(participationData);
+      }
+    });
+    
+    res.json({
+      message: '付款確認成功',
+      orderId: req.params.id,
+      orderNumber: order.orderNumber,
+      paymentId,
+      status: ORDER_STATUS.PAID
+    });
+    
+  } catch (err) {
+    return handleError(err, res);
+  }
+};
+
 module.exports = { 
   createOrder,
   getOrder,
   getOrderWithDetails,
   updateOrderStatus,
   cancelOrder,
+  confirmPayment,
   ORDER_STATUS
 };
