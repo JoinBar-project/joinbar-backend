@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
+const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
@@ -21,6 +22,7 @@ app.use(withTaiwanTime);
 
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
 
