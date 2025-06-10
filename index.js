@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
+const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
@@ -17,6 +18,7 @@ app.use(cors(corsOptions));
 
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/event', eventRoutes);
 app.use('/tags', tagsRoutes);
 
