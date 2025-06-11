@@ -395,11 +395,16 @@ const confirmPayment = async (req, res) => {
     const { paymentId, paymentMethod } = req.body;
     const order = await findOrder(req.params.id);
     
+    if (order.userId !== req.user.id) {
+      return res.status(403).json({ message: '無權限確認此訂單付款' });
+    }
+    
     // 檢查訂單狀態
     if (order.status !== ORDER_STATUS.PENDING) {
       return res.status(400).json({ 
         message: '只能對待付款訂單進行付款確認',
-        currentStatus: order.status 
+        currentStatus: order.status,
+        allowedStatuses: [ORDER_STATUS.PENDING]
       });
     }
     
@@ -442,7 +447,8 @@ const confirmPayment = async (req, res) => {
       orderId: req.params.id,
       orderNumber: order.orderNumber,
       paymentId,
-      status: ORDER_STATUS.PAID
+      status: ORDER_STATUS.PAID,
+      timestamp: new Date().toISOString()
     });
     
   } catch (err) {

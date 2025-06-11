@@ -11,7 +11,7 @@ const signupSchema = z.object({
   password: z.string()
     .min(8, "密碼至少需要 8 個字元")
     .max(100, "密碼不可超過 100 個字元")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)$/, "密碼必須包含至少 1 個大寫字母、小寫字母和數字"),
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,'密碼必須包含至少 1 個大寫字母、小寫字母和數字'),
   email: z.string().email("email 格式不正確"),
   birthday: z.union(
     [z.string()
