@@ -10,6 +10,8 @@ const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
 const cookieParser = require('cookie-parser');
 const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
 const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 dotenv.config();
 
@@ -20,11 +22,13 @@ app.use(cors(corsOptions));
 app.use(formatBigIntResponse);
 app.use(withTaiwanTime);
 
+
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
