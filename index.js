@@ -6,12 +6,12 @@ const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
-const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
+const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
 const cookieParser = require('cookie-parser');
 const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
 const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
+const swaggerSpec = require('./src/config/swagger');
 
 dotenv.config();
 
@@ -23,8 +23,8 @@ app.use(formatBigIntResponse);
 app.use(withTaiwanTime);
 
 
-app.use("/api/auth/line", lineAuthRoutes);
-app.use("/api/auth", authRoutes);
+app.use('/api/auth/line', lineAuthRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);

@@ -10,7 +10,7 @@ const options = {
       這是「JoinBar」的 RESTful API 文件。
       JoinBar 是一個以地圖為核心的酒吧社交平台，結合會員互動、活動揪團與金流購物等功能，提供完整的夜生活交流體驗。
 
-      ##說明：
+      說明：
       這是一個酒吧地圖社交平台
 
       ##主要功能：
@@ -60,9 +60,9 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routes*.js'], 
+  apis: ['./src/routes/*.js'], 
 };
 
-const swaggerSpec = swaggerJSDoc(options);
+const swaggerSpec = swaggerJsdoc(options);
 
 module.exports = swaggerSpec;
