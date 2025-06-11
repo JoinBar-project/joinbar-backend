@@ -8,7 +8,7 @@ const {
   confirmPayment
 } = require('../controllers/orderControllers');
 
-const { authenticateToken } = require('../middlewares/authenticateToken');
+const authenticateToken = require('../middlewares/authenticateToken');
 const { checkOrderOwnership, checkAdminRole } = require('../middlewares/checkPermission');
 
 const router = express.Router();

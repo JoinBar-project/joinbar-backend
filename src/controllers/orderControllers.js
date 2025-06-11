@@ -45,13 +45,41 @@ const generateOrderId = () => {
 const handleError = (err, res) => {
   console.error('訂單錯誤:', err);
   
-  // 根據錯誤類型返回不同的狀態碼
-  if (err.message.includes('找不到')) return res.status(404).json({ message: err.message });
-  if (err.message.includes('無權限')) return res.status(403).json({ message: err.message });
-  if (err.message.includes('重複')) return res.status(409).json({ message: err.message });
-  if (err.message.includes('已結束') || err.message.includes('狀態')) return res.status(400).json({ message: err.message });
+  const errorResponse = {
+    error: true,
+    timestamp: new Date().toISOString(),
+    message: '',
+    code: ''
+  }
+
+  if (err.message.includes('找不到')) {
+    errorResponse.message = err.message
+    errorResponse.code = 'NOT_FOUND'
+    return res.status(404).json(errorResponse)
+  }
   
-  return res.status(500).json({ message: '伺服器錯誤，請稍後再試' });
+  if (err.message.includes('無權限')) {
+    errorResponse.message = err.message
+    errorResponse.code = 'FORBIDDEN'
+    return res.status(403).json(errorResponse)
+  }
+  
+  if (err.message.includes('重複')) {
+    errorResponse.message = err.message
+    errorResponse.code = 'DUPLICATE'
+    return res.status(409).json(errorResponse)
+  }
+  
+  if (err.message.includes('已結束') || err.message.includes('狀態')) {
+    errorResponse.message = err.message
+    errorResponse.code = 'INVALID_STATE'
+    return res.status(400).json(errorResponse)
+  }
+  
+  // 預設伺服器錯誤
+  errorResponse.message = '伺服器錯誤，請稍後再試'
+  errorResponse.code = 'INTERNAL_ERROR'
+  return res.status(500).json(errorResponse)
 };
 
 // 驗證訂單輸入
