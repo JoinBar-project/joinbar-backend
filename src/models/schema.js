@@ -133,20 +133,17 @@ const eventTags = pgTable('event_tags', {
 
 const orders = pgTable('orders', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
-  orderNumber: varchar('order_number', { length: 100 }).notNull().unique(),
-  userId: integer('user_id').references(() => usersTable.id, { onDelete: 'set null' }),
-  totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
+  orderNumber: varchar('order_number', { length: 255 }).notNull().unique(),
+  userId: integer('user_id').references(() => usersTable.id),
+  totalAmount: integer('total_amount').notNull(),
   status: varchar('status', { length: 20 }).default('pending').notNull(),
   paymentMethod: varchar('payment_method', { length: 20 }),
-  customerName: varchar('customer_name', { length: 100 }),
-  customerPhone: varchar('customer_phone', { length: 20 }),
-  customerEmail: varchar('customer_email', { length: 100 }),
   paymentId: varchar('payment_id', { length: 255 }),
-  paidAt: timestamp('paid_at'),
-  cancelledAt: timestamp('cancelled_at'),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+  cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
   cancellationReason: varchar('cancellation_reason', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
 
 const orderItems = pgTable('order_items', {
@@ -156,14 +153,12 @@ const orderItems = pgTable('order_items', {
   eventName: varchar('event_name', { length: 255 }).notNull(),
   barName: varchar('bar_name', { length: 100 }).notNull(),
   location: varchar('location', { length: 255 }).notNull(),
-  eventStartDate: timestamp('event_start_date').notNull(),
-  eventEndDate: timestamp('event_end_date').notNull(),
+  eventStartDate: timestamp('event_start_date', { withTimezone: true }).notNull(),
+  eventEndDate: timestamp('event_end_date', { withTimezone: true }).notNull(),
   hostUserId: integer('host_user_id').notNull(),
-  price: numeric('price', { precision: 10, scale: 2 }).notNull(),
+  price: integer('price').notNull(),
   quantity: integer('quantity').notNull(),
-  subtotal: numeric('subtotal', { precision: 10, scale: 2 }).notNull()
+  subtotal: integer('subtotal').notNull() 
 });
-
-
 
 module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems };
