@@ -1,12 +1,15 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
+const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
 const cookieParser = require('cookie-parser');
+const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
+const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
 
 dotenv.config();
 
@@ -14,11 +17,14 @@ const app = express();
 app.use(cookieParser()); 
 app.use(express.json());
 app.use(cors(corsOptions));
+app.use(formatBigIntResponse);
+app.use(withTaiwanTime);
 
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
-app.use('/event', eventRoutes);
-app.use('/tags', tagsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/event', eventRoutes);
+app.use('/api/tags', tagsRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
