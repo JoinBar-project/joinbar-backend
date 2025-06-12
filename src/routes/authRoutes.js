@@ -123,10 +123,39 @@ router.post("/signup", validateSignup, signup);
  *                 example: bella@example.com
  *               password:
  *                 type: string
- *                 example: password123
+ *                 example: Password123
  *     responses:
  *       200:
- *         description: 登入成功，回傳 JWT token
+ *         description: 登入成功，回傳 access 與 refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 登入成功
+ *                 accessToken:
+ *                   type: string
+ *                   example: ".................."
+ *                 refreshToken:
+ *                   type: string
+ *                   example: ".................."
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     username:
+ *                       type: string
+ *                       example: Bella
+ *                     email:
+ *                       type: string
+ *                       example: bella@example.com
+ *                     role:
+ *                       type: string
+ *                       example: user
  *       401:
  *         description: 信箱或密碼錯誤
  */
