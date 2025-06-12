@@ -22,7 +22,7 @@ const deleteAccount = async (req, res) => {
 			return res.status(400).json({ success: false, error: '請輸入正確的確認文字：刪除我的帳戶' });
 		}
 
-		if(user.providerType !== 'email' && user.password) {
+		if(user.providerType === 'email' && user.password) {
 			if(!password) {
 				return res.status(400).json({ success: false, error: '請輸入密碼以確認身份' });
 			}
@@ -94,8 +94,8 @@ const getDeletionWarning = async (req, res) => {
 		const warningInfo = {
       accountInfo: {
         username: user.username,
-        email: usersTable.email || null,
-				lineUserId: usersTable.lineUserId || null,
+        email: user.email || null,
+				lineUserId: user.lineUserId || null,
         providerType: user.providerType
       },
 			consequences: [

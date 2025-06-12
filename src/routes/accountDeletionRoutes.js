@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { deleteAccount, getDeletionWarning } = require('../controllers/accountDeletionController');
 const authenticateToken = require('../middlewares/authenticateToken');
+const { validateAccountDeletion } = require('../middlewares/validateAccountDeletion');
 
 router.use(authenticateToken);
 

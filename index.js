@@ -10,6 +10,7 @@ const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
 const cookieParser = require('cookie-parser');
 const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
 const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
+const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 
 dotenv.config();
 
