@@ -45,25 +45,25 @@ const createEvent = async (req, res) => {
   
   try {
     //新增活動
-    await db.insert(events).values(newEvent);
+    const [ createdEvent ] = await db.insert(events).values(newEvent).returning();
 
     //新增活動標籤
     if( req.body.tags && req.body.tags.length > 0){
-      const tagsList = []
+      const tagsList = req.body.tags.map(tagId => ({
+        eventId: id,
+        tagId: tagId
+      })); 
 
-      for (const tagId of req.body.tags) {
-        const tag = {
-          eventId: id,
-          tagId: tagId
-        }
-        tagsList.push(tag)
+      try{
+        await db.insert(eventTags).values(tagsList)
+      }catch(tagErr){
+        console.error("新增標籤失敗，可能是外鍵錯誤：", tagErr.message);
+        return res.status(400).json({ message: '活動新增成功，但標籤失敗，請確認 tag 是否存在', error: tagErr.message });
       }
-
-      await db.insert(eventTags).values(tagsList)
     }
-    
     res.status(201).json({ message: '活動已建立', event: newEvent });
-  } catch (err) {
+      
+    }catch (err) {
     console.error('建立活動時發生錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
   }
