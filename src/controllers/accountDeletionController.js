@@ -66,3 +66,64 @@ const deleteAccount = async (req, res) => {
 		return res.status(500).json({ success: false, error: '帳戶註銷過程發生錯誤' });
 	}
 };
+
+const getDeletionWarning = async (req, res) => {
+	const userId = req.user.id;
+
+	try {
+		const [user] = await db
+      .select({
+				id: usersTable.id,
+        username: usersTable.username,
+        email: usersTable.email || null,
+				lineUserId: usersTable.lineUserId || null,
+        providerType: usersTable.providerType,
+        createdAt: usersTable.createdAt,
+			})
+			.from(usersTable)
+      .where(and(eq(usersTable.id, userId), eq(usersTable.status, 1)))
+      .limit(1);
+
+			if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: '找不到用戶'
+      });
+    }
+
+		const warningInfo = {
+      accountInfo: {
+        username: user.username,
+        email: usersTable.email || null,
+				lineUserId: usersTable.lineUserId || null,
+        providerType: user.providerType
+      },
+			consequences: [
+        '您將永久無法使用此帳戶登入',
+        '您的所有個人資料將被立即清除',
+        '此操作立即生效且不可逆轉',
+        '無法提供帳戶恢復服務'
+      ],
+			requirements: user.providerType === 'email' ? [
+        '需要輸入當前密碼確認身份',
+        '需要輸入確認文字：「刪除我的帳戶」'
+      ] : [
+        '需要輸入確認文字：「刪除我的帳戶」'
+      ],
+			alternatives: [
+        '注意：一旦確認註銷，將無法恢復'
+      ]
+		};
+
+		return res.status(200).json({
+      success: true,
+      data: warningInfo
+    });
+	} catch(err) {
+		console.error('獲取註銷警告資訊時發生錯誤:', err);
+    return res.status(500).json({
+      success: false,
+      error: '獲取資訊失敗'
+    });
+	}
+};
