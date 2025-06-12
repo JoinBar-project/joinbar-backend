@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { usersTable } = require('../models/schema');
-const { eq } = require('drizzle-orm');
+const { eq, and } = require('drizzle-orm');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -115,7 +115,7 @@ const patchUserById = async (req, res) => {
         message: '無法修改已註銷的帳戶',
       });
     }
-    
+
     const { username, nickname, birthday, avatarUrl } = req.body;
 
     const updateData = {};
@@ -150,4 +150,41 @@ const patchUserById = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUserById, patchUserById };
+// 獲取已註銷的用戶列表（僅管理員）
+const getDeletedUsers = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: '無權限查看',
+      });
+    }
+
+    const deletedUsers = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        email: usersTable.email,
+        role: usersTable.role,
+        status: usersTable.status,
+        createdAt: usersTable.createdAt,
+        updatedAt: usersTable.updatedAt 
+      })
+      .from(usersTable)
+      .where(eq(usersTable.status, 2)); 
+
+    res.status(200).json({
+      success: true,
+      message: `找到 ${deletedUsers.length} 個已註銷的帳戶`,
+      data: deletedUsers,
+    });
+  } catch (err) {
+    console.error('獲取已註銷用戶列表時發生錯誤:', err);
+    res.status(500).json({
+      success: false,
+      message: '伺服器錯誤',
+    });
+  }
+};
+
+module.exports = { getAllUsers, getUserById, patchUserById, getDeletedUsers };
