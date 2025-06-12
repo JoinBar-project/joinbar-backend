@@ -141,23 +141,32 @@ const updateEvent = async( req, res) => {
       .delete(eventTags)
       .where(eq(eventTags.eventId, eventId));
 
-      const tagsList = []
-
-      for (const tagId of req.body.tags) {
-        const tag = {
-          eventId: eventId,
-          tagId: tagId
-        }
-        tagsList.push(tag)
-      }
+      const tagsList = req.body.tags.map(tagId =>({
+        eventId,
+        tagId
+      }))
 
       await db.insert(eventTags).values(tagsList)
     }
 
-    res.status(200).json({
+    const updatedTags = await db
+      .select({
+        id: tags.id,
+        name: tags.name,
+      })
+      .from(eventTags)
+      .innerJoin(tags, eq(eventTags.tagId, tags.id))
+      .where(eq(eventTags.eventId, eventId));
+
+    return res.status(200).json({
       message: '活動已更新',
-      update: updatedData
+      update: {
+        ...updatedData,
+        id: eventId,
+        tags: updatedTags,
+      },
     });
+    
   }catch(err){
     console.log(`更新活動發生錯誤: ${err}`)
     return res.status(500).json({ message: '伺服器錯誤'})
