@@ -9,6 +9,6 @@ router.use(authenticateToken);
 router.get('/deletion-warning', getDeletionWarning);
 
 // 執行帳戶註銷
-router.delete('/delete', deleteAccount);
+router.delete('/delete', validateAccountDeletion, deleteAccount);
 
 module.exports = router;
