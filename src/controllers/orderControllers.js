@@ -5,9 +5,15 @@ const { orders, orderItems, events, userEventParticipationTable } = require('../
 const { eq, and, inArray, count } = require('drizzle-orm');
 const { checkUserExists } = require('../middlewares/checkPermission');
 
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const flake = new FlakeId({ id: 1 });
 
-// 訂單狀態
 const ORDER_STATUS = {
   PENDING: 'pending',
   PAID: 'paid', 
@@ -17,7 +23,6 @@ const ORDER_STATUS = {
   EXPIRED: 'expired'
 };
 
-// 允許的狀態轉換
 const STATE_TRANSITIONS = {
   [ORDER_STATUS.PENDING]: [ORDER_STATUS.PAID, ORDER_STATUS.CANCELLED, ORDER_STATUS.EXPIRED],
   [ORDER_STATUS.PAID]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.REFUNDED],
@@ -27,17 +32,35 @@ const STATE_TRANSITIONS = {
   [ORDER_STATUS.EXPIRED]: []
 };
 
-// 工具函數
 const stringifyBigInts = (obj) => JSON.parse(JSON.stringify(obj, (_, value) => 
   typeof value === 'bigint' ? value.toString() : value
 ));
 
-const validateStatusTransition = (current, target) => 
-  (STATE_TRANSITIONS[current] || []).includes(target);
+const validateStatusTransition = (current, target) => {
+  if (!current || typeof current !== 'string') {
+    throw new Error('Invalid current status: must be a non-empty string');
+  }
+  if (!target || typeof target !== 'string') {
+    throw new Error('Invalid target status: must be a non-empty string');
+  }
+  
+  if (!(current in STATE_TRANSITIONS)) {
+    throw new Error(`Invalid current status: ${current}`);
+  }
+  if (!Object.values(ORDER_STATUS).includes(target)) {
+    throw new Error(`Invalid target status: ${target}`);
+  }
+  
+  if ((STATE_TRANSITIONS[current] || []).includes(target)) {
+    return true;
+  } else {
+    throw new Error(`Invalid status transition from ${current} to ${target}`);
+  }
+};
 
 const generateOrderId = () => {
   const orderId = intformat(flake.next(), 'dec');
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const today = dayjs().tz('Asia/Taipei').format('YYYYMMDD');
   const orderNumber = `ORDER-${today}-${Date.now().toString().slice(-6)}`;
   return { orderId, orderNumber };
 };
@@ -76,13 +99,11 @@ const handleError = (err, res) => {
     return res.status(400).json(errorResponse)
   }
   
-  // 預設伺服器錯誤
   errorResponse.message = '伺服器錯誤，請稍後再試'
   errorResponse.code = 'INTERNAL_ERROR'
   return res.status(500).json(errorResponse)
 };
 
-// 驗證訂單輸入
 const validateOrderInput = async (userId, items) => {
   await checkUserExists(userId);
   
@@ -113,9 +134,8 @@ const validateOrderInput = async (userId, items) => {
   return true;
 };
 
-// 驗證活動並計算總金額
 const validateAndGetEvents = async (items) => {
-  const now = new Date();
+  const now = dayjs().tz('Asia/Taipei').toDate();
   let totalAmount = 0;
   const validatedItems = [];
   const eventIds = items.map(item => item.eventId.toString());
@@ -142,7 +162,6 @@ const validateAndGetEvents = async (items) => {
       throw new Error(`活動「${event.name}」已結束`);
     }
     
-    // 檢查人數限制
     if (event.maxPeople) {
       const [participantCount] = await db
         .select({ count: count() })
@@ -171,9 +190,7 @@ const validateAndGetEvents = async (items) => {
   return { totalAmount, validatedItems };
 };
 
-// 檢查重複購買
 const checkDuplicatePurchase = async (userId, items) => {
-  // 檢查未付款訂單
   const existingPendingOrders = await db
     .select({ count: count() })
     .from(orders)
@@ -183,7 +200,6 @@ const checkDuplicatePurchase = async (userId, items) => {
     throw new Error('您有未付款訂單，請先完成付款或取消');
   }
   
-  // 檢查重複參加
   const eventIds = items.map(item => item.eventId.toString());
   const existingParticipations = await db
     .select({ eventId: userEventParticipationTable.eventId })
@@ -198,7 +214,6 @@ const checkDuplicatePurchase = async (userId, items) => {
   }
 };
 
-// 資料庫操作函數
 const findOrder = async (orderId) => {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
   if (!order) {
@@ -218,9 +233,9 @@ const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
     eventStartDate: item.startDate,
     eventEndDate: item.endDate,
     hostUserId: item.hostUserId,
-    price: item.price.toString(),
+    price: item.price, 
     quantity: 1,
-    subtotal: item.price.toString()
+    subtotal: item.price 
   }));
   
   if (orderItemsData.length > 0) {
@@ -244,7 +259,7 @@ const getOrderItemsByOrderId = async (orderId) => {
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { items, paymentMethod, customerName, customerPhone, customerEmail } = req.body;
+    const { items, paymentMethod } = req.body; 
     
     const result = await db.transaction(async (tx) => {
       await validateOrderInput(userId, items);
@@ -252,18 +267,15 @@ const createOrder = async (req, res) => {
       await checkDuplicatePurchase(userId, items);
       
       const { orderId, orderNumber } = generateOrderId();
-      const now = new Date();
+      const now = dayjs().tz('Asia/Taipei').toDate();
       
       const newOrder = {
         id: orderId,
         orderNumber,
         userId,
-        totalAmount: totalAmount.toString(),
+        totalAmount: totalAmount, 
         status: ORDER_STATUS.PENDING,
         paymentMethod: paymentMethod || null,
-        customerName: customerName || null,
-        customerPhone: customerPhone || null,
-        customerEmail: customerEmail || null,
         createdAt: now,
         updatedAt: now
       };
@@ -274,7 +286,7 @@ const createOrder = async (req, res) => {
       return {
         orderId,
         orderNumber,
-        totalAmount: totalAmount.toString(),
+        totalAmount: totalAmount.toString(), 
         status: ORDER_STATUS.PENDING,
         itemCount: validatedItems.length,
         orderItems: orderItemsCreated.map(item => stringifyBigInts(item))
@@ -324,32 +336,32 @@ const updateOrderStatus = async (req, res) => {
   try {
     const { status: newStatus, paymentId } = req.body;
     const order = await findOrder(req.params.id);
-    
-    if (!validateStatusTransition(order.status, newStatus)) {
+    try {
+      validateStatusTransition(order.status, newStatus);
+    } catch (err) {
       return res.status(400).json({
-        message: `無法從 ${order.status} 轉換到 ${newStatus}`,
-        allowedTransitions: STATE_TRANSITIONS[order.status]
+        message: err.message,
+        allowedTransitions: STATE_TRANSITIONS[order.status] || []
       });
     }
     
     await db.transaction(async (tx) => {
-      const updateData = { status: newStatus, updatedAt: new Date() };
+      const updateData = { status: newStatus, updatedAt: dayjs().tz('Asia/Taipei').toDate() };
       
       if (newStatus === ORDER_STATUS.PAID) {
         if (!paymentId) {
           throw new Error('付款狀態需要提供 paymentId');
         }
         updateData.paymentId = paymentId;
-        updateData.paidAt = new Date();
+        updateData.paidAt = dayjs().tz('Asia/Taipei').toDate();
         
       } else if (newStatus === ORDER_STATUS.CONFIRMED) {
-        // 確認訂單時自動加入參加記錄
         const orderItemsList = await getOrderItemsByOrderId(req.params.id);
         const participationData = orderItemsList.map(item => ({
           userId: order.userId,
           eventId: item.eventId,
-          joinedAt: new Date(),
-          updatedAt: new Date()
+          joinedAt: dayjs().tz('Asia/Taipei').toDate(),
+          updatedAt: dayjs().tz('Asia/Taipei').toDate()
         }));
         
         if (participationData.length > 0) {
@@ -357,7 +369,6 @@ const updateOrderStatus = async (req, res) => {
         }
         
       } else if (newStatus === ORDER_STATUS.REFUNDED) {
-        // 退款時移除參加記錄
         const orderItemsList = await getOrderItemsByOrderId(req.params.id);
         const eventIds = orderItemsList.map(item => item.eventId);
         
@@ -399,7 +410,7 @@ const cancelOrder = async (req, res) => {
       return res.status(400).json({ message: '只能取消待付款訂單' });
     }
     
-    const cancelledAt = new Date();
+    const cancelledAt = dayjs().tz('Asia/Taipei').toDate();
     await db.update(orders).set({
       status: ORDER_STATUS.CANCELLED,
       cancelledAt,
@@ -427,7 +438,6 @@ const confirmPayment = async (req, res) => {
       return res.status(403).json({ message: '無權限確認此訂單付款' });
     }
     
-    // 檢查訂單狀態
     if (order.status !== ORDER_STATUS.PENDING) {
       return res.status(400).json({ 
         message: '只能對待付款訂單進行付款確認',
@@ -436,33 +446,31 @@ const confirmPayment = async (req, res) => {
       });
     }
     
-    // 檢查必要參數
     if (!paymentId) {
       return res.status(400).json({ message: '缺少付款 ID' });
     }
     
     await db.transaction(async (tx) => {
+      const now = dayjs().tz('Asia/Taipei').toDate();
       const updateData = { 
         status: ORDER_STATUS.PAID,
         paymentId,
-        paidAt: new Date(),
-        updatedAt: new Date()
+        paidAt: now,
+        updatedAt: now
       };
       
-      // 如果有提供付款方式，也一併更新
       if (paymentMethod) {
         updateData.paymentMethod = paymentMethod;
       }
       
       await tx.update(orders).set(updateData).where(eq(orders.id, req.params.id));
       
-      // 自動加入參加記錄
       const orderItemsList = await getOrderItemsByOrderId(req.params.id);
       const participationData = orderItemsList.map(item => ({
         userId: order.userId,
         eventId: item.eventId,
-        joinedAt: new Date(),
-        updatedAt: new Date()
+        joinedAt: now,
+        updatedAt: now
       }));
       
       if (participationData.length > 0) {
@@ -476,7 +484,7 @@ const confirmPayment = async (req, res) => {
       orderNumber: order.orderNumber,
       paymentId,
       status: ORDER_STATUS.PAID,
-      timestamp: new Date().toISOString()
+      timestamp: dayjs().tz('Asia/Taipei').toISOString()
     });
     
   } catch (err) {
