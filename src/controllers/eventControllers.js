@@ -174,25 +174,36 @@ const softDeleteEvent  = async( req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
-    const eventsList = await db.select().from(events);
+    const rows = await db
+      .select({
+        eventId: events.id,
+        eventData: events,
+        tagId: eventTags.tagId
+      })
+      .from(events)
+      .leftJoin(eventTags, eq(events.id, eventTags.eventId));
 
-    const result = await Promise.all(eventsList.map(async (event) => {
-      const eventTag = await db
-        .select({ tagId: eventTags.tagId })
-        .from(eventTags)
-        .where(eq(eventTags.eventId, event.id));
-      const tagIds = eventTag.map(item => Number(item.tagId));
-      return {
-        ...stringifyBigInts(event),
-        tagIds
+    const eventMap = new Map();
+
+    for (const row of rows) {
+      const id = row.eventId.toString();
+      if (!eventMap.has(id)) {
+        eventMap.set(id, {
+          ...stringifyBigInts(row.eventData),
+          tagIds: []
+        });
       }
-    }));
+      if (row.tagId) {
+        eventMap.get(id).tagIds.push(Number(row.tagId));
+      }
+    }
 
+    const result = Array.from(eventMap.values());
     res.status(200).json(result);
   } catch (err) {
     console.error('取得全部活動失敗:', err);
     res.status(500).json({ message: '伺服器錯誤' });
   }
-}
+};
 
 module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent, getAllEvents };
