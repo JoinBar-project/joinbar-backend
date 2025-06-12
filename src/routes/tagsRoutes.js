@@ -7,7 +7,7 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Tags
- *   description: 活動標籤相關 API
+ *   description: 活動標籤 API
  */
 
 /**
