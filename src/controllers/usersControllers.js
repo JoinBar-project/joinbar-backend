@@ -58,15 +58,16 @@ const getUserById = async (req, res) => {
         role: usersTable.role,
         birthday: usersTable.birthday,
         avatarUrl: usersTable.avatarUrl,
+        providerType: usersTable.providerType,
       })
       .from(usersTable)
-      .where(eq(usersTable.id, userId))
+      .where(and(eq(usersTable.id, userId), eq(usersTable.status, 1)))
       .limit(1);
 
     if (!userResult) {
       return res.status(404).json({
         success: false,
-        message: '查無此使用者',
+        message: '查無此使用者或帳戶已被註銷',
       });
     }
 
@@ -75,6 +76,7 @@ const getUserById = async (req, res) => {
       data: userResult,
     });
   } catch (err) {
+    console.error('獲取用戶資料時發生錯誤:', err);
     return res.status(500).json({
       success: false,
       message: '伺服器錯誤',
@@ -93,6 +95,27 @@ const patchUserById = async (req, res) => {
       });
     }
 
+    // 檢查用戶是否存在且為啟用狀態
+    const [existingUser] = await db
+      .select({ id: usersTable.id, status: usersTable.status })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: '查無此使用者',
+      });
+    }
+
+    if (existingUser.status !== 1) {
+      return res.status(400).json({
+        success: false,
+        message: '無法修改已註銷的帳戶',
+      });
+    }
+    
     const { username, nickname, birthday, avatarUrl } = req.body;
 
     const updateData = {};
