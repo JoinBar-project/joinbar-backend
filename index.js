@@ -23,6 +23,7 @@ app.use(withTaiwanTime);
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/deleteAccount', accountDeletionRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
 

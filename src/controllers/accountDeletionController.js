@@ -127,3 +127,5 @@ const getDeletionWarning = async (req, res) => {
     });
 	}
 };
+
+module.exports = { deleteAccount, getDeletionWarning };
