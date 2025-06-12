@@ -1,4 +1,4 @@
-const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerJSDoc = require('swagger-jsdoc');
 
 const options = {
   definition: {
@@ -51,27 +51,24 @@ const options = {
       
       🔗 其他連結：
       [GitHub Repo](https://github.com/JoinBar-project)
-
       `
     },
-    servers:[
-      {
-        url: 'http://localhost:3000',
-      },
-    ],
+    servers: [{ url: 'http://localhost:3000' }],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT', 
+          bearerFormat: 'JWT',
         },
       },
     },
+    security: [{ 
+      bearerAuth: [] 
+    }], 
   },
-  apis: ['./src/routes/*.js'], 
+  apis: ['./src/routes/*.js'],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
-
+const swaggerSpec = swaggerJSDoc(options);
 module.exports = swaggerSpec;

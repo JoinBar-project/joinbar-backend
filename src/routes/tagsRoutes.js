@@ -5,13 +5,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- *   name: Tags
- *   description: 活動標籤 API
- */
-
-/**
- * @swagger
  * /api/tags/createTag:
  *   post:
  *     summary: 建立新標籤
@@ -29,6 +22,23 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: 標籤建立成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 標籤已建立
+ *                 tag:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: 調酒達人
  */
 router.post('/createTag', createTag);
 
@@ -44,14 +54,19 @@ router.post('/createTag', createTag);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
+ *               type: object
+ *               properties:
+ *                 tags:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: 調酒達人
  */
 router.get('/list', getListTag);
 
@@ -71,6 +86,22 @@ router.get('/list', getListTag);
  *     responses:
  *       200:
  *         description: 成功取得標籤
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tag:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: 調酒達人
+ *       404:
+ *         description: 找不到標籤
  */
 router.get('/:id', getTag);
 
@@ -89,7 +120,17 @@ router.get('/:id', getTag);
  *           type: string
  *     responses:
  *       200:
- *         description: 刪除成功
+ *         description: 標籤刪除成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 標籤已刪除
+ *       404:
+ *         description: 找不到標籤
  */
 router.delete('/deleteTag/:id', deleteTag);
 
