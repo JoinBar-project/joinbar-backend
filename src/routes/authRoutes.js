@@ -27,24 +27,78 @@ const  validateSignup  = require("../middlewares/validateSignup.js");
  *           schema:
  *             type: object
  *             required:
+ *               - username
+ *               - nickname 
  *               - email
  *               - password
- *               - nickname
  *             properties:
+ *               username:
+ *                 type: string
+ *                 example: Bella
+ *               nickname:
+ *                 type: string
+ *                 example: Bella
  *               email:
  *                 type: string
  *                 example: bella@example.com
  *               password:
  *                 type: string
- *                 example: password123
- *               nickname:
+ *                 example: Password123
+ *               birthday:
  *                 type: string
- *                 example: Bella
+ *                 format: date
+ *                 example: 1995-01-01
+ *
  *     responses:
  *       201:
  *         description: 註冊成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 註冊成功
+ *                 user:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       username:
+ *                         type: string
+ *                         example: Bella
+ *                       email:
+ *                         type: string
+ *                         example: bella@example.com
+ *                       role:
+ *                         type: string
+ *                         example: user
  *       400:
- *         description: 資料格式錯誤或帳號已存在
+ *         description: 請求格式錯誤或欄位驗證失敗
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       path:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["username"]
+ *                       message:
+ *                         type: string
+ *                         example: "姓名不可少於 2 個字元"
+ *       409:
+ *         description: 此信箱已被註冊
  */
 router.post("/signup", validateSignup, signup);
 
