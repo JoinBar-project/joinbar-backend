@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { messages, usersTable } = require('../models/schema');
-const { eq } = require('drizzle-orm');
+const { eq, desc } = require('drizzle-orm');
 
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
@@ -50,6 +50,24 @@ const postMessageToEvent = async (req, res) => {
   }
 
   try {
+    const lastMessage = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.userId, userId))
+      .orderBy(desc(messages.createdAt))
+      .limit(1);
+
+    if (lastMessage.length > 0) {
+      const diffInSeconds = (Date.now() - new Date(lastMessage[0].createdAt)) / 1000;
+      if (diffInSeconds < 10) {
+        return res.status(429).json({ message: '請勿頻繁留言，請稍後再試。' });
+      }
+    }
+
+    if (lastMessage.length > 0 && lastMessage[0].content === content.trim()) {
+      return res.status(400).json({ message: '請勿重複留言相同內容' });
+    }
+
     await db.insert(messages).values({
       content: content.trim(),
       userId,
