@@ -59,7 +59,43 @@ const postMessageToEvent = async (req, res) => {
   }
 };
 
+const updateMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const { content } = req.body;
+
+  if (!content || content.trim() === '') {
+    return res.status(400).json({ message: '留言內容不可為空' });
+  }
+
+  try {
+    await db.update(messages)
+      .set({ content: content.trim() })
+      .where(eq(messages.id, messageId));
+
+    res.status(200).json({ message: '留言已更新' });
+  } catch (err) {
+    console.error('更新留言錯誤:', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
+};
+
+const deleteMessage = async (req, res) => {
+  const { messageId } = req.params;
+
+  try {
+    await db.delete(messages)
+      .where(eq(messages.id, messageId));
+
+    res.status(200).json({ message: '留言已刪除' });
+  } catch (err) {
+    console.error('刪除留言錯誤:', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
+};
+
 module.exports = {
   getMessagesByEventId,
-  postMessageToEvent
+  postMessageToEvent,
+  updateMessage,
+  deleteMessage
 };
