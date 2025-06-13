@@ -4,6 +4,7 @@ const { eq } = require("drizzle-orm");
 const dotenv = require("dotenv");
 dotenv.config();
 const bcrypt = require("bcrypt");
+const crypto = require('crypto');
 const { sendVerificationEmail } = require('../services/emailService');
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;

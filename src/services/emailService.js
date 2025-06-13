@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // 建立郵件傳送器
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: process.env.SMTP_SECURE === 'true',
