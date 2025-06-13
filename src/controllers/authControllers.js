@@ -4,6 +4,7 @@ const { eq } = require("drizzle-orm");
 const dotenv = require("dotenv");
 dotenv.config();
 const bcrypt = require("bcrypt");
+const { sendVerificationEmail } = require('../services/emailService');
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
@@ -23,13 +24,16 @@ const signup = async (req, res) => {
       .select({ email: usersTable.email })
       .from(usersTable)
       .where(eq(usersTable.email, email))
-      .limit(1); // 查到第一筆符合條件的資料就停止查詢
+      .limit(1);
 
     if (userResult.length > 0) {
       return res.status(409).json({ error: "此信箱已被註冊" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
 
     const newUser = await db.insert(usersTable).values({
       username,
@@ -38,6 +42,8 @@ const signup = async (req, res) => {
       password: hashedPassword,
       birthday: birthday ? new Date(birthday) : null,
       isVerifiedEmail: false,
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: verificationExpires,
       providerType: "email",
     }).returning({
       id: usersTable.id,
@@ -46,7 +52,17 @@ const signup = async (req, res) => {
       role: usersTable.role
     });
 
-    return res.status(201).json({ message: "註冊成功", user: newUser });
+    const emailResult = await sendVerificationEmail(email, verificationToken, username);
+
+    if (!emailResult.success) {
+      console.error('寄送驗證信失敗，但用戶已建立');
+    }
+
+    return res.status(201).json({ 
+      message: "註冊成功！請檢查您的信箱並點擊驗證連結來啟用帳號",
+      user: newUser,
+      emailSent: emailResult.success
+    });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
