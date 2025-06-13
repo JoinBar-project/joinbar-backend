@@ -22,6 +22,7 @@ const getMessagesByEventId = async (req, res) => {
         createdAt: messages.createdAt,
         userId: messages.userId,
         userNickname: usersTable.nickname,
+        userAvatarUrl: usersTable.avatarUrl
       })
       .from(messages)
       .leftJoin(usersTable, eq(messages.userId, usersTable.id))
