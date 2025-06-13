@@ -22,7 +22,6 @@ app.use('/api/users', barTagsRoutes);
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/event', eventRoutes);
-app.use('/tags', tagsRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {

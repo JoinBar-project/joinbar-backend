@@ -132,7 +132,7 @@ const eventTags = pgTable('event_tags', {
 }));
 
 const barTags = pgTable('bar_tags', {
-  barId: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
+  bar_id: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
   sport: boolean('sport').notNull(),
   music: boolean('music').notNull(),
   student: boolean('student').notNull(),
