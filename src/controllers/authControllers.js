@@ -189,4 +189,89 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, verifyEmail };
+const resendVerificationEmail = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "請提供信箱地址" });
+  }
+
+  try {
+    // 查找用戶
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (!user) {
+      return res.status(200).json({ 
+        message: "如果該信箱已註冊，您將收到新的驗證信" 
+      });
+    }
+
+    // 如果已經驗證過了
+    if (user.isVerifiedEmail) {
+      return res.status(400).json({ 
+        error: "此信箱已經驗證完成，您可以直接登入" 
+      });
+    }
+
+    // 檢查是否在短時間內重複請求（防止濫用）
+    const now = new Date();
+    const lastSentEmailTime = user.emailVerificationExpires;
+
+    if (lastSentEmailTime) {
+      // 計算距離上次寄送的時間
+      const TimeOfFlight = now - (lastSentEmailTime.getTime() - 24 * 60 * 60 * 1000);
+      const cooldownTimeMinutes = 5; // 5分鐘冷卻時間
+
+      if (TimeOfFlight < cooldownTimeMinutes * 60 * 1000) {
+        const remainingTime = Math.ceil((cooldownTimeMinutes * 60 * 1000 - TimeOfFlight) / 1000 / 60);
+        return res.status(429).json({ 
+          error: `請等待 ${remainingTime} 分鐘後再重新寄送驗證信` 
+        });
+      }
+    }
+
+    // 產生新的驗證 token
+    const newVerificationToken = crypto.randomBytes(32).toString('hex');
+    const newVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
+
+    // 更新資料庫中的 token
+    await db
+      .update(usersTable)
+      .set({
+        emailVerificationToken: newVerificationToken,
+        emailVerificationExpires: newVerificationExpires,
+        updatedAt: new Date()
+      })
+      .where(eq(usersTable.id, user.id));
+
+    // 寄送新的驗證信
+    const emailResult = await sendVerificationEmail(
+      email, 
+      newVerificationToken, 
+      user.username
+    );
+
+    if (!emailResult.success) {
+      console.error('重新寄送驗證信失敗:', emailResult.error);
+      return res.status(500).json({ 
+        error: "寄送驗證信失敗，請稍後再試" 
+      });
+    }
+
+    return res.status(200).json({ 
+      message: "新的驗證信已寄送，請檢查您的信箱"
+    });
+
+  } catch (err) {
+    console.error('重新寄送驗證信過程發生錯誤:', err);
+    return res.status(500).json({ 
+      error: "處理請求失敗，請稍後再試" 
+    });
+  }
+};
+
+module.exports = { signup, login, verifyEmail, resendVerificationEmail };
