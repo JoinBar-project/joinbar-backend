@@ -1,6 +1,7 @@
 {
-  "id": "8ff1e642-d749-4fe3-bf18-8a37355955ce",
-  "prevId": "47e837e5-1e65-4f45-a282-7c4f66ab1940",
+  "id": "d6c6f579-174b-4679-be10-6ed400f62308",
+  "prevId": "7562d988-2bcf-48ec-bdba-3d33c89f31bc",
+
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -50,6 +51,37 @@
           "type": "date",
           "primaryKey": false,
           "notNull": false
+        },
+        "line_user_id": {
+          "name": "line_user_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_display_name": {
+          "name": "line_display_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_picture_url": {
+          "name": "line_picture_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_status_message": {
+          "name": "line_status_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_line_user": {
+          "name": "is_line_user",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "is_verified_email": {
           "name": "is_verified_email",
@@ -121,6 +153,15 @@
           "columns": [
             "email"
           ]
+
+        },
+        "users_line_user_id_unique": {
+          "name": "users_line_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "line_user_id"
+          ]
+
         }
       },
       "policies": {},
@@ -679,13 +720,15 @@
         },
         "start_date": {
           "name": "start_date",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
+
           "primaryKey": false,
           "notNull": true
         },
         "end_date": {
           "name": "end_date",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
+
           "primaryKey": false,
           "notNull": true
         },
@@ -715,13 +758,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
+
           "primaryKey": false,
           "notNull": true
         },
         "modify_at": {
           "name": "modify_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -855,6 +899,7 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+
     },
     "public.bar_tags": {
       "name": "bar_tags",
@@ -915,6 +960,7 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+
     }
   },
   "enums": {},

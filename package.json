@@ -8,7 +8,7 @@
     "start": "nodemon index.js",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "fake": "forker generate"
+    "seed": "node src/seeds/seed.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
     "biguint-format": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.0",
     "express": "^5.1.0",
@@ -35,9 +36,9 @@
     "zod": "^3.25.42"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.8.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-seed": "^0.3.1",
-    "forker": "^3.0.0",
     "nodemon": "^3.1.10"
   },
   "overrides": {
