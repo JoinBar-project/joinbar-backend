@@ -88,6 +88,15 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
+
+    // 檢查信箱是否已驗證
+    if (!userResult.isVerifiedEmail) {
+      return res.status(403).json({ 
+        error: "請先驗證您的信箱才能登入",
+        needVerification: true 
+      });
+    }
+
     // 產生 token
     const accessToken = jwt.sign(
       {
