@@ -25,7 +25,8 @@ const getMessagesByEventId = async (req, res) => {
       })
       .from(messages)
       .leftJoin(usersTable, eq(messages.userId, usersTable.id))
-      .where(eq(messages.eventId, eventId));
+      .where(eq(messages.eventId, eventId))
+      .orderBy(messages.createdAt);
 
     res.status(200).json({ message: '留言取得成功', messages: result });
   } catch (err) {
