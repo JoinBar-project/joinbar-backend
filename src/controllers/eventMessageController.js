@@ -45,6 +45,9 @@ const postMessageToEvent = async (req, res) => {
   if (!content || content.trim() === '') {
     return res.status(400).json({ message: '留言內容不可為空' });
   }
+  if (content.trim().length > 200) {
+    return res.status(400).json({ message: '留言長度不得超過 200 字' });
+  }
 
   try {
     await db.insert(messages).values({
