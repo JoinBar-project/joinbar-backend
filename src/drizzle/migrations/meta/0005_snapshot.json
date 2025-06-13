@@ -1,7 +1,6 @@
 {
-  "id": "d6c6f579-174b-4679-be10-6ed400f62308",
-  "prevId": "7562d988-2bcf-48ec-bdba-3d33c89f31bc",
-
+  "id": "e6d7dc33-1185-40f4-9d23-7d675f321891",
+  "prevId": "8e190ee9-5de8-42a3-b698-77839fac773f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -51,37 +50,6 @@
           "type": "date",
           "primaryKey": false,
           "notNull": false
-        },
-        "line_user_id": {
-          "name": "line_user_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "line_display_name": {
-          "name": "line_display_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "line_picture_url": {
-          "name": "line_picture_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "line_status_message": {
-          "name": "line_status_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_line_user": {
-          "name": "is_line_user",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         },
         "is_verified_email": {
           "name": "is_verified_email",
@@ -153,15 +121,6 @@
           "columns": [
             "email"
           ]
-
-        },
-        "users_line_user_id_unique": {
-          "name": "users_line_user_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "line_user_id"
-          ]
-
         }
       },
       "policies": {},
@@ -720,15 +679,13 @@
         },
         "start_date": {
           "name": "start_date",
-          "type": "timestamp with time zone",
-
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
         "end_date": {
           "name": "end_date",
-          "type": "timestamp with time zone",
-
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
@@ -758,14 +715,13 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp with time zone",
-
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
         "modify_at": {
           "name": "modify_at",
-          "type": "timestamp with time zone",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
@@ -899,7 +855,6 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-
     },
     "public.bar_tags": {
       "name": "bar_tags",
@@ -911,9 +866,63 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "integer",
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true
         }
@@ -932,13 +941,93 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_tags": {
+      "name": "user_tags",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         },
-        "bar_tags_tag_id_tags_id_fk": {
-          "name": "bar_tags_tag_id_tags_id_fk",
-          "tableFrom": "bar_tags",
-          "tableTo": "tags",
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_tags_user_id_users_id_fk": {
+          "name": "user_tags_user_id_users_id_fk",
+          "tableFrom": "user_tags",
+          "tableTo": "users",
           "columnsFrom": [
-            "tag_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -947,20 +1036,11 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "bar_tags_bar_id_tag_id_pk": {
-          "name": "bar_tags_bar_id_tag_id_pk",
-          "columns": [
-            "bar_id",
-            "tag_id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-
     }
   },
   "enums": {},
