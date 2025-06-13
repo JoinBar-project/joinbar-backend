@@ -129,4 +129,54 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).json({ error: "缺少驗證 token" });
+  }
+
+  try {
+    // 查找有效的驗證 token
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.emailVerificationToken, token))
+      .limit(1);
+
+    if (!user) {
+      return res.status(400).json({ error: "無效的驗證連結" });
+    }
+
+    // 檢查 token 是否過期
+    if (new Date() > user.emailVerificationExpires) {
+      return res.status(400).json({ error: "驗證連結已過期，請重新註冊" });
+    }
+
+    // 檢查是否已經驗證過
+    if (user.isVerifiedEmail) {
+      return res.status(200).json({ message: "信箱已經驗證過了" });
+    }
+
+    // 更新用戶狀態
+    await db
+      .update(usersTable)
+      .set({
+        isVerifiedEmail: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(usersTable.id, user.id));
+
+    return res.status(200).json({ 
+      message: "信箱驗證成功！您現在可以正常使用所有功能了" 
+    });
+
+  } catch (err) {
+    console.error('驗證信箱過程發生錯誤:', err);
+    return res.status(500).json({ error: "驗證失敗，請稍後再試" });
+  }
+};
+
+module.exports = { signup, login, verifyEmail };
