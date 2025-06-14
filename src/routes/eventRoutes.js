@@ -14,13 +14,13 @@ const authenticateToken = require('../middlewares/authenticateToken');
 const router = express.Router();
 
 router.get('/all', getAllEvents);
-router.post('/create', createEvent);
+router.post('/create', authenticateToken, createEvent);
 
 router.post('/:id/join', authenticateToken, joinEvent);
 router.use('/:id/messages', eventMessageRoutes);
 
 router.get('/:id', getEvent);
-router.put('/update/:id', updateEvent);
-router.delete('/delete/:id', softDeleteEvent);
+router.put('/update/:id', authenticateToken, updateEvent);
+router.delete('/delete/:id', authenticateToken, softDeleteEvent);
 
 module.exports = router;
