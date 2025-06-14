@@ -332,9 +332,9 @@ const checkLinePaymentStatus = async (req, res) => {
      paymentMethod: order.paymentMethod,
      paymentId: order.paymentId,
      transactionId: order.transactionId,
-     paidAt: order.paidAt,
+     paidAt: order.paidAt ? dayjs(order.paidAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
      createdAt: order.createdAt,
-     updatedAt: order.updatedAt,
+     updatedAt: order.updatedAt ? dayjs(order.updatedAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
      linePayStatus: linePayStatus
    });
 
