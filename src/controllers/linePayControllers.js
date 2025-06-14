@@ -1,3 +1,4 @@
+// controllers/linePayControllers.js
 const db = require('../config/db');
 const { orders, orderItems, userEventParticipationTable } = require('../models/schema');
 const { eq, and, inArray } = require('drizzle-orm');
@@ -9,7 +10,7 @@ const handleError = (err, res) => {
  
  const errorResponse = {
    error: true,
-   timestamp: new Date().toISOString(),
+   timestamp: dayjs().toISOString(),
    message: '',
    code: ''
  }
@@ -363,12 +364,14 @@ const refundLinePayment = async (req, res) => {
 
      const eventIds = orderItemsList.map(item => item.eventId);
 
-     await tx
-       .delete(userEventParticipationTable)
-       .where(and(
-         eq(userEventParticipationTable.userId, order.userId),
-         inArray(userEventParticipationTable.eventId, eventIds)
-       ));
+     if (eventIds.length > 0) {
+       await tx
+         .delete(userEventParticipationTable)
+         .where(and(
+           eq(userEventParticipationTable.userId, order.userId),
+           inArray(userEventParticipationTable.eventId, eventIds)
+         ));
+     }
    });
 
    res.json({
@@ -392,4 +395,4 @@ module.exports = {
  confirmLinePayment,
  checkLinePaymentStatus,
  refundLinePayment
-};
+}
