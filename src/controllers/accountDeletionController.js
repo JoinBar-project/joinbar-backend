@@ -2,6 +2,7 @@ const db = require('../config/db');
 const { usersTable } = require('../models/schema');
 const { eq, and } = require('drizzle-orm');
 const bcrypt = require('bcrypt');
+const dayjs = require('dayjs');
 
 const deleteAccount = async (req, res) => {
 	const userId = req.user.id;
@@ -33,8 +34,8 @@ const deleteAccount = async (req, res) => {
 			}
 		}
 
-		const now = new Date();
-		const timestamp = now.toISOString().replace(/[:.]/g, '-');
+		const now = dayjs();
+		const timestamp = now.format('YYYY-MM-DD-HH-mm-ss');
 		const deletedEmail = user.email ? `${user.email}.deleted.${timestamp}` : null;
 		const deletedLineUserId = user.lineUserId ? `${user.lineUserId}.deleted.${timestamp}` : null;
 		const [deletedUser] = await db
@@ -44,7 +45,7 @@ const deleteAccount = async (req, res) => {
 				email: deletedEmail,
 				lineUserId: deletedLineUserId,
 				password: null, 
-				updatedAt: now,
+				updatedAt: now.toDate(),
 				birthday: null,
         avatarUrl: null,
         linePictureUrl: null,
@@ -58,9 +59,9 @@ const deleteAccount = async (req, res) => {
         status: usersTable.status,
         updatedAt: usersTable.updatedAt
 			});
-		console.log(`帳戶註銷: 用戶 ${user.username} (ID: ${userId}) 於 ${now.toISOString()} 註銷帳戶`);
+		console.log(`帳戶註銷: 用戶 ${user.username} (ID: ${userId}) 於 ${now.format('YYYY-MM-DD HH:mm:ss')} 註銷帳戶`);
 
-		return res.status(200).json({ success: true, message: '帳戶已成功註銷，感謝您的使用', data: { deletedAt: now, userId: deletedUser.id } });
+		return res.status(200).json({ success: true, message: '帳戶已成功註銷，感謝您的使用', data: { deletedAt: now.toDate(), userId: deletedUser.id } });
 	} catch(err) {
 		console.error('帳戶註銷過程發生錯誤:', err);
 		return res.status(500).json({ success: false, error: '帳戶註銷過程發生錯誤' });
