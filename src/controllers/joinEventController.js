@@ -13,7 +13,11 @@ const tz = 'Asia/Taipei';
 const joinEvent = async (req, res) => {
   const eventId = req.params.id;
   const userId = req.user?.id;
-
+  
+  if (!userId) {
+    return res.status(401).json({ message: '未授權的請求，請先登入' });
+  }
+  
   try {
     const [event] = await db.select().from(events).where(eq(events.id, eventId));
     if (!event) {

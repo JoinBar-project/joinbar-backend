@@ -9,13 +9,14 @@ const {
 
 const { joinEvent } = require('../controllers/joinEventController');
 const eventMessageRoutes = require('./eventMessageRoutes');
+const authenticateToken = require('../middlewares/authenticateToken');
 
 const router = express.Router();
 
 router.get('/all', getAllEvents);
 router.post('/create', createEvent);
 
-router.post('/:id/join', joinEvent);
+router.post('/:id/join', authenticateToken, joinEvent);
 router.use('/:id/messages', eventMessageRoutes);
 
 router.get('/:id', getEvent);
