@@ -131,6 +131,34 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
+const orders = pgTable('orders', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  orderNumber: varchar('order_number', { length: 255 }).notNull().unique(),
+  userId: integer('user_id').references(() => usersTable.id),
+  totalAmount: integer('total_amount').notNull(),
+  status: varchar('status', { length: 20 }).default('pending').notNull(),
+  paymentMethod: varchar('payment_method', { length: 20 }),
+  paymentId: varchar('payment_id', { length: 255 }),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+  cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+  cancellationReason: varchar('cancellation_reason', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
+});
 
+const orderItems = pgTable('order_items', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  orderId: bigint('order_id', { mode: 'string' }).references(() => orders.id, { onDelete: 'cascade' }).notNull(),
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }).notNull(),
+  eventName: varchar('event_name', { length: 255 }).notNull(),
+  barName: varchar('bar_name', { length: 100 }).notNull(),
+  location: varchar('location', { length: 255 }).notNull(),
+  eventStartDate: timestamp('event_start_date', { withTimezone: true }).notNull(),
+  eventEndDate: timestamp('event_end_date', { withTimezone: true }).notNull(),
+  hostUserId: integer('host_user_id').notNull(),
+  price: integer('price').notNull(),
+  quantity: integer('quantity').notNull(),
+  subtotal: integer('subtotal').notNull() 
+});
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems };
