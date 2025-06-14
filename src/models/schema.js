@@ -139,9 +139,12 @@ const orders = pgTable('orders', {
   status: varchar('status', { length: 20 }).default('pending').notNull(),
   paymentMethod: varchar('payment_method', { length: 20 }),
   paymentId: varchar('payment_id', { length: 255 }),
+  transactionId: varchar('transaction_id', { length: 255 }), 
   paidAt: timestamp('paid_at', { withTimezone: true }),
   cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
   cancellationReason: varchar('cancellation_reason', { length: 255 }),
+  refundId: varchar('refund_id', { length: 255 }), 
+  refundedAt: timestamp('refunded_at', { withTimezone: true }), 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
