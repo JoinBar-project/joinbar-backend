@@ -17,7 +17,6 @@ const checkOrderOwnership = async (req, res, next) => {
       return res.status(404).json({ message: '找不到訂單' });
     }
     
-    // 只有訂單擁有者或管理員能查看
     if (order.userId !== userId && req.user.role !== 'admin') {
       return res.status(403).json({ message: '無權限存取此訂單' });
     }
@@ -32,7 +31,6 @@ const checkOrderOwnership = async (req, res, next) => {
 };
 
 
-// 檢查管理員權限
 const checkAdminRole = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: '需要管理員權限' });
@@ -40,7 +38,6 @@ const checkAdminRole = (req, res, next) => {
   next();
 };
 
-// 檢查用戶是否存在
 const checkUserExists = async (userId) => {
   const [user] = await db
     .select({ id: usersTable.id, status: usersTable.status })
