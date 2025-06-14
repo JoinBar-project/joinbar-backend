@@ -106,13 +106,13 @@ const events = pgTable('events', {
   name: varchar('name', { length: 50 }).notNull(),
   barName: varchar('bar_name', { length: 100 }).notNull(),
   location: varchar('location', { length: 100 }).notNull(),
-  startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-  endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+  startAt: timestamp('start_At', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_At', { withTimezone: true }).notNull(),
   maxPeople: integer('max_people'),
   imageUrl: varchar('image_url', { length: 255 }),
   price: integer('price'),
   hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  creatAt: timestamp('creat_at', { withTimezone: true }).notNull(),
   modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除， 3: 活動結束(程式判斷沒存DB)
 }, (table) => ({
@@ -161,4 +161,16 @@ const orderItems = pgTable('order_items', {
   subtotal: integer('subtotal').notNull() 
 });
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems };
+const subTable = pgTable('subs', {
+  id:bigint('id', { mode: 'string'}).primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  subType: varchar('sub_type', { length: 100 }).notNull(),
+  price: integer('price'),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
+  status: smallint('status').default(1).notNull(), //1: 正常，2: 取消，3: 到期
+  createdAt : timestamp('create_at', { withTimezone: true }).notNull(),
+  modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
+})
+
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, subTable };
