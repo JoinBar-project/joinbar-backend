@@ -28,6 +28,8 @@ app.use('/api/users', usersRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api/sub', subRoutes);
+
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
