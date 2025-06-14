@@ -16,7 +16,11 @@ const usersTable = pgTable("users", {
   lineStatusMessage: text('line_status_message'),
   isLineUser: boolean('is_line_user').default(false),
 
+  // email 驗證相關欄位
   isVerifiedEmail: boolean("is_verified_email").default(false),
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),
   avatarUrl: varchar("avatar_url", { length: 255 }),
