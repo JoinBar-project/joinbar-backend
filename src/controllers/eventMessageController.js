@@ -10,6 +10,18 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const tz = 'Asia/Taipei';
 
+const checkIfUserJoinedEvent = async (userId, eventId) => {
+  const [hasJoined] = await db
+    .select()
+    .from(userEventParticipationTable)
+    .where(
+      and(
+        eq(userEventParticipationTable.userId, userId),
+        eq(userEventParticipationTable.eventId, eventId)
+      )
+    );
+  return !!hasJoined;
+};
 
 const getMessagesByEventId = async (req, res) => {
   const eventId = req.params.id;
@@ -50,15 +62,7 @@ const postMessageToEvent = async (req, res) => {
   }
 
   try {
-    const [hasJoined] = await db
-      .select()
-      .from(userEventParticipationTable)
-      .where(
-        and(
-          eq(userEventParticipationTable.userId, userId),
-          eq(userEventParticipationTable.eventId, eventId)
-        )
-      );
+    const hasJoined = await checkIfUserJoinedEvent(userId, eventId);
 
     if (!hasJoined) {
       return res.status(403).json({ message: '只有已報名活動的使用者才能留言' });
@@ -106,15 +110,7 @@ const updateMessage = async (req, res) => {
   }
 
   try {
-    const [hasJoined] = await db
-      .select()
-      .from(userEventParticipationTable)
-      .where(
-        and(
-          eq(userEventParticipationTable.userId, userId),
-          eq(userEventParticipationTable.eventId, eventId)
-        )
-      );
+    const hasJoined = await checkIfUserJoinedEvent(userId, eventId);
 
     if (!hasJoined) {
       return res.status(403).json({ message: '只有已報名活動的使用者才能修改留言' });
@@ -136,15 +132,7 @@ const deleteMessage = async (req, res) => {
   const userId = req.user?.id;
 
   try {
-    const [hasJoined] = await db
-      .select()
-      .from(userEventParticipationTable)
-      .where(
-        and(
-          eq(userEventParticipationTable.userId, userId),
-          eq(userEventParticipationTable.eventId, eventId)
-        )
-      );
+    const hasJoined = await checkIfUserJoinedEvent(userId, eventId);
 
     if (!hasJoined) {
       return res.status(403).json({ message: '只有已報名活動的使用者才能刪除留言' });
