@@ -131,6 +131,13 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
+// src/models/schema.js
+const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  userId: integer('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
+});
 
-
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, messages };

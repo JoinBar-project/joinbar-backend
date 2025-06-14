@@ -191,6 +191,38 @@ const softDeleteEvent  = async( req, res) => {
   }
 }
 
+const getAllEvents = async (req, res) => {
+  try {
+    const rows = await db
+      .select({
+        eventId: events.id,
+        eventData: events,
+        tagId: eventTags.tagId
+      })
+      .from(events)
+      .leftJoin(eventTags, eq(events.id, eventTags.eventId));
 
+    const eventMap = new Map();
 
-module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent };
+    for (const row of rows) {
+      const id = row.eventId.toString();
+      if (!eventMap.has(id)) {
+        eventMap.set(id, {
+          ...row.eventData,
+          tagIds: []
+        });
+      }
+      if (row.tagId) {
+        eventMap.get(id).tagIds.push(Number(row.tagId));
+      }
+    }
+
+    const result = Array.from(eventMap.values());
+    res.status(200).json(result);
+  } catch (err) {
+    console.error('取得全部活動失敗:', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
+};
+
+module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent, getAllEvents };
