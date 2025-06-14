@@ -1,6 +1,6 @@
 const db = require('../config/db');
-const { messages, usersTable } = require('../models/schema');
-const { eq, desc } = require('drizzle-orm');
+const { messages, usersTable, userEventParticipationTable } = require('../models/schema');
+const { eq, desc, and } = require('drizzle-orm');
 
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
@@ -50,6 +50,20 @@ const postMessageToEvent = async (req, res) => {
   }
 
   try {
+    const [hasJoined] = await db
+      .select()
+      .from(userEventParticipationTable)
+      .where(
+        and(
+          eq(userEventParticipationTable.userId, userId),
+          eq(userEventParticipationTable.eventId, eventId)
+        )
+      );
+
+    if (!hasJoined) {
+      return res.status(403).json({ message: '只有已報名活動的使用者才能留言' });
+    }
+
     const lastMessage = await db
       .select()
       .from(messages)
@@ -83,7 +97,8 @@ const postMessageToEvent = async (req, res) => {
 };
 
 const updateMessage = async (req, res) => {
-  const { messageId } = req.params;
+  const { messageId, id: eventId } = req.params;
+  const userId = req.user?.id;
   const { content } = req.body;
 
   if (!content || content.trim() === '') {
@@ -91,6 +106,20 @@ const updateMessage = async (req, res) => {
   }
 
   try {
+    const [hasJoined] = await db
+      .select()
+      .from(userEventParticipationTable)
+      .where(
+        and(
+          eq(userEventParticipationTable.userId, userId),
+          eq(userEventParticipationTable.eventId, eventId)
+        )
+      );
+
+    if (!hasJoined) {
+      return res.status(403).json({ message: '只有已報名活動的使用者才能修改留言' });
+    }
+
     await db.update(messages)
       .set({ content: content.trim() })
       .where(eq(messages.id, messageId));
@@ -103,9 +132,24 @@ const updateMessage = async (req, res) => {
 };
 
 const deleteMessage = async (req, res) => {
-  const { messageId } = req.params;
+  const { messageId, id: eventId } = req.params;
+  const userId = req.user?.id;
 
   try {
+    const [hasJoined] = await db
+      .select()
+      .from(userEventParticipationTable)
+      .where(
+        and(
+          eq(userEventParticipationTable.userId, userId),
+          eq(userEventParticipationTable.eventId, eventId)
+        )
+      );
+
+    if (!hasJoined) {
+      return res.status(403).json({ message: '只有已報名活動的使用者才能刪除留言' });
+    }
+
     await db.delete(messages)
       .where(eq(messages.id, messageId));
 
