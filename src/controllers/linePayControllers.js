@@ -238,45 +238,89 @@ const checkLinePaymentStatus = async (req, res) => {
 
    let linePayStatus = null;
    
-   if (order.paymentId && order.paymentMethod === 'linepay') {
-     const statusResult = await LinePayProvider.checkPaymentStatus(order.paymentId);
+   if (order.paymentMethod === 'linepay') {
+     const transactionId = order.transactionId || order.paymentId;
      
-     if (statusResult.success) {
-       linePayStatus = {
-         transactionId: order.paymentId,
-         status: statusResult.status,
-         isPaid: statusResult.isPaid,
-         amount: statusResult.amount
-       };
+     if (transactionId) {
+       console.log('🔍 查詢 LINE Pay 狀態:', transactionId);
+       
+       try {
+         const statusResult = await LinePayProvider.checkPaymentStatus(transactionId);
+         
+         if (statusResult.success) {
+           linePayStatus = {
+             transactionId: transactionId,
+             status: statusResult.status,
+             isPaid: statusResult.isPaid,
+             amount: statusResult.amount,
+             currency: statusResult.currency
+           };
 
-       if (statusResult.isPaid && order.status === 'pending') {
-         await db.transaction(async (tx) => {
-           await tx.update(orders).set({
-             status: 'confirmed',
-             paidAt: dayjs().tz('Asia/Taipei').toDate(),
-             updatedAt: dayjs().tz('Asia/Taipei').toDate()
-           }).where(eq(orders.id, orderId));
+           if (statusResult.isPaid && order.status === 'pending') {
+             console.log('🔄 同步付款狀態:', orderId);
+             
+             await db.transaction(async (tx) => {
+               await tx.update(orders).set({
+                 status: 'confirmed',
+                 paidAt: dayjs().tz('Asia/Taipei').toDate(),
+                 updatedAt: dayjs().tz('Asia/Taipei').toDate()
+               }).where(eq(orders.id, orderId));
 
-           const orderItemsList = await db
-             .select()
-             .from(orderItems)
-             .where(eq(orderItems.orderId, orderId));
+               const orderItemsList = await db
+                 .select()
+                 .from(orderItems)
+                 .where(eq(orderItems.orderId, orderId));
 
-           const participationData = orderItemsList.map(item => ({
-             userId: order.userId,
-             eventId: item.eventId,
-             joinedAt: dayjs().tz('Asia/Taipei').toDate(),
-             updatedAt: dayjs().tz('Asia/Taipei').toDate()
-           }));
+               const participationData = orderItemsList.map(item => ({
+                 userId: order.userId,
+                 eventId: item.eventId,
+                 joinedAt: dayjs().tz('Asia/Taipei').toDate(),
+                 updatedAt: dayjs().tz('Asia/Taipei').toDate()
+               }));
 
-           if (participationData.length > 0) {
-             await tx.insert(userEventParticipationTable).values(participationData);
+               if (participationData.length > 0) {
+                 await tx.insert(userEventParticipationTable).values(participationData);
+               }
+             });
+
+             order.status = 'confirmed';
+             order.paidAt = dayjs().tz('Asia/Taipei').toDate();
            }
-         });
-
-         order.status = 'confirmed';
-         order.paidAt = dayjs().tz('Asia/Taipei').toDate();
+         } else {
+           console.warn('⚠️ LINE Pay 狀態查詢失敗:', statusResult.message);
+           
+           linePayStatus = {
+             transactionId: transactionId,
+             status: 'LOCAL_RECORD_ONLY',
+             isPaid: order.status === 'confirmed',
+             amount: order.totalAmount,
+             currency: 'TWD',
+             note: '無法查詢 LINE Pay 即時狀態，顯示本地記錄'
+           };
+         }
+       } catch (error) {
+         console.error('❌ LINE Pay 狀態查詢異常:', error);
+         
+         linePayStatus = {
+           transactionId: transactionId,
+           status: 'API_ERROR',
+           isPaid: order.status === 'confirmed',
+           amount: order.totalAmount,
+           currency: 'TWD',
+           error: '查詢 LINE Pay 狀態時發生錯誤'
+         };
        }
+     } else {
+       console.warn('⚠️ LINE Pay 訂單但無交易 ID:', orderId);
+       
+       linePayStatus = {
+         transactionId: null,
+         status: 'NO_TRANSACTION_ID',
+         isPaid: order.status === 'confirmed',
+         amount: order.totalAmount,
+         currency: 'TWD',
+         note: 'LINE Pay 訂單但無交易記錄'
+       };
      }
    }
 
@@ -286,8 +330,11 @@ const checkLinePaymentStatus = async (req, res) => {
      status: order.status,
      amount: order.totalAmount,
      paymentMethod: order.paymentMethod,
+     paymentId: order.paymentId,
+     transactionId: order.transactionId,
      paidAt: order.paidAt,
      createdAt: order.createdAt,
+     updatedAt: order.updatedAt,
      linePayStatus: linePayStatus
    });
 
