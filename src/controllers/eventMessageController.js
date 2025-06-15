@@ -23,6 +23,16 @@ const checkIfUserJoinedEvent = async (userId, eventId) => {
   return !!hasJoined;
 };
 
+const getLastMessageByUserId = async (userId) => {
+  const [lastMessage] = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.userId, userId))
+    .orderBy(desc(messages.createdAt))
+    .limit(1);
+  return lastMessage || null;
+};
+
 const getMessagesByEventId = async (req, res) => {
   const eventId = req.params.id;
 
@@ -68,22 +78,17 @@ const postMessageToEvent = async (req, res) => {
       return res.status(403).json({ message: '只有已報名活動的使用者才能留言' });
     }
 
-    const lastMessage = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.userId, userId))
-      .orderBy(desc(messages.createdAt))
-      .limit(1);
+    const lastMessage = await getLastMessageByUserId(userId);
 
-    if (lastMessage.length > 0) {
-      const diffInSeconds = (Date.now() - new Date(lastMessage[0].createdAt)) / 1000;
+    if (lastMessage) {
+      const diffInSeconds = (Date.now() - new Date(lastMessage.createdAt)) / 1000;
       if (diffInSeconds < 10) {
         return res.status(429).json({ message: '請勿頻繁留言，請稍後再試。' });
       }
-    }
 
-    if (lastMessage.length > 0 && lastMessage[0].content === content.trim()) {
-      return res.status(400).json({ message: '請勿重複留言相同內容' });
+      if (lastMessage.content === content.trim()) {
+        return res.status(400).json({ message: '請勿重複留言相同內容' });
+      }
     }
 
     await db.insert(messages).values({
