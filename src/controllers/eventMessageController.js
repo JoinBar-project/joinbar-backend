@@ -111,7 +111,8 @@ const postMessageToEvent = async (req, res) => {
 };
 
 const updateMessage = async (req, res) => {
-  const { messageId, id: eventId } = req.params;
+  const messageId = BigInt(req.params.messageId);
+  const eventId = BigInt(req.params.id);
   const userId = req.user?.id;
   const { content } = req.body;
 
@@ -138,7 +139,8 @@ const updateMessage = async (req, res) => {
 };
 
 const deleteMessage = async (req, res) => {
-  const { messageId, id: eventId } = req.params;
+  const messageId = BigInt(req.params.messageId);
+  const eventId = BigInt(req.params.id);
   const userId = req.user?.id;
 
   try {
