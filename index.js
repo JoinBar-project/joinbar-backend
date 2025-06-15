@@ -4,6 +4,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
+const orderRoutes = require('./src/routes/orderRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
@@ -14,6 +15,7 @@ const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
 dotenv.config();
 
 const app = express();
+
 app.use(cookieParser()); 
 app.use(express.json());
 app.use(cors(corsOptions));
@@ -23,6 +25,7 @@ app.use(withTaiwanTime);
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/orders', orderRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
 

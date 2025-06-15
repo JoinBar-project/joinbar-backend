@@ -31,7 +31,6 @@ cache/
 
 # 其他
 *.pid
-*.seed
 *.pid.lock
 .grunt
 .lock-wscript
@@ -52,4 +51,3 @@ logs/
 *.sqlite
 *.db
 uploads/
-seeds/
