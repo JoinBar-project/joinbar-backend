@@ -23,18 +23,23 @@ const checkIfUserJoinedEvent = async (userId, eventId) => {
   return !!hasJoined;
 };
 
-const getLastMessageByUserId = async (userId) => {
+const getLastMessageByUserId = async (userId, eventId) => {
   const [lastMessage] = await db
     .select()
     .from(messages)
-    .where(eq(messages.userId, userId))
+    .where(
+      and(
+        eq(messages.userId, userId),
+        eq(messages.eventId, eventId)
+      )
+    )
     .orderBy(desc(messages.createdAt))
     .limit(1);
   return lastMessage || null;
 };
 
 const getMessagesByEventId = async (req, res) => {
-  const eventId = req.params.id;
+  const eventId = BigInt(req.params.id);
 
   try {
     const result = await db
@@ -60,7 +65,7 @@ const getMessagesByEventId = async (req, res) => {
 
 
 const postMessageToEvent = async (req, res) => {
-  const eventId = req.params.id;
+  const eventId = BigInt(req.params.id);
   const userId = req.user?.id;
   const { content } = req.body;
 
@@ -78,7 +83,7 @@ const postMessageToEvent = async (req, res) => {
       return res.status(403).json({ message: '只有已報名活動的使用者才能留言' });
     }
 
-    const lastMessage = await getLastMessageByUserId(userId);
+    const lastMessage = await getLastMessageByUserId(userId, eventId);
 
     if (lastMessage) {
       const diffInSeconds = (Date.now() - new Date(lastMessage.createdAt)) / 1000;
