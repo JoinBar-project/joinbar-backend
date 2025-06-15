@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, getUserById, patchUserById } = require('../controllers/usersControllers');
+const { getAllUsers, getUserById, patchUserById, getDeletedUsers } = require('../controllers/usersControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
 const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
 
-router.get('/', authenticateToken, getAllUsers);
-router.get('/:id', authenticateToken, getUserById);
-router.patch('/:id', authenticateToken, validateUpdateUserData, patchUserById);
+router.use(authenticateToken);
+
+router.get('/', getAllUsers);
+router.get('/deleted', getDeletedUsers); // 獲取已註銷用戶（僅管理員）
+router.get('/:id', getUserById);
+router.patch('/:id', validateUpdateUserData, patchUserById);
 
 module.exports = router;
