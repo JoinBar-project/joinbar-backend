@@ -1,17 +1,17 @@
 const db = require('../config/db');
 // tags, barTags：從 schema 匯入的兩張資料表。barTags 是多對多關聯表（bar 和 tag 的對應關係）
-const { userTags,barTags ,barsTable } = require('../models/schema');
+const { userTags, barTags ,barsTable } = require('../models/schema');
 const { eq, and ,inArray} = require('drizzle-orm');
 
 // 新增標籤到個人推薦
 const addTagsToUser = async (req, res) => {
 
-  const user_id = Number(req.params.id);
+  const userId = Number(req.params.id);
   const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
 
   try {
     const newUserTags = await db.insert(userTags).values({
-      user_id,  
+      userId,  
       sport,
       music,
       student,
@@ -32,13 +32,13 @@ const addTagsToUser = async (req, res) => {
 
 // 取得使用者偏好
 const getBarTagsFromUser = async (req, res) => {
-  const user_id = Number(req.params.id);
+  const userId = Number(req.params.id);
 
   try {
     const result = await db
       .select()
       .from(userTags)
-      .where(eq(userTags.user_id, user_id));
+      .where(eq(userTags.userId, userId));
 
     if (result.length === 0) {
       return res.status(404).json({ error: '找不到該使用者的標籤' });
@@ -52,7 +52,7 @@ const getBarTagsFromUser = async (req, res) => {
 
 // 更新使用者的標籤偏好資料
 const UpdateTagFromUser = async (req, res) => {
-  const user_id = Number(req.params.id);
+  const userId = Number(req.params.id);
   const {sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy} = req.body;
   
   try {
@@ -68,7 +68,7 @@ const UpdateTagFromUser = async (req, res) => {
       highlevel,
       easy,
     })
-    .where(eq(userTags.user_id, user_id));
+    .where(eq(userTags.userId, userId));
 
     return res.status(200).json({ message: '更新酒吧類型偏好成功', data: updatedTag });
   } catch (err) {
@@ -78,7 +78,7 @@ const UpdateTagFromUser = async (req, res) => {
 
 //推薦
 const recommendToUser = async (req, res) => {
-  const user_id = Number(req.params.id);
+  const userId = Number(req.params.id);
 
   try {
     //先從user_tags裡，拿到每類偏好，透過user_id
@@ -96,7 +96,7 @@ const recommendToUser = async (req, res) => {
       easy: userTags.easy,
     })
     .from(userTags)
-    .where(eq(userTags.user_id, user_id))
+    .where(eq(userTags.user_id, userId))
     .then(rows => rows[0]);
     //記錄在 tagValues
     console.log()

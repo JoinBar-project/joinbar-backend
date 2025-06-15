@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "id": "47e837e5-1e65-4f45-a282-7c4f66ab1940",
-=======
   "id": "7562d988-2bcf-48ec-bdba-3d33c89f31bc",
->>>>>>> origin/dev
   "prevId": "b52444eb-5c65-4c0d-ae47-42cd5fa2c43b",
   "version": "7",
   "dialect": "postgresql",
@@ -55,8 +51,7 @@
           "primaryKey": false,
           "notNull": false
         },
-<<<<<<< HEAD
-=======
+
         "line_user_id": {
           "name": "line_user_id",
           "type": "varchar(255)",
@@ -88,7 +83,7 @@
           "notNull": false,
           "default": false
         },
->>>>>>> origin/dev
+
         "is_verified_email": {
           "name": "is_verified_email",
           "type": "boolean",
@@ -159,8 +154,7 @@
           "columns": [
             "email"
           ]
-<<<<<<< HEAD
-=======
+
         },
         "users_line_user_id_unique": {
           "name": "users_line_user_id_unique",
@@ -168,7 +162,7 @@
           "columns": [
             "line_user_id"
           ]
->>>>>>> origin/dev
+
         }
       },
       "policies": {},
