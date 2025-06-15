@@ -131,7 +131,6 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
-<<<<<<< HEAD
 const barTags = pgTable('bar_tags', {
   bar_id: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
   sport: boolean('sport').notNull(),
@@ -160,8 +159,6 @@ const userTags = pgTable('user_tags', {
   easy: boolean('easy').notNull(),
 },);
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags };
-=======
 const orders = pgTable('orders', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderNumber: varchar('order_number', { length: 255 }).notNull().unique(),
@@ -192,5 +189,4 @@ const orderItems = pgTable('order_items', {
   subtotal: integer('subtotal').notNull() 
 });
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems };
->>>>>>> 51d9562c6ce2dd155dfc8a6d2f5244019ca15fd4
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags, orders, orderItems };
