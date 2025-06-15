@@ -20,7 +20,7 @@ router.post('/:id/join', authenticateToken, joinEvent);
 router.use('/:id/messages', eventMessageRoutes);
 
 router.get('/:id', getEvent);
-router.put('/update/:id', authenticateToken, updateEvent);
-router.delete('/delete/:id', authenticateToken, softDeleteEvent);
+router.put('/:id/update', authenticateToken, updateEvent);
+router.delete('/:id/delete', authenticateToken, softDeleteEvent);
 
 module.exports = router;
