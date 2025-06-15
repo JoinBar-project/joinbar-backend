@@ -1,3 +1,5 @@
+import { unique } from 'drizzle-orm/pg-core';
+
 const { pgTable, varchar, bigint, timestamp, integer, index, smallint, serial, primaryKey, date, boolean, text, numeric, unique } = require('drizzle-orm/pg-core');
 
 const usersTable = pgTable("users", {
@@ -106,13 +108,13 @@ const events = pgTable('events', {
   name: varchar('name', { length: 50 }).notNull(),
   barName: varchar('bar_name', { length: 100 }).notNull(),
   location: varchar('location', { length: 100 }).notNull(),
-  startAt: timestamp('start_At', { withTimezone: true }).notNull(),
-  endAt: timestamp('end_At', { withTimezone: true }).notNull(),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
   maxPeople: integer('max_people'),
   imageUrl: varchar('image_url', { length: 255 }),
   price: integer('price'),
   hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  creatAt: timestamp('creat_at', { withTimezone: true }).notNull(),
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
   modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除， 3: 活動結束(程式判斷沒存DB)
 }, (table) => ({
@@ -162,15 +164,17 @@ const orderItems = pgTable('order_items', {
 });
 
 const subTable = pgTable('subs', {
-  id:bigint('id', { mode: 'string'}).primaryKey(),
+  id: bigint('id', { mode: 'string' }).primaryKey(),
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   subType: varchar('sub_type', { length: 100 }).notNull(),
   price: integer('price'),
   startAt: timestamp('start_at', { withTimezone: true }).notNull(),
   endAt: timestamp('end_at', { withTimezone: true }).notNull(),
-  status: smallint('status').default(1).notNull(), //1: 正常，2: 取消，3: 到期
-  createdAt : timestamp('create_at', { withTimezone: true }).notNull(),
+  status: smallint('status').default(1).notNull(), // 1: 已訂閱，2: 取消，3: 到期
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
   modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
-})
+}, (table) => ({
+  userIdx: index('idx_user').on(table.userId),
+}));
 
 module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, subTable };

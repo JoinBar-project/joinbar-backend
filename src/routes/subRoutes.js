@@ -1,9 +1,12 @@
 const express = require('express')
-const { getSupscription } = require('../controllers/eventControllers');
+const { createSubscription } = require('../controllers/subscriptionControllers');
 const authenticateToken = require('../middlewares/authenticateToken')
+const withTaiwanTime = require('../middlewares/withTaiwanTime')
+const formatBigIntResponse = require('../middlewares/formatBigIntResponse');
+
 
 const router = express.Router()
 
-router.get('/', authenticateToken, getSupscription)
+router.post('/', authenticateToken,formatBigIntResponse,  withTaiwanTime, createSubscription)
 
 module.exports = router
