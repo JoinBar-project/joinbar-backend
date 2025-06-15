@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { userEventParticipationTable, events } = require('../models/schema');
-const { eq } = require('drizzle-orm');
+const { eq,and } = require('drizzle-orm');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
@@ -28,8 +28,10 @@ const joinEvent = async (req, res) => {
       .select()
       .from(userEventParticipationTable)
       .where(
-        eq(userEventParticipationTable.userId, userId),
-        eq(userEventParticipationTable.eventId, eventId)
+        and(
+          eq(userEventParticipationTable.userId, userId),
+          eq(userEventParticipationTable.eventId, eventId)
+        )
       );
 
     if (existing) {
