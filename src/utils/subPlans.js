@@ -1,4 +1,4 @@
-const subPlan = {
+const subPlans = {
   vip: {
     title: '尊爵黑卡',
     price: 2999,
@@ -33,3 +33,5 @@ const subPlan = {
     ]
   }
 }
+
+module.exports = { subPlans };
