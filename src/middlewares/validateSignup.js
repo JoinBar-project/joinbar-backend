@@ -5,7 +5,7 @@ const signupSchema = z.object({
     .max(20, '姓名最多為 20 個字元'),
   nickname: z.union([
     z.string()
-      .min(1, '使用者名稱至少需要 1 個字元') // 避免使用者輸入空字串
+      .min(1, '使用者名稱至少需要 1 個字元')
       .max(100, '使用者名稱不可超過 100 個字元'),
     z.undefined()]),
   password: z.string()
@@ -17,8 +17,8 @@ const signupSchema = z.object({
     z.string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, '生日格式錯誤，請輸入 YYYY-MM-DD 格式')
       .refine((date) => {
-        const birthDate = new Date(date); // 先將使用者輸入的字串轉成 JS 日期物件
-        return !isNaN(birthDate.getTime()); // 將日期轉成毫秒，並判斷是否為數字
+        const birthDate = new Date(date);
+        return !isNaN(birthDate.getTime());
       }, '請輸入有效的日期')
       .refine((date) => {
         const birthDate = new Date(date);
@@ -30,7 +30,7 @@ const signupSchema = z.object({
 
 const validateSignup = (req, res, next) => {
   try {
-    signupSchema.parse(req.body); // 驗證資料
+    signupSchema.parse(req.body);
     next();
   } catch (err) {
     res.status(400).json({ error: err.errors });

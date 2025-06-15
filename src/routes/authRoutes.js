@@ -1,11 +1,7 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const dotenv = require("dotenv");
-dotenv.config();
-
+const validateSignup = require('../middlewares/validateSignup.js');
 const { signup, login, verifyEmail, resendVerificationEmail } = require("../controllers/authControllers.js");
-const  validateSignup  = require("../middlewares/validateSignup.js");
-
 
 router.post("/signup", validateSignup, signup);
 router.get("/verify-email", verifyEmail);

@@ -36,7 +36,7 @@ const signup = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
 
-    const newUser = await db.insert(usersTable).values({
+    const [newUser] = await db.insert(usersTable).values({
       username,
       nickname,
       email,
@@ -82,7 +82,7 @@ const login = async (req, res) => {
     if (!userResult) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
-    // 比對密碼是否一樣
+
     const isMatch = await bcrypt.compare(password, userResult.password);
 
     if (!isMatch) {
@@ -104,18 +104,18 @@ const login = async (req, res) => {
         username: userResult.username,
         email: userResult.email,
         role: userResult.role,
-        type: "access" // token 型別
+        type: "access"
       },
       JWT_SECRET,
       {
         expiresIn: "15m",
       }
     );
-    // 更新 token
+
     const refreshToken = jwt.sign(
       {
         id: userResult.id,
-        type: "refresh", // token 型別
+        type: "refresh",
       },
       REFRESH_SECRET,
       {
