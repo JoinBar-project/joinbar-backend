@@ -6,6 +6,10 @@ const isMessageOwner = async (req, res, next) => {
   const userId = req.user?.id;
   const messageId = req.params.messageId;
 
+  if (!userId) {
+    return res.status(401).json({ message: '未經授權，請先登入' });
+  }
+  
   try {
     const [msg] = await db
       .select()
