@@ -15,8 +15,8 @@ const tz = 'Asia/Taipei'
 const flake = new FlakeId({ id: 1 });
 
 const createEvent = async (req, res) => {
-  const parsedStart = dayjs(req.body.startDate);
-  const parsedEnd = dayjs(req.body.endDate);
+  const parsedStart = dayjs(req.body.startAt);
+  const parsedEnd = dayjs(req.body.endAt);
 
   if (!parsedStart.isValid()) {
     return res.status(400).json({ message: '開始時間格式錯誤' });
@@ -33,13 +33,13 @@ const createEvent = async (req, res) => {
     name: req.body.name,
     barName: req.body.barName,
     location: req.body.location,
-    startDate: dayjs(req.body.startDate).tz(tz).toDate(),
-    endDate: dayjs(req.body.endDate).tz(tz).toDate(),
+    startAt: dayjs(req.body.startAt).tz(tz).toDate(),
+    endAt: dayjs(req.body.endAt).tz(tz).toDate(),
     maxPeople: req.body.maxPeople,
     imageUrl: req.body.imageUrl,
     price: req.body.price,
     hostUser: req.body.hostUser,
-    createdAt: dayjs().tz(tz).toDate(),
+    createAt: dayjs().tz(tz).toDate(),
     modifyAt: dayjs().tz(tz).toDate(),
   };
   
@@ -120,8 +120,8 @@ const updateEvent = async( req, res) => {
       name: req.body.name,
       barName: req.body.barName,
       location: req.body.location,
-      startDate: dayjs(req.body.startDate).tz(tz).toDate(),
-      endDate: dayjs(req.body.endDate).tz(tz).toDate(),
+      startAt: dayjs(req.body.startAt).tz(tz).toDate(),
+      endAt: dayjs(req.body.endAt).tz(tz).toDate(),
       maxPeople: req.body.maxPeople,
       imageUrl: req.body.imageUrl,
       price: req.body.price,
