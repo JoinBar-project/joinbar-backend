@@ -4,7 +4,7 @@ const db = require('../config/db');
 const { eq } = require('drizzle-orm');
 const dayjs = require('dayjs');
 const { subTable } = require('../models/schema');
-const { subPlans } = require('../utils/subscriptionPlans');
+const { subPlans } = require('../utils/subPlans');
 
 const flake = new FlakeId({ id: 1 });
 

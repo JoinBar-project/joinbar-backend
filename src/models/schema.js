@@ -1,5 +1,3 @@
-import { unique } from 'drizzle-orm/pg-core';
-
 const { pgTable, varchar, bigint, timestamp, integer, index, smallint, serial, primaryKey, date, boolean, text, numeric, unique } = require('drizzle-orm/pg-core');
 
 const usersTable = pgTable("users", {
