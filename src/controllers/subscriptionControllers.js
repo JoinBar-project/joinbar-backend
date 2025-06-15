@@ -17,12 +17,10 @@ const createSubscription = async (req, res) => {
   console.log('🧑 使用者 ID:', userId);
   console.log('📦 req.body:', req.body);
 
-  // 判斷 userId 是否存在
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
   }
 
-  // 檢查訂閱方案是否存在
   const plan = subPlans[subType];
   if (!plan) {
     return res.status(400).json({ error: '不支援的訂閱方案' });
@@ -36,6 +34,7 @@ const createSubscription = async (req, res) => {
       .from(subTable)
       .where(eq(subTable.userId, userId))
       .execute();
+      
 
     console.log('💡 existingSubs:', existingSubs);
 
@@ -72,9 +71,68 @@ const createSubscription = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('❌ 建立訂閱失敗:', err);
+    console.error('建立訂閱失敗:', err);
     return res.status(500).json({ error: '系統錯誤，請稍後再試' });
   }
 };
 
-module.exports = { createSubscription };
+const getAllPlans = async (req, res) =>{
+
+  try{
+    const planArr = Object.entries(subPlans).map(([key, value]) => ({
+      type: key,
+      ...value
+      })
+    );
+
+    return res.status(200).json({
+      message: '查詢訂閱成功',
+      subscription: planArr
+    });
+
+  }catch(err){
+    return res.status(409).json({ error: '訂閱顯示錯誤' });
+  }
+
+}
+
+const getPlan = async (req,res) => {
+  const userId = req.user?.id;
+
+  if(!userId){
+    return res.status(401).json({ error: '未授權，請先登入' });
+  }
+
+  try{
+    const [ plan ] = await db
+    .select()
+    .from(subTable)
+    .where(
+      and(
+        eq(subTable.userId, userId),
+        eq(subTable.status, 1)
+      )
+    )
+    .limit(1)
+
+    if(!plan){
+      return res.status(404).json({ error: '目前沒有訂閱' });
+    }
+
+    return res.status(200).json({
+      message: '查詢單筆訂閱成功',
+      subscription:{
+        ...plan,
+        startAt: dayjs(plan.startAt).format('YYYY-MM-DD HH:mm:ss'),
+        endAt: dayjs(plan.endAt).format('YYYY-MM-DD HH:mm:ss'),
+        createAt: dayjs(plan.createAt).format('YYYY-MM-DD HH:mm:ss'),
+        modifyAt: dayjs(plan.modifyAt).format('YYYY-MM-DD HH:mm:ss'),
+      } ,
+    });
+
+  }catch(err){
+    return res.status(500).json({ error: '沒系統錯誤，請稍後再試' });
+  }
+}
+
+module.exports = { createSubscription, getAllPlans, getPlan };
