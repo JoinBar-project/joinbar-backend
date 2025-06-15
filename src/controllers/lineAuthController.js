@@ -38,7 +38,7 @@ const handleError = (error, message, res) => {
   }
   
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const errorUrl = `${frontendUrl}/auth/line/error?message=${encodeURIComponent(message)}`;
+  const errorUrl = `${frontendUrl}/login?error=${encodeURIComponent(message)}`;
   return res.redirect(errorUrl);
 };
 
@@ -334,7 +334,7 @@ const lineCallback = async (req, res) => {
       path: '/'
     });
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/auth/line/success`);
+    res.redirect(`${frontendUrl}/login?success=true`);
 	} catch(err) {
 		return handleError(err, 'LINE 登入處理過程發生錯誤，請重新登入', res);
 	}

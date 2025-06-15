@@ -118,15 +118,15 @@ const patchUserById = async (req, res) => {
 
     const { username, nickname, birthday, avatarUrl } = req.body;
 
-    const updateData = {};
-    if (username) updateData.username = username;
-    if (nickname) updateData.nickname = nickname;
-    if (birthday) updateData.birthday = birthday;
-    if (avatarUrl) updateData.avatarUrl = avatarUrl;
+    const fieldsToUpdate = {};
+    if (username) fieldsToUpdate.username = username;
+    if (nickname) fieldsToUpdate.nickname = nickname;
+    if (birthday) fieldsToUpdate.birthday = birthday;
+    if (avatarUrl) fieldsToUpdate.avatarUrl = avatarUrl;
 
-    const [updateUserData] = await db
+    const [updatedUser] = await db
       .update(usersTable)
-      .set(updateData)
+      .set(fieldsToUpdate)
       .where(eq(usersTable.id, userId))
       .returning({
         id: usersTable.id,
@@ -140,7 +140,7 @@ const patchUserById = async (req, res) => {
     res.status(200).json({
       success: true,
       message: '更新資料成功',
-      data: updateUserData,
+      data: updatedUser,
     });
   } catch (err) {
     res.status(500).json({

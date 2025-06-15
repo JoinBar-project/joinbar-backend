@@ -23,7 +23,7 @@ const signup = async (req, res) => {
       .select({ email: usersTable.email })
       .from(usersTable)
       .where(eq(usersTable.email, email))
-      .limit(1); // 查到第一筆符合條件的資料就停止查詢
+      .limit(1);
 
     if (userResult.length > 0) {
       return res.status(409).json({ error: "此信箱已被註冊" });
@@ -31,7 +31,7 @@ const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await db.insert(usersTable).values({
+    const [newUser] = await db.insert(usersTable).values({
       username,
       nickname,
       email,
@@ -65,31 +65,31 @@ const login = async (req, res) => {
     if (!userResult) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
-    // 比對密碼是否一樣
+
     const isMatch = await bcrypt.compare(password, userResult.password);
 
     if (!isMatch) {
       return res.status(401).json({ error: "帳號或密碼有誤" });
     }
-    // 產生 token
+
     const accessToken = jwt.sign(
       {
         id: userResult.id,
         username: userResult.username,
         email: userResult.email,
         role: userResult.role,
-        type: "access" // token 型別
+        type: "access"
       },
       JWT_SECRET,
       {
         expiresIn: "15m",
       }
     );
-    // 更新 token
+
     const refreshToken = jwt.sign(
       {
         id: userResult.id,
-        type: "refresh", // token 型別
+        type: "refresh",
       },
       REFRESH_SECRET,
       {
