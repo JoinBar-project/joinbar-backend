@@ -11,5 +11,4 @@ router.post('/', authenticateToken, formatBigIntResponse, withTaiwanTime, create
 router.get('/allPlans', formatBigIntResponse, withTaiwanTime, getAllPlans)
 router.get('/plan', authenticateToken, formatBigIntResponse, withTaiwanTime, getPlan)
 
-
 module.exports = router

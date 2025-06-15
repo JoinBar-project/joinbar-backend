@@ -1,6 +1,6 @@
 const { subTable } = require('../models/schema');
 const { subPlans } = require('../utils/subPlans');
-const { eq } = require('drizzle-orm');
+const { eq, and, gt, lt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -10,7 +10,7 @@ const flake = new FlakeId({ id: 1 });
 
 const createSubscription = async (req, res) => {
   console.log('🔥 createSubscription 被呼叫');
-  
+
   const userId = req.user?.id;
   const { subType } = req.body;
 
@@ -21,31 +21,33 @@ const createSubscription = async (req, res) => {
     return res.status(401).json({ error: '未授權，請先登入' });
   }
 
-  const plan = subPlans[subType];
-  if (!plan) {
-    return res.status(400).json({ error: '不支援的訂閱方案' });
-  }
-
   try {
-    const id = intformat(flake.next(), 'dec');
-
-    const existingSubs = await db
-      .select()
-      .from(subTable)
-      .where(eq(subTable.userId, userId))
-      .execute();
-      
-
-    console.log('💡 existingSubs:', existingSubs);
-
-    const hasActiveSub = existingSubs?.some(sub => sub.status === 1);
-    if (hasActiveSub) {
-      return res.status(409).json({ error: '已有訂閱，請先取消現有方案' });
+    const plan = subPlans[subType];
+    if (!plan) {
+      return res.status(400).json({ error: '不支援的訂閱方案' });
     }
 
     const now = dayjs();
     const startAt = now.toDate();
     const endAt = now.add(plan.duration, 'day').toDate();
+    const id = intformat(flake.next(), 'dec');
+
+    const existingSubs = await db
+      .select()
+      .from(subTable)
+      .where(
+        and(
+          eq(subTable.userId, userId),
+          eq(subTable.subType, subType),
+          eq(subTable.status, 1),
+          lt(subTable.endAt, now.toDate()) // 注意也要加 `.toDate()`
+        )
+      )
+      .execute();
+
+    if (existingSubs.length > 0) {
+      return res.status(409).json({ error: '已有相同類型的訂閱，請先取消後再訂閱' });
+    }
 
     const [newSub] = await db.insert(subTable).values({
       id,
@@ -54,7 +56,7 @@ const createSubscription = async (req, res) => {
       price: plan.price,
       startAt,
       endAt,
-      status: 1, // 1: 已訂閱，2: 取消，3: 到期
+      status: 1,
       createAt: now.toDate(),
       modifyAt: now.toDate(),
     }).returning();
@@ -86,7 +88,7 @@ const getAllPlans = async (req, res) =>{
     );
 
     return res.status(200).json({
-      message: '查詢訂閱成功',
+      message: '查詢訂閱方案完成',
       subscription: planArr
     });
 
@@ -96,43 +98,47 @@ const getAllPlans = async (req, res) =>{
 
 }
 
-const getPlan = async (req,res) => {
+const getPlan = async (req, res) => {
   const userId = req.user?.id;
 
-  if(!userId){
+  if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
   }
 
-  try{
-    const [ plan ] = await db
-    .select()
-    .from(subTable)
-    .where(
-      and(
-        eq(subTable.userId, userId),
-        eq(subTable.status, 1)
-      )
-    )
-    .limit(1)
+  try {
+    const now = dayjs();
 
-    if(!plan){
-      return res.status(404).json({ error: '目前沒有訂閱' });
+    const plans = await db
+      .select()
+      .from(subTable)
+      .where(
+        and(
+          eq(subTable.userId, userId),
+          eq(subTable.status, 1),
+          gt(subTable.endAt, now)
+        )
+      );
+
+    if (plans.length === 0) {
+      return res.status(404).json({ error: '目前沒有有效訂閱' });
     }
 
+    const formattedPlans = plans.map(plan => ({
+      ...plan,
+      startAt: dayjs(plan.startAt).format('YYYY-MM-DD HH:mm:ss'),
+      endAt: dayjs(plan.endAt).format('YYYY-MM-DD HH:mm:ss'),
+      createAt: dayjs(plan.createAt).format('YYYY-MM-DD HH:mm:ss'),
+      modifyAt: dayjs(plan.modifyAt).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
     return res.status(200).json({
-      message: '查詢單筆訂閱成功',
-      subscription:{
-        ...plan,
-        startAt: dayjs(plan.startAt).format('YYYY-MM-DD HH:mm:ss'),
-        endAt: dayjs(plan.endAt).format('YYYY-MM-DD HH:mm:ss'),
-        createAt: dayjs(plan.createAt).format('YYYY-MM-DD HH:mm:ss'),
-        modifyAt: dayjs(plan.modifyAt).format('YYYY-MM-DD HH:mm:ss'),
-      } ,
+      message: '查詢成功',
+      subscriptions: formattedPlans,
     });
 
-  }catch(err){
-    return res.status(500).json({ error: '沒系統錯誤，請稍後再試' });
+  } catch (err) {
+    console.error('查詢訂閱失敗:', err);
+    return res.status(500).json({ error: '系統錯誤，請稍後再試' });
   }
-}
-
+};
 module.exports = { createSubscription, getAllPlans, getPlan };
