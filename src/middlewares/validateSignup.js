@@ -11,11 +11,12 @@ const signupSchema = z.object({
   password: z.string()
     .min(8, '密碼至少需要 8 個字元')
     .max(100, '密碼不可超過 100 個字元')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,'密碼必須包含至少 1 個大寫字母、小寫字母和數字'),
-  email: z.string().email('email 格式不正確'),
-  birthday: z.union([
-    z.string()
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, '密碼必須包含至少 1 個大寫字母、小寫字母和數字'),
+  email: z.string().email("email 格式不正確"),
+  birthday: z.union(
+    [z.string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, '生日格式錯誤，請輸入 YYYY-MM-DD 格式')
+
       .refine((date) => {
         const birthDate = new Date(date);
         return !isNaN(birthDate.getTime());
