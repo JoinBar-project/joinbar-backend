@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # joinbar-backend 後端介紹
 ---
 ### 使用套件
