@@ -1,4 +1,4 @@
-const { benefitRedeemsTable } = require('../models/schema');
+const { benefitRedeemsTable, barsTable } = require('../models/schema');
 const { subTable } = require('../models/schema');
 const { subPlans } = require('../utils/subPlans');
 const { eq, and, gt } = require('drizzle-orm');
@@ -117,8 +117,8 @@ const getBenefit = async (req, res) => {
         userId: benefit.userId,
         benefit: benefit.benefit,
         status: benefit.status,
-        startAt: benefit.startAt,
-        endAt: benefit.endAt
+        startAt: dayjs(benefit.startAt).format('YYYY-MM-DD HH:mm:ss'),
+        endAt: dayjs(benefit.endAt).format('YYYY-MM-DD HH:mm:ss')
     }));
 
     res.status(200).json({ benefits: sortGetAllBenefit });
@@ -128,4 +128,67 @@ const getBenefit = async (req, res) => {
   }
 }
 
-module.exports = { createBenefit, getBenefit };
+const updateBenefit = async (req, res) => {
+  const userId = req.user?.id;
+  const benefitId = req.body?.benefitId;
+  const barId = req.body?.barId;
+  
+  if (!userId) {
+    return res.status(401).json({ error: '未授權，請先登入' });
+  }
+
+  try {
+    const now = dayjs().toDate();
+
+    const [benefit] = await db
+      .select()
+      .from(benefitRedeemsTable)
+      .where(eq(benefitRedeemsTable.id, benefitId))
+      .limit(1);
+
+    if (!benefit) {
+      return res.status(404).json({ error: '查無此優惠券' });
+    }
+
+    if (benefit.userId != userId) {
+      return res.status(403).json({ error: '無權限核銷此優惠券' });
+    }
+
+    if (benefit.status != 1) {
+      return res.status(400).json({ error: '此優惠券無法使用' });
+    }
+
+    if (dayjs(benefit.endAt).isBefore(now)) {
+      return res.status(400).json({ error: '此優惠券已過期，無法使用' });
+    }
+    
+    const [bar] = await db
+      .select()
+      .from(barsTable)
+      .where(eq(barsTable.id, barId))
+      .limit(1);
+
+    if (bar.length === 0) {
+      return res.status(404).json({ error: '查無此酒吧' });
+    }
+
+    await db
+      .update(benefitRedeemsTable)
+      .set({
+        status: 2,
+        barId,
+        redeemAt: now,
+        modifyAt: now,
+      })
+      .where(eq(benefitRedeemsTable.id, benefitId));
+
+    return res.status(200).json(
+      { message: '優惠券已成功核銷',
+        barName: bar.name
+      });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { createBenefit, getBenefit, updateBenefit };
