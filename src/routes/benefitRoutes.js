@@ -7,6 +7,6 @@ const formatBigIntResponse = require('../middlewares/formatBigIntResponse');
 
 const router = express.Router()
 
-router.post('/', authenticateToken, formatBigIntResponse, withTaiwanTime, createBenefit)
+router.post('/create', authenticateToken, formatBigIntResponse, withTaiwanTime, createBenefit)
 
 module.exports = router

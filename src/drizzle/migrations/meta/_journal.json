@@ -43,6 +43,13 @@
       "when": 1749978669521,
       "tag": "0005_brown_romulus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1750058010997,
+      "tag": "0006_slimy_triton",
+      "breakpoints": true
     }
   ]
 }

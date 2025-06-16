@@ -178,9 +178,9 @@ const subTable = pgTable('subs', {
 const benefitRedeemsTable = pgTable('benefitRedeems',{
   id: bigint('id', { mode: 'string' }).primaryKey(),
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  subId: bigint('sub_id').notNull().references(() => subTable.id, { onDelete: "cascade" }),
+  subId: bigint('sub_id', { mode: 'string' }).notNull().references(() => subTable.id, { onDelete: "cascade" }),
   benefit: varchar('benefit', { length: 255 }).notNull(),
-  redeemAt: timestamp('redeem_at', { withTimezone: true }).nullable(),
+  redeemAt: timestamp('redeem_at', { withTimezone: true, nullable: true }), //未核銷設為 null
   createAt: timestamp('create_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(0).notNull(), // 1: 未使用, 2: 已使用
 }, (table) => ({

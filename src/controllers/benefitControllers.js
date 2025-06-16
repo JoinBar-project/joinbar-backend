@@ -9,7 +9,7 @@ const dayjs = require('dayjs');
 
 const flake = new FlakeId({ id: 1 });
 
-const createbenefit = async (req, res) => {
+const createBenefit = async (req, res) => {
   const userId = req.user?.id;
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
@@ -18,8 +18,7 @@ const createbenefit = async (req, res) => {
   const now = dayjs();
   const startAt = now.toDate();
   const endAt = now.add(plan.duration, 'day').toDate();
-  const id = intformat(flake.next(), 'dec');
-
+  
   const subscriptions = await db
     .select()
     .from(subTable)
@@ -38,7 +37,8 @@ const createbenefit = async (req, res) => {
   }
 
   try {
-    // 有效訂閱的優惠內容
+
+    //建立優惠券
     for (const sub of subscriptions) {
       const subType = sub.subType; 
       const benefits = subPlans[subType]?.benefits; 
@@ -48,14 +48,14 @@ const createbenefit = async (req, res) => {
       }
 
       const createBenefitPromises = benefits.map(async (benefit) => {
-        // 插入優惠券資料到資料庫
+        const id = intformat(flake.next(), 'dec');
         const newBenefit = await db.insert(benefitRedeemsTable)
         .values({
           id,
           userId,
           subId: sub.id,
           benefit,
-          redeemAt: null, // 尚未核銷，設為 null
+          redeemAt: null, // 尚未核銷 null
           startAt,
           endAt,
           status: 1,
@@ -80,4 +80,4 @@ const createbenefit = async (req, res) => {
 
 };
 
-module.exports = { createbenefit };
+module.exports = { createBenefit };
