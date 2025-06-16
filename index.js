@@ -12,6 +12,7 @@ const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
 const cookieParser = require('cookie-parser');
 const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
 const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
+const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(withTaiwanTime);
 app.use("/api/auth/line", lineAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/account', accountDeletionRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
