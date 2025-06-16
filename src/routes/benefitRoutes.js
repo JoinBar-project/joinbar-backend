@@ -1,5 +1,5 @@
 const express = require('express')
-const { createRedeems } = require('../controllers/redeemsControllers');
+const { createBenefit } = require('../controllers/benefitControllers');
 const authenticateToken = require('../middlewares/authenticateToken')
 const withTaiwanTime = require('../middlewares/withTaiwanTime')
 const formatBigIntResponse = require('../middlewares/formatBigIntResponse');
@@ -7,6 +7,6 @@ const formatBigIntResponse = require('../middlewares/formatBigIntResponse');
 
 const router = express.Router()
 
-router.post('/', authenticateToken, formatBigIntResponse, withTaiwanTime, createRedeems)
+router.post('/', authenticateToken, formatBigIntResponse, withTaiwanTime, createBenefit)
 
 module.exports = router

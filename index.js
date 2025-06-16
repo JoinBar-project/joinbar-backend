@@ -6,7 +6,7 @@ const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const subRoutes = require('./src/routes/subRoutes');
-const redeemsRoutes = require('./src/routes/redeemsRoutes');
+const benefitRoutes = require('./src/routes/benefitRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const lineAuthRoutes = require("./src/routes/lineAuthRoutes");
@@ -31,7 +31,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/sub', subRoutes);
-app.use('/api/redeems', redeemsRoutes);
+app.use('/api/benefit', benefitRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
