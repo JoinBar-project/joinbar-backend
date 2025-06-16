@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, getUserById, patchUserById } = require('../controllers/usersControllers');
+const { getAllUsers, getUserById, patchUserById, getDeletedUsers } = require('../controllers/usersControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
 const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
 
@@ -10,6 +10,9 @@ const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
  *   name: Users
  *   description: 使用者管理 API
  */
+
+// 所有路由都需驗證 Token
+router.use(authenticateToken);
 
 /**
  * @swagger
@@ -55,7 +58,53 @@ const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
  *       500:
  *         description: 伺服器錯誤
  */
-router.get('/', authenticateToken, getAllUsers);
+router.get('/', getAllUsers);
+
+/**
+ * @swagger
+ * /api/users/deleted:
+ *   get:
+ *     summary: 取得所有已註銷使用者（限管理員）
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功取得已註銷使用者資料
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       username:
+ *                         type: string
+ *                       nickname:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       role:
+ *                         type: string
+ *                       birthday:
+ *                         type: string
+ *                         format: date
+ *                       avatarUrl:
+ *                         type: string
+ *       403:
+ *         description: 無權限
+ *       500:
+ *         description: 伺服器錯誤
+ */
+router.get('/deleted', getDeletedUsers);
 
 /**
  * @swagger
@@ -107,7 +156,7 @@ router.get('/', authenticateToken, getAllUsers);
  *       500:
  *         description: 伺服器錯誤
  */
-router.get('/:id', authenticateToken, getUserById);
+router.get('/:id', getUserById);
 
 /**
  * @swagger
@@ -175,6 +224,6 @@ router.get('/:id', authenticateToken, getUserById);
  *       500:
  *         description: 伺服器錯誤
  */
-router.patch('/:id', authenticateToken, validateUpdateUserData, patchUserById);
+router.patch('/:id', validateUpdateUserData, patchUserById);
 
 module.exports = router;

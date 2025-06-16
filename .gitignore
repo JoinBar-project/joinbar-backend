@@ -6,6 +6,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+.seed
+
 # 環境變數
 .env
 .env.local
@@ -51,4 +53,5 @@ logs/
 *.sqlite
 *.db
 uploads/
-seeds/
+
+.gitattributes

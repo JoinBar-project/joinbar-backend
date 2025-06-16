@@ -1,5 +1,15 @@
 const express = require('express');
-const { createEvent, getEvent, updateEvent, softDeleteEvent } = require('../controllers/eventControllers');
+const {
+  createEvent,
+  getEvent,
+  updateEvent,
+  softDeleteEvent,
+  getAllEvents
+} = require('../controllers/eventControllers');
+
+const { joinEvent } = require('../controllers/joinEventController');
+const eventMessageRoutes = require('./eventMessageRoutes');
+const authenticateToken = require('../middlewares/authenticateToken');
 
 const router = express.Router();
 
@@ -106,7 +116,7 @@ const router = express.Router();
  *       500:
  *         description: 伺服器錯誤
  */
-router.post('/create', createEvent);
+router.post('/create', authenticateToken, createEvent);
 
 /**
  * @swagger
@@ -289,7 +299,7 @@ router.get('/:id', getEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.put('/update/:id', updateEvent);
+router.put('/:id/update', authenticateToken, updateEvent);
 
 /**
  * @swagger
@@ -321,6 +331,12 @@ router.put('/update/:id', updateEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.delete('/delete/:id', softDeleteEvent);
+router.delete('/:id/delete', authenticateToken, softDeleteEvent);
+
+
+//下面API等大家API都差不多後再補上API文件
+router.get('/all', getAllEvents);
+router.post('/:id/join', authenticateToken, joinEvent);
+router.use('/:id/messages', eventMessageRoutes);
 
 module.exports = router;
