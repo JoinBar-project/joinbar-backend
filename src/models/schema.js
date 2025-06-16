@@ -161,4 +161,12 @@ const orderItems = pgTable('order_items', {
   subtotal: integer('subtotal').notNull() 
 });
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems };
+const messages = pgTable('messages', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  userId: integer('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
+});
+
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages };
