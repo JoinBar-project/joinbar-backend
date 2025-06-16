@@ -16,60 +16,68 @@ const createBenefit = async (req, res) => {
   }
 
   const now = dayjs();
-  const startAt = now.toDate();
-  const endAt = now.add(plan.duration, 'day').toDate();
-  
+  const createdCoupons = [];
+
   const subscriptions = await db
     .select()
     .from(subTable)
-    .leftJoin(benefitRedeems, eq(subTable.id, benefitRedeems.subId))
+    .leftJoin(benefitRedeemsTable, eq(subTable.id, benefitRedeemsTable.subId))
     .where(
       and(
         eq(subTable.userId, userId),
-        eq(subTable.status, 1),  
+        eq(subTable.status, 1),
         gt(subTable.endAt, now)  // 尚未過期
       )
     )
-    .limit(3);  
+    .limit(3);
 
-  if (subscriptions.length == 0) {
+  if (subscriptions.length === 0) {
     return res.status(404).json({ error: '該用戶沒有有效訂閱' });
   }
 
   try {
 
-    //建立優惠券
-    for (const sub of subscriptions) {
-      const subType = sub.subType; 
-      const benefits = subPlans[subType]?.benefits; 
+    for (const subscription of subscriptions) {
+      const sub = subscription.subs;
+      const subType = sub.subType;
+      const plan = subPlans[subType];
+
+      if (!plan) {
+        return res.status(404).json({ error: '此訂閱方案無效或不存在' });
+      }
+
+      const benefits = plan?.benefits;
 
       if (!benefits) {
         return res.status(404).json({ error: '此訂閱方案無優惠內容' });
       }
 
+      const startAt = now.toDate();
+      const endAt = now.add(plan.duration, 'day').toDate();
+
       const createBenefitPromises = benefits.map(async (benefit) => {
         const id = intformat(flake.next(), 'dec');
         const newBenefit = await db.insert(benefitRedeemsTable)
-        .values({
-          id,
-          userId,
-          subId: sub.id,
-          benefit,
-          redeemAt: null, // 尚未核銷 null
-          startAt,
-          endAt,
-          status: 1,
-          createAt: now.toDate(),
-          modifyAt: now.toDate(),
-        })
-        .returning();
+          .values({
+            id,
+            userId,
+            subId: sub.id,
+            benefit,
+            redeemAt: null, // 尚未核銷
+            startAt,
+            endAt,
+            status: 1, // 優惠券狀態為有效
+            createAt: now.toDate(),
+            modifyAt: now.toDate(),
+          })
+          .returning();
 
-        // 收集建立的優惠券資料
         createdCoupons.push(newBenefit[0]);
       });
 
       await Promise.all(createBenefitPromises);
     }
+
     res.status(201).json({
       message: '優惠券創建成功',
       coupons: createdCoupons,
@@ -77,7 +85,6 @@ const createBenefit = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-
 };
 
 module.exports = { createBenefit };
