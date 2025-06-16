@@ -10,6 +10,7 @@ const dayjs = require('dayjs');
 const flake = new FlakeId({ id: 1 });
 
 const createBenefit = async (req, res) => {
+  
   const userId = req.user?.id;
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
@@ -89,4 +90,54 @@ const createBenefit = async (req, res) => {
   }
 };
 
-module.exports = { createBenefit };
+const getBenefit = async (req, res) => {
+  
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ error: '未授權，請先登入' });
+  }
+
+  const GetAllBenefit = await db
+  .select()
+  .from(benefitRedeemsTable)
+  .where(eq(benefitRedeemsTable.userId, userId));
+
+  if( GetAllBenefit.length == 0 ){
+    return res.status(404).json({ error: '目前尚未擁有優惠券' });
+  }
+
+  console.log(`===========${GetAllBenefit}`)
+
+  try{
+
+    const sortGetAllBenefit = GetAllBenefit
+    .sort( (couponA, couponB) => {
+      if( couponA.status != couponB.status ){
+        return couponA.status - couponB.status;
+      }
+
+      return  dayjs(couponA.endAt).isBefore(couponB.endAt) ? -1 : 1;
+    })
+
+    .map( benefit => ({
+        id: benefit.id,
+        userId: benefit.userId,
+        benefit: benefit.benefit,
+        status: benefit.status,
+        startAt: benefit.startAt,
+        endAt: benefit.endAt
+    }));
+
+    res.status(200).json({ benefits: sortGetAllBenefit });
+
+  }catch(err){
+    res.status(500).json({ error: err.message });
+  }
+
+  
+  
+
+
+}
+
+module.exports = { createBenefit, getBenefit };
