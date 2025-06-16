@@ -8,6 +8,8 @@ const orderRoutes = require('./src/routes/orderRoutes');
 const barTagsRoutes = require('./src/routes/barTagsRoutes');
 const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
 const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
+const cartRoutes = require('./src/routes/cartRoutes');
+
 
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
@@ -38,6 +40,7 @@ app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
 app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/cart', cartRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
