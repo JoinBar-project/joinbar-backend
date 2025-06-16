@@ -1,6 +1,6 @@
 const { subTable } = require('../models/schema');
 const { subPlans } = require('../utils/subPlans');
-const { eq, and, gt, lt } = require('drizzle-orm');
+const { eq, and, gt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -9,13 +9,9 @@ const dayjs = require('dayjs');
 const flake = new FlakeId({ id: 1 });
 
 const createSubscription = async (req, res) => {
-  console.log('🔥 createSubscription 被呼叫');
 
   const userId = req.user?.id;
   const { subType } = req.body;
-
-  console.log('🧑 使用者 ID:', userId);
-  console.log('📦 req.body:', req.body);
 
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
@@ -40,13 +36,13 @@ const createSubscription = async (req, res) => {
           eq(subTable.userId, userId),
           eq(subTable.subType, subType),
           eq(subTable.status, 1),
-          lt(subTable.endAt, now.toDate()) // 已過期
+          gt(subTable.endAt, now.toDate()) // 已過期
         )
       )
       .execute();
 
     if (existingSubs.length > 0) {
-      return res.status(409).json({ error: '已有相同類型的訂閱，請先取消後再訂閱' });
+      return res.status(409).json({ error: '已有相同類型的訂閱，請改訂閱其他方案' });
     }
 
     const [newSub] = await db.insert(subTable).values({
@@ -73,7 +69,6 @@ const createSubscription = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('建立訂閱失敗:', err);
     return res.status(500).json({ error: '系統錯誤，請稍後再試' });
   }
 };
@@ -95,7 +90,6 @@ const getAllPlans = async (req, res) =>{
   }catch(err){
     return res.status(409).json({ error: '訂閱顯示錯誤' });
   }
-
 }
 
 const getPlan = async (req, res) => {

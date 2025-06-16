@@ -182,7 +182,7 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   benefit: varchar('benefit', { length: 255 }).notNull(),
   redeemAt: timestamp('redeem_at', { withTimezone: true, nullable: true }), //未核銷設為 null
   createAt: timestamp('create_at', { withTimezone: true }).notNull(),
-  status: smallint('status').default(0).notNull(), // 1: 未使用, 2: 已使用
+  status: smallint('status').default(0).notNull(), // 0:尚未生成優惠券, 1: 未使用, 2: 已使用
 }, (table) => ({
   subIdx: index('idx_sub').on(table.subId),
 })); 

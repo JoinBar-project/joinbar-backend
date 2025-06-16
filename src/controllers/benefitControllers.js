@@ -26,13 +26,14 @@ const createBenefit = async (req, res) => {
       and(
         eq(subTable.userId, userId),
         eq(subTable.status, 1),
+        eq(benefitRedeemsTable.status, 0), // 尚未生成優惠券
         gt(subTable.endAt, now)  // 尚未過期
       )
     )
     .limit(3);
 
-  if (subscriptions.length === 0) {
-    return res.status(404).json({ error: '該用戶沒有有效訂閱' });
+  if (subscriptions.length == 0) {
+    return res.status(404).json({ error: '查無訂閱 或 所有訂閱已經領取過優惠券' });
   }
 
   try {
@@ -40,6 +41,7 @@ const createBenefit = async (req, res) => {
     for (const subscription of subscriptions) {
       const sub = subscription.subs;
       const subType = sub.subType;
+      
       const plan = subPlans[subType];
 
       if (!plan) {
