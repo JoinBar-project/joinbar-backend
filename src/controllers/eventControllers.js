@@ -1,3 +1,4 @@
+const bucket = require('../config/firebase');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -17,6 +18,8 @@ const flake = new FlakeId({ id: 1 });
 const createEvent = async (req, res) => {
   const parsedStart = dayjs(req.body.startDate);
   const parsedEnd = dayjs(req.body.endDate);
+  const imageFile = req.file;
+  let imageUrl = req.body.imageUrl || '';
 
   if (!parsedStart.isValid()) {
     return res.status(400).json({ message: '開始時間格式錯誤' });
@@ -24,6 +27,33 @@ const createEvent = async (req, res) => {
 
   if (!parsedEnd.isValid()) {
     return res.status(400).json({ message: '結束時間格式錯誤' });
+  }
+
+  if (!imageFile) {
+    return res.status(400).json({ message: '請上傳圖片或選擇預設圖片' });
+  }
+
+  try {
+    const blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
+    const blobStream = blob.createWriteStream({
+      metadata: { contentType: imageFile.mimetype },
+    });
+
+    await new Promise((resolve, reject) => {
+      blobStream.on('error', reject);
+      blobStream.on('finish', resolve);
+      blobStream.end(imageFile.buffer);
+    });
+
+    await blob.makePublic();
+    imageUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+  } catch (uploadError) {
+    console.error('圖片上傳失敗:', uploadError);
+    return res.status(500).json({ message: '圖片上傳失敗' });
+  }
+
+  if (!imageUrl) {
+    return res.status(400).json({ message: '請提供圖片（上傳或選擇預設圖）' });
   }
 
   const id = intformat(flake.next(), 'dec');
@@ -36,7 +66,7 @@ const createEvent = async (req, res) => {
     startDate: dayjs(req.body.startDate).tz(tz).toDate(),
     endDate: dayjs(req.body.endDate).tz(tz).toDate(),
     maxPeople: req.body.maxPeople,
-    imageUrl: req.body.imageUrl,
+    imageUrl: imageUrl,
     price: req.body.price,
     hostUser: req.body.hostUser,
     createdAt: dayjs().tz(tz).toDate(),
