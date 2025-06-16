@@ -1,6 +1,6 @@
 const { subTable } = require('../models/schema');
 const { subPlans } = require('../utils/subPlans');
-const { eq, and, gt, lt } = require('drizzle-orm');
+const { eq, and, gt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -9,13 +9,9 @@ const dayjs = require('dayjs');
 const flake = new FlakeId({ id: 1 });
 
 const createSubscription = async (req, res) => {
-  console.log('🔥 createSubscription 被呼叫');
 
   const userId = req.user?.id;
   const { subType } = req.body;
-
-  console.log('🧑 使用者 ID:', userId);
-  console.log('📦 req.body:', req.body);
 
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
@@ -40,7 +36,7 @@ const createSubscription = async (req, res) => {
           eq(subTable.userId, userId),
           eq(subTable.subType, subType),
           eq(subTable.status, 1),
-          lt(subTable.endAt, now.toDate()) // 注意也要加 `.toDate()`
+          gt(subTable.endAt, now.toDate())
         )
       )
       .execute();
