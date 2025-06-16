@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const authenticateToken = require('../middlewares/authenticateToken');
 
-const { addTagsToUser, getBarTagsFromUser, UpdateTagFromUser,recommendToUser } = require("../controllers/barTagControllers.js");
+const { addTagsToUser, getBarTagsFromUser, updateTagsFromUser } = require("../controllers/barTagControllers.js");
 
-router.post("/preferences/:id", addTagsToUser);
-router.get("/preferences/:id", getBarTagsFromUser);
-router.put("/preferences/:id", UpdateTagFromUser);
-router.post("/preferences/:id", recommendToUser);
+// router.use(authenticateToken);
+
+router.post("/user/:id", addTagsToUser);
+router.get("/user/:id", getBarTagsFromUser);
+router.put("/user/:id", updateTagsFromUser);
+// router.post("/user/:id", recommendToUser);
 
 module.exports = router;

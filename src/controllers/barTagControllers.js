@@ -44,7 +44,7 @@ const getBarTagsFromUser = async (req, res) => {
     const result = await db
       .select()
       .from(userTags)
-      .where(eq(userTags.userId, userId));
+      .where(eq(userTags.user_id, userId));
 
     if (result.length === 0) {
       return res.status(404).json({ error: '找不到使用者的標籤' });

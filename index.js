@@ -5,6 +5,7 @@ const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
+const barTagsRoutes = require('./src/routes/barTagsRoutes');
 
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
@@ -32,7 +33,7 @@ app.use('/api/account', accountDeletionRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
-
+app.use('/api/barTags', barTagsRoutes);
 
 // 健康檢查路由
 app.get('/health', (req, res) => {
