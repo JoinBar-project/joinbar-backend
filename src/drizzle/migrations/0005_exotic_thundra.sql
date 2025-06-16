@@ -29,18 +29,6 @@ CREATE TABLE "order_items" (
 	"subtotal" integer NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "events" ALTER COLUMN "start_date" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "events" ALTER COLUMN "end_date" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "events" ALTER COLUMN "created_at" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "events" ALTER COLUMN "modify_at" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "bar_tags" ADD PRIMARY KEY ("bar_id");--> statement-breakpoint
-ALTER TABLE "user_tags" ADD PRIMARY KEY ("user_id");--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "line_user_id" varchar(255);--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "line_display_name" varchar(255);--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "line_picture_url" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "line_status_message" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "is_line_user" boolean DEFAULT false;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_line_user_id_unique" UNIQUE("line_user_id");
+ALTER TABLE "order_items" ADD CONSTRAINT "order_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE restrict ON UPDATE no action;

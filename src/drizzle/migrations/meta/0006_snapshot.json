@@ -1,6 +1,6 @@
 {
-  "id": "d6c6f579-174b-4679-be10-6ed400f62308",
-  "prevId": "7562d988-2bcf-48ec-bdba-3d33c89f31bc",
+  "id": "12494b5f-a946-4d51-bea7-344575883b49",
+  "prevId": "b85afcf9-8cf4-44a9-908a-52210f7d5e66",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -889,6 +889,414 @@
           ]
         }
       },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.bar_tags": {
+      "name": "bar_tags",
+      "schema": "",
+      "columns": {
+        "bar_id": {
+          "name": "bar_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bar_tags_bar_id_bars_id_fk": {
+          "name": "bar_tags_bar_id_bars_id_fk",
+          "tableFrom": "bar_tags",
+          "tableTo": "bars",
+          "columnsFrom": [
+            "bar_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_tags": {
+      "name": "user_tags",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_tags_user_id_users_id_fk": {
+          "name": "user_tags_user_id_users_id_fk",
+          "tableFrom": "user_tags",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.orders": {
+      "name": "orders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "order_number": {
+          "name": "order_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_amount": {
+          "name": "total_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancellation_reason": {
+          "name": "cancellation_reason",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "orders_user_id_users_id_fk": {
+          "name": "orders_user_id_users_id_fk",
+          "tableFrom": "orders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "orders_order_number_unique": {
+          "name": "orders_order_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "order_number"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.order_items": {
+      "name": "order_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bar_name": {
+          "name": "bar_name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_start_date": {
+          "name": "event_start_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_end_date": {
+          "name": "event_end_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "host_user_id": {
+          "name": "host_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subtotal": {
+          "name": "subtotal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "order_items_order_id_orders_id_fk": {
+          "name": "order_items_order_id_orders_id_fk",
+          "tableFrom": "order_items",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "order_items_event_id_events_id_fk": {
+          "name": "order_items_event_id_events_id_fk",
+          "tableFrom": "order_items",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

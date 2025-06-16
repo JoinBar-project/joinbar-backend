@@ -51,7 +51,6 @@
           "primaryKey": false,
           "notNull": false
         },
-
         "line_user_id": {
           "name": "line_user_id",
           "type": "varchar(255)",
@@ -83,7 +82,6 @@
           "notNull": false,
           "default": false
         },
-
         "is_verified_email": {
           "name": "is_verified_email",
           "type": "boolean",
@@ -154,7 +152,6 @@
           "columns": [
             "email"
           ]
-
         },
         "users_line_user_id_unique": {
           "name": "users_line_user_id_unique",
@@ -162,7 +159,6 @@
           "columns": [
             "line_user_id"
           ]
-
         }
       },
       "policies": {},

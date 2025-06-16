@@ -1,6 +1,6 @@
 {
-  "id": "48d8232e-7f3b-480c-bdda-471aa98dd83a",
-  "prevId": "e6d7dc33-1185-40f4-9d23-7d675f321891",
+  "id": "b85afcf9-8cf4-44a9-908a-52210f7d5e66",
+  "prevId": "0f6f2fa8-5ee1-4158-9625-2a5936b9816f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -88,6 +88,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "email_verification_token": {
+          "name": "email_verification_token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_verification_expires": {
+          "name": "email_verification_expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "provider_type": {
           "name": "provider_type",
@@ -889,192 +901,6 @@
           ]
         }
       },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.bar_tags": {
-      "name": "bar_tags",
-      "schema": "",
-      "columns": {
-        "bar_id": {
-          "name": "bar_id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "sport": {
-          "name": "sport",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "music": {
-          "name": "music",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student": {
-          "name": "student",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bistro": {
-          "name": "bistro",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "drink": {
-          "name": "drink",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "joy": {
-          "name": "joy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "romantic": {
-          "name": "romantic",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "oldschool": {
-          "name": "oldschool",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "highlevel": {
-          "name": "highlevel",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "easy": {
-          "name": "easy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "bar_tags_bar_id_bars_id_fk": {
-          "name": "bar_tags_bar_id_bars_id_fk",
-          "tableFrom": "bar_tags",
-          "tableTo": "bars",
-          "columnsFrom": [
-            "bar_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.user_tags": {
-      "name": "user_tags",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "sport": {
-          "name": "sport",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "music": {
-          "name": "music",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student": {
-          "name": "student",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bistro": {
-          "name": "bistro",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "drink": {
-          "name": "drink",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "joy": {
-          "name": "joy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "romantic": {
-          "name": "romantic",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "oldschool": {
-          "name": "oldschool",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "highlevel": {
-          "name": "highlevel",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "easy": {
-          "name": "easy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_tags_user_id_users_id_fk": {
-          "name": "user_tags_user_id_users_id_fk",
-          "tableFrom": "user_tags",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

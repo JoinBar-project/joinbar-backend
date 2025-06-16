@@ -20,7 +20,7 @@ const addTagsToUser = async (req, res) => {
     const existing = await db.select().from(userTags).where(eq(userTags.user_id, userId)).limit(1);
 
     if (existing.length > 0) {
-      return res.status(400).json({ error: '使用者標籤資料已存在，請改用更新接口' });
+      return res.status(400).json({ error: '使用者標籤資料已存在' });
     }
 
     // 新增一筆
@@ -29,7 +29,7 @@ const addTagsToUser = async (req, res) => {
       ...validTags,
     });
 
-    return res.status(201).json({ message: '新增標籤成功' });
+    return res.status(201).json({ message: '新增酒吧偏好成功' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -47,7 +47,7 @@ const getBarTagsFromUser = async (req, res) => {
       .where(eq(userTags.userId, userId));
 
     if (result.length === 0) {
-      return res.status(404).json({ error: '找不到該使用者的標籤' });
+      return res.status(404).json({ error: '找不到使用者的標籤' });
     }
 
     return res.status(200).json(result[0]);
@@ -72,7 +72,7 @@ const updateTagsFromUser = async (req, res) => {
       .set(validTags)
       .where(eq(userTags.user_id, userId));
 
-    return res.status(200).json({ message: '更新標籤成功' });
+    return res.status(200).json({ message: '更新酒吧偏好成功' });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -83,7 +83,7 @@ const updateTagsFromUser = async (req, res) => {
 //   const userId = Number(req.params.id);
 
 //   try {
-//     //先從user_tags裡，拿到每類偏好，透過user_id
+//     // 先從user_tags裡，透過user_id 拿到每類偏好
 //     const tagValues = await db
 //     .select({
 //       sport: userTags.sport,
@@ -100,7 +100,7 @@ const updateTagsFromUser = async (req, res) => {
 //     .from(userTags)
 //     .where(eq(userTags.user_id, userId))
 //     .then(rows => rows[0]);
-//     //記錄在 tagValues
+//     // 記錄在 tagValues
 //     console.log()
 //     //確保不是空值
 //     if (!tagValues) {
