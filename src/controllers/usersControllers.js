@@ -45,7 +45,7 @@ const getUserById = async (req, res) => {
     if (req.user.id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: '你無權限查看',
+        message: '無權限查看',
       });
     }
 
