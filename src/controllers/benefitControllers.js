@@ -1,7 +1,7 @@
 const { benefitRedeemsTable, barsTable } = require('../models/schema');
 const { subTable } = require('../models/schema');
 const { subPlans } = require('../utils/subPlans');
-const { eq, and, gt } = require('drizzle-orm');
+const { eq, and, gt, lt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -87,17 +87,41 @@ const createBenefit = async (req, res) => {
   }
 };
 
-const getBenefit = async (req, res) => {
+const getBenefitList = async (req, res) => {
   
   const userId = req.user?.id;
+  const { status } = req.query;
+  const now = dayjs().toDate();
+
   if (!userId) {
     return res.status(401).json({ error: '未授權，請先登入' });
   }
 
+  let conditions = [eq(benefitRedeemsTable.userId, userId)];
+
+  if (status == '1') {
+    conditions.push(
+      and(
+        eq(benefitRedeemsTable.status, 1),
+        gt(benefitRedeemsTable.endAt, now)
+      )
+    );
+  } else if (status == '2') {
+    conditions.push(eq(benefitRedeemsTable.status, 2));
+  } else if (status == '3') {
+    conditions.push(
+      and(
+        eq(benefitRedeemsTable.status, 1),
+        lt(benefitRedeemsTable.endAt, now)
+      )
+    );
+  }
+
   const GetAllBenefit = await db
-  .select()
-  .from(benefitRedeemsTable)
-  .where(eq(benefitRedeemsTable.userId, userId));
+    .select()
+    .from(benefitRedeemsTable)
+    .where(and(...conditions));
+
 
   if( GetAllBenefit.length == 0 ){
     return res.status(404).json({ error: '目前尚未擁有優惠券' });
@@ -191,4 +215,4 @@ const updateBenefit = async (req, res) => {
   }
 };
 
-module.exports = { createBenefit, getBenefit, updateBenefit };
+module.exports = { createBenefit, getBenefitList, updateBenefit };
