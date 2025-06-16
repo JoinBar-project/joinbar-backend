@@ -197,5 +197,21 @@ const messages = pgTable('messages', {
   eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
 });
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages,barTags, userTags };
+const userCartTable = pgTable('user_cart', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => usersTable.id, { onDelete: 'cascade' })
+    .notNull(),
+  eventId: bigint('event_id', { mode: 'string' })
+    .references(() => events.id, { onDelete: 'cascade' })
+    .notNull(),
+  quantity: integer('quantity').default(1).notNull(),
+  addedAt: timestamp('added_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  userEventUnique: unique().on(table.userId, table.eventId),
+  userIdIdx: index('user_cart_user_id_idx').on(table.userId),
+}));
+
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages,barTags, userTags, userCartTable };
 
