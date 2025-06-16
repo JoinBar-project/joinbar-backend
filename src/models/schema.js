@@ -180,7 +180,7 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   subId: bigint('sub_id').notNull().references(() => subTable.id, { onDelete: "cascade" }),
   benefit: varchar('benefit', { length: 255 }).notNull(),
-  redeemAt: timestamp('redeem_at', { withTimezone: true }).notNull(),
+  redeemAt: timestamp('redeem_at', { withTimezone: true }).nullable(),
   createAt: timestamp('create_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(0).notNull(), // 1: 未使用, 2: 已使用
 }, (table) => ({

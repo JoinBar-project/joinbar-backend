@@ -40,7 +40,7 @@ const createSubscription = async (req, res) => {
           eq(subTable.userId, userId),
           eq(subTable.subType, subType),
           eq(subTable.status, 1),
-          lt(subTable.endAt, now.toDate()) // 注意也要加 `.toDate()`
+          lt(subTable.endAt, now.toDate()) // 已過期
         )
       )
       .execute();
@@ -115,7 +115,7 @@ const getPlan = async (req, res) => {
         and(
           eq(subTable.userId, userId),
           eq(subTable.status, 1),
-          gt(subTable.endAt, now)
+          gt(subTable.endAt, now) // 尚未過期
         )
       );
 
