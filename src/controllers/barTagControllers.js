@@ -131,4 +131,4 @@ const updateTagsFromUser = async (req, res) => {
 //   }
 // };
 
-module.exports = { addTagsToUser, getBarTagsFromUser, UpdateTagFromUser};
+module.exports = { addTagsToUser, getBarTagsFromUser, updateTagsFromUser};
