@@ -78,7 +78,7 @@ const router = express.Router();
  *         description: 伺服器錯誤
  */
 router.post('/create', authenticateToken, upload.single('image'), createEvent);
-
+router.get('/all', getAllEvents);
 /**
  * @swagger
  * /api/event/{id}:
@@ -177,7 +177,6 @@ router.put('/:id/update', authenticateToken, updateEvent);
 router.delete('/:id/delete', authenticateToken, softDeleteEvent);
 
 // 其他 API（後續可補 Swagger 文件）
-router.get('/all', getAllEvents);
 router.post('/:id/join', authenticateToken, joinEvent);
 router.use('/:id/messages', eventMessageRoutes);
 
