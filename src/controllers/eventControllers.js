@@ -4,17 +4,16 @@ const intformat = require('biguint-format');
 const db = require('../config/db');
 const { events, eventTags, tags } = require('../models/schema');
 const { eq } = require('drizzle-orm');
+const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils'); // ✅ 工具模組整合
 
 const dayjs = require('dayjs')
 const utc = require('dayjs/plugin/utc')
 const timezone = require('dayjs/plugin/timezone')
-
 dayjs.extend(utc)
 dayjs.extend(timezone)
 const tz = 'Asia/Taipei'
 
 const flake = new FlakeId({ id: 1 });
-
 
 const createEvent = async (req, res) => {
   // 清理 req.body 中的 Tab 字符
@@ -29,7 +28,6 @@ const createEvent = async (req, res) => {
   const imageFile = req.file;
 
   let imageUrl = '';
-  let blob;
 
   if (!parsedStart.isValid()) return res.status(400).json({ message: '開始時間格式錯誤' });
   if (!parsedEnd.isValid()) return res.status(400).json({ message: '結束時間格式錯誤' });
@@ -38,19 +36,11 @@ const createEvent = async (req, res) => {
   if (!cleanBody.barName) return res.status(400).json({ message: 'barName 欄位是必填的' });
 
   try {
-    blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
-    const blobStream = blob.createWriteStream({
-      metadata: { contentType: imageFile.mimetype },
-    });
-
-    await new Promise((resolve, reject) => {
-      blobStream.on('error', reject);
-      blobStream.on('finish', resolve);
-      blobStream.end(imageFile.buffer);
-    });
-
-    await blob.makePublic();
-    imageUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+    imageUrl = await uploadImage(
+      imageFile.buffer,
+      imageFile.mimetype,
+      imageFile.originalname
+    );
   } catch (uploadError) {
     console.error('圖片上傳失敗:', uploadError);
     return res.status(500).json({ message: '圖片上傳失敗' });
@@ -110,7 +100,6 @@ const createEvent = async (req, res) => {
 };
 
 const getEvent = async (req, res) => {
-
   const eventId = req.params.id
   try{
     const [ event ] = await db
@@ -165,19 +154,12 @@ const updateEvent = async( req, res) => {
     
     if (imageFile) {
       try {
-        const blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
-        const blobStream = blob.createWriteStream({
-          metadata: { contentType: imageFile.mimetype },
-        });
-
-        await new Promise((resolve, reject) => {
-          blobStream.on('error', reject);
-          blobStream.on('finish', resolve);
-          blobStream.end(imageFile.buffer);
-        });
-
-        await blob.makePublic();
-        imageUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        await deleteImageByUrl(event.imageUrl);
+        imageUrl = await uploadImage(
+          imageFile.buffer,
+          imageFile.mimetype,
+          imageFile.originalname
+        );
       } catch (uploadError) {
         console.error('圖片更新失敗:', uploadError);
         return res.status(500).json({ message: '圖片更新失敗' });
@@ -204,7 +186,6 @@ const updateEvent = async( req, res) => {
 
     //活動標籤全刪再新增
     if( req.body.tags && req.body.tags.length > 0){
-
       await db
       .delete(eventTags)
       .where(eq(eventTags.eventId, eventId));
@@ -258,15 +239,20 @@ const softDeleteEvent  = async( req, res) => {
       return res.status(403).json({ message: '你沒有權限刪除此活動' });
     }
 
+    if (event.imageUrl) {
+      await deleteImageByUrl(event.imageUrl);
+    }
+
     await db.update(events)
-    .set({ 
-      status : 2, 
-      modifyAt: dayjs().tz(tz).toDate() 
-    })
-    .where(eq(events.id, eventId));
+      .set({ 
+        status : 2, 
+        modifyAt: dayjs().tz(tz).toDate() 
+      })
+      .where(eq(events.id, eventId));
+
     return res.status(200).json({ message: '活動已刪除'})
 
-  }catch(err){
+  } catch(err){
     console.log(`無法刪除: ${err}`)
     return res.status(500).json({ message: '伺服器錯誤'})
   }
