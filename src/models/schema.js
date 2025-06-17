@@ -131,6 +131,34 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
+const barTags = pgTable('bar_tags', {
+  bar_id: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
+  sport: boolean('sport').notNull(),
+  music: boolean('music').notNull(),
+  student: boolean('student').notNull(),
+  bistro: boolean('bistro').notNull(),
+  drink: boolean('drink').notNull(),
+  joy: boolean('joy').notNull(),
+  romantic: boolean('romantic').notNull(),
+  oldschool: boolean('oldschool').notNull(),
+  highlevel: boolean('highlevel').notNull(),
+  easy: boolean('easy').notNull(),
+},);
+
+const userTags = pgTable('user_tags', {
+  user_id: integer('user_id').notNull().primaryKey().references(() => usersTable.id, { onDelete: 'cascade' }),
+  sport: boolean('sport').notNull(),
+  music: boolean('music').notNull(),
+  student: boolean('student').notNull(),
+  bistro: boolean('bistro').notNull(),
+  drink: boolean('drink').notNull(),
+  joy: boolean('joy').notNull(),
+  romantic: boolean('romantic').notNull(),
+  oldschool: boolean('oldschool').notNull(),
+  highlevel: boolean('highlevel').notNull(),
+  easy: boolean('easy').notNull(),
+},);
+
 const orders = pgTable('orders', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderNumber: varchar('order_number', { length: 255 }).notNull().unique(),
@@ -159,6 +187,14 @@ const orderItems = pgTable('order_items', {
   price: integer('price').notNull(),
   quantity: integer('quantity').notNull(),
   subtotal: integer('subtotal').notNull() 
+});
+
+const messages = pgTable('messages', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  userId: integer('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
 });
 
 const subTable = pgTable('subs', {
@@ -190,4 +226,4 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   subIdx: index('idx_sub').on(table.subId),
 })); 
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, subTable, benefitRedeemsTable };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable };
