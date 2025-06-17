@@ -125,7 +125,7 @@ const getEvent = async (req, res) => {
     if( event.status == 1 && event.endDate < dayjs().tz(tz).toDate()){
       event.status = 3
     }
-    // 撈取活動標籤
+
     const getEventTags  = await db
     .select({ 
       id: tags.id,
@@ -154,6 +154,10 @@ const updateEvent = async( req, res) => {
 
     if( !event ){
       return res.status(404).json({ message: '找不到活動'})
+    }
+
+    if (event.hostUser !== req.user.id) {
+      return res.status(403).json({ message: '你沒有權限修改此活動' });
     }
 
     const imageFile = req.file;
@@ -249,6 +253,10 @@ const softDeleteEvent  = async( req, res) => {
     if( !event || event.status == 2 ){
       return res.status(404).json({ message: '找不到活動或已刪除' })
     };
+
+    if (event.hostUser !== req.user.id) {
+      return res.status(403).json({ message: '你沒有權限刪除此活動' });
+    }
 
     await db.update(events)
     .set({ 
