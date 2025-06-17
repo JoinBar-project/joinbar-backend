@@ -31,25 +31,11 @@ const createEvent = async (req, res) => {
   let imageUrl = '';
   let blob;
 
-  if (!parsedStart.isValid()) {
-    return res.status(400).json({ message: '開始時間格式錯誤' });
-  }
-
-  if (!parsedEnd.isValid()) {
-    return res.status(400).json({ message: '結束時間格式錯誤' });
-  }
-
-  if (!imageFile) {
-    return res.status(400).json({ message: '請上傳圖片檔案' });
-  }
-
-  if (!cleanBody.name) {
-    return res.status(400).json({ message: 'name 欄位是必填的' });
-  }
-
-  if (!cleanBody.barName) {
-    return res.status(400).json({ message: 'barName 欄位是必填的' });
-  }
+  if (!parsedStart.isValid()) return res.status(400).json({ message: '開始時間格式錯誤' });
+  if (!parsedEnd.isValid()) return res.status(400).json({ message: '結束時間格式錯誤' });
+  if (!imageFile) return res.status(400).json({ message: '請上傳圖片檔案' });
+  if (!cleanBody.name) return res.status(400).json({ message: 'name 欄位是必填的' });
+  if (!cleanBody.barName) return res.status(400).json({ message: 'barName 欄位是必填的' });
 
   try {
     blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
@@ -75,7 +61,7 @@ const createEvent = async (req, res) => {
   }
 
   const id = intformat(flake.next(), 'dec');
- 
+
   const newEvent = {
     id,
     name: cleanBody.name,
@@ -90,30 +76,33 @@ const createEvent = async (req, res) => {
     createdAt: dayjs().tz(tz).toDate(),
     modifyAt: dayjs().tz(tz).toDate(),
   };
-  
+
   try {
     await db.insert(events).values(newEvent);
 
-    if(cleanBody.tags && cleanBody.tags.length > 0){
-      const tagsList = []
+    if (cleanBody.tags && cleanBody.tags.length > 0) {
+      const tagsList = cleanBody.tags.map(tagId => ({
+        eventId: id,
+        tagId: tagId,
+      }));
 
-      for (const tagId of cleanBody.tags) {
-        const tag = {
-          eventId: id,
-          tagId: tagId
-        }
-        tagsList.push(tag)
+      try {
+        await db.insert(eventTags).values(tagsList);
+      } catch (tagErr) {
+        console.error("新增標籤失敗，可能是外鍵錯誤：", tagErr.message);
+        return res.status(400).json({
+          message: '活動已建立，但標籤新增失敗，請確認所選 tag 是否存在',
+          error: tagErr.message,
+        });
       }
-
-      await db.insert(eventTags).values(tagsList);
     }
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       message: '活動已建立',
       imagePreview: imageUrl,
       event: newEvent
     });
-    
+
   } catch (err) {
     console.error('建立活動時發生錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
@@ -192,23 +181,32 @@ const updateEvent = async( req, res) => {
       .delete(eventTags)
       .where(eq(eventTags.eventId, eventId));
 
-      const tagsList = []
-
-      for (const tagId of req.body.tags) {
-        const tag = {
-          eventId: eventId,
-          tagId: tagId
-        }
-        tagsList.push(tag)
-      }
+      const tagsList = req.body.tags.map(tagId =>({
+        eventId,
+        tagId
+      }))
 
       await db.insert(eventTags).values(tagsList)
     }
 
-    res.status(200).json({
+    const updatedTags = await db
+      .select({
+        id: tags.id,
+        name: tags.name,
+      })
+      .from(eventTags)
+      .innerJoin(tags, eq(eventTags.tagId, tags.id))
+      .where(eq(eventTags.eventId, eventId));
+
+    return res.status(200).json({
       message: '活動已更新',
-      update: updatedData
+      update: {
+        ...updatedData,
+        id: eventId,
+        tags: updatedTags,
+      },
     });
+    
   }catch(err){
     console.log(`更新活動發生錯誤: ${err}`)
     return res.status(500).json({ message: '伺服器錯誤'})
