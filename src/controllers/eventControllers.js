@@ -15,11 +15,21 @@ const tz = 'Asia/Taipei'
 
 const flake = new FlakeId({ id: 1 });
 
+
 const createEvent = async (req, res) => {
-  const parsedStart = dayjs(req.body.startDate);
-  const parsedEnd = dayjs(req.body.endDate);
+  // 清理 req.body 中的 Tab 字符
+  const cleanBody = {};
+  for (const [key, value] of Object.entries(req.body)) {
+    const cleanKey = key.replace(/\t/g, '').trim();
+    cleanBody[cleanKey] = value;
+  }
+
+  const parsedStart = dayjs(cleanBody.startDate);
+  const parsedEnd = dayjs(cleanBody.endDate);
   const imageFile = req.file;
-  let imageUrl = req.body.imageUrl || '';
+
+  let imageUrl = '';
+  let blob;
 
   if (!parsedStart.isValid()) {
     return res.status(400).json({ message: '開始時間格式錯誤' });
@@ -30,11 +40,19 @@ const createEvent = async (req, res) => {
   }
 
   if (!imageFile) {
-    return res.status(400).json({ message: '請上傳圖片或選擇預設圖片' });
+    return res.status(400).json({ message: '請上傳圖片檔案' });
+  }
+
+  if (!cleanBody.name) {
+    return res.status(400).json({ message: 'name 欄位是必填的' });
+  }
+
+  if (!cleanBody.barName) {
+    return res.status(400).json({ message: 'barName 欄位是必填的' });
   }
 
   try {
-    const blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
+    blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
     const blobStream = blob.createWriteStream({
       metadata: { contentType: imageFile.mimetype },
     });
@@ -53,35 +71,33 @@ const createEvent = async (req, res) => {
   }
 
   if (!imageUrl) {
-    return res.status(400).json({ message: '請提供圖片（上傳或選擇預設圖）' });
+    return res.status(500).json({ message: '圖片 URL 產生失敗' });
   }
 
   const id = intformat(flake.next(), 'dec');
  
   const newEvent = {
     id,
-    name: req.body.name,
-    barName: req.body.barName,
-    location: req.body.location,
-    startDate: dayjs(req.body.startDate).tz(tz).toDate(),
-    endDate: dayjs(req.body.endDate).tz(tz).toDate(),
-    maxPeople: req.body.maxPeople,
-    imageUrl: imageUrl,
-    price: req.body.price,
-    hostUser: req.body.hostUser,
+    name: cleanBody.name,
+    barName: cleanBody.barName,
+    location: cleanBody.location,
+    startDate: dayjs(cleanBody.startDate).tz(tz).toDate(),
+    endDate: dayjs(cleanBody.endDate).tz(tz).toDate(),
+    maxPeople: cleanBody.maxPeople,
+    imageUrl,
+    price: cleanBody.price,
+    hostUser: req.user.id,
     createdAt: dayjs().tz(tz).toDate(),
     modifyAt: dayjs().tz(tz).toDate(),
   };
   
   try {
-    //新增活動
     await db.insert(events).values(newEvent);
 
-    //新增活動標籤
-    if( req.body.tags && req.body.tags.length > 0){
+    if(cleanBody.tags && cleanBody.tags.length > 0){
       const tagsList = []
 
-      for (const tagId of req.body.tags) {
+      for (const tagId of cleanBody.tags) {
         const tag = {
           eventId: id,
           tagId: tagId
@@ -89,10 +105,15 @@ const createEvent = async (req, res) => {
         tagsList.push(tag)
       }
 
-      await db.insert(eventTags).values(tagsList)
+      await db.insert(eventTags).values(tagsList);
     }
     
-    res.status(201).json({ message: '活動已建立', event: newEvent });
+    res.status(201).json({ 
+      message: '活動已建立',
+      imagePreview: imageUrl,
+      event: newEvent
+    });
+    
   } catch (err) {
     console.error('建立活動時發生錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
