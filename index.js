@@ -56,7 +56,7 @@ app.use((req, res) => {
 // 全域錯誤處理
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    // 處理 Multer 的錯誤（如檔案過大）
+    // 處理 Multer 的錯誤
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ message: '圖片大小超過限制（1MB）' });
     }
