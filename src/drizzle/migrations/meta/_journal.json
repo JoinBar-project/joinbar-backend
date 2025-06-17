@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1748698829924,
-      "tag": "0000_material_black_widow",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1748706785440,
-      "tag": "0001_empty_changeling",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1749107459201,
-      "tag": "0002_flippant_killmonger",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1749479687826,
-      "tag": "0003_melted_the_phantom",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1749809169489,
-      "tag": "0004_lovely_ultron",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1750000221149,
-      "tag": "0005_strong_meteorite",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1750039090281,
-      "tag": "0006_military_slapstick",
+      "when": 1750124795126,
+      "tag": "0000_equal_moondragon",
       "breakpoints": true
     }
   ]

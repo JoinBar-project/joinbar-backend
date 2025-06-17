@@ -51,7 +51,7 @@ const createBenefit = async (req, res) => {
     const startAt = now.toDate();
     const endAt = now.add(plan.duration, 'day').toDate(); 
 
-    // 創建優惠券
+    // 建立優惠券
     const valuesToInsert = [];
 
     for (const benefit of plan.benefits) {
@@ -79,7 +79,7 @@ const createBenefit = async (req, res) => {
     }
 
     res.status(201).json({
-      message: '優惠券創建成功'
+      message: '優惠券建立成功'
     });
 
   } catch (err) {
