@@ -152,7 +152,7 @@ router.get('/:id', getEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.put('/:id/update', authenticateToken, updateEvent);
+router.put('/update/:id', authenticateToken, upload.single('image'), updateEvent);
 
 /**
  * @swagger
@@ -174,10 +174,10 @@ router.put('/:id/update', authenticateToken, updateEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.delete('/:id/delete', authenticateToken, softDeleteEvent);
+router.delete('/delete/:id', authenticateToken, softDeleteEvent);
 
 // 其他 API（後續可補 Swagger 文件）
-router.post('/:id/join', authenticateToken, joinEvent);
-router.use('/:id/messages', eventMessageRoutes);
+router.post('/join/:id', authenticateToken, joinEvent);
+router.use('/messages/:id', eventMessageRoutes);
 
 module.exports = router;

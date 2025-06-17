@@ -156,6 +156,30 @@ const updateEvent = async( req, res) => {
       return res.status(404).json({ message: '找不到活動'})
     }
 
+    const imageFile = req.file;
+    let imageUrl = event.imageUrl;
+    
+    if (imageFile) {
+      try {
+        const blob = bucket.file(`events/${Date.now()}-${imageFile.originalname}`);
+        const blobStream = blob.createWriteStream({
+          metadata: { contentType: imageFile.mimetype },
+        });
+
+        await new Promise((resolve, reject) => {
+          blobStream.on('error', reject);
+          blobStream.on('finish', resolve);
+          blobStream.end(imageFile.buffer);
+        });
+
+        await blob.makePublic();
+        imageUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      } catch (uploadError) {
+        console.error('圖片更新失敗:', uploadError);
+        return res.status(500).json({ message: '圖片更新失敗' });
+      }
+    }
+
     const updatedData = {
       name: req.body.name,
       barName: req.body.barName,
@@ -163,7 +187,7 @@ const updateEvent = async( req, res) => {
       startDate: dayjs(req.body.startDate).tz(tz).toDate(),
       endDate: dayjs(req.body.endDate).tz(tz).toDate(),
       maxPeople: req.body.maxPeople,
-      imageUrl: req.body.imageUrl,
+      imageUrl,
       price: req.body.price,
       hostUser: req.body.hostUser,
       modifyAt: dayjs().tz(tz).toDate()
