@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const multer = require('multer');
 const authRoutes = require('./src/routes/authRoutes');
 const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
@@ -54,6 +55,18 @@ app.use((req, res) => {
 
 // 全域錯誤處理
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    // 處理 Multer 的錯誤（如檔案過大）
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: '圖片大小超過限制（1MB）' });
+    }
+    return res.status(400).json({ message: '圖片上傳錯誤', error: err.message });
+  }
+
+  if (err.message === '不支援的圖片格式') {
+    return res.status(400).json({ message: '只支援 jpg/png/webp 圖片格式' });
+  }
+  
   console.error('伺服器錯誤:', err);
   res.status(500).json({
   error: '伺服器內部錯誤',
