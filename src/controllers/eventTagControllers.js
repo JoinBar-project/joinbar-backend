@@ -8,8 +8,8 @@ const createTag = async (req, res) => {
   }
 
   try {
-    await db.insert(tags).values(newTag);
-    res.status(201).json({ message: '標籤已建立', tag: newTag });
+    const [createdTag] = await db.insert(tags).values(newTag).returning();
+    res.status(201).json({ message: '標籤已建立', tag: createdTag });
   } catch (err) {
     console.error('建立標籤時發生錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
@@ -42,8 +42,8 @@ const getListTag = async (req, res) => {
     const tagsAll = await db
     .select()
     .from(tags);
-
     return res.status(200).json(tagsAll);
+
   }catch(err){
     console.log(err)
     

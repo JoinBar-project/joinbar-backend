@@ -16,7 +16,12 @@ const usersTable = pgTable("users", {
   lineStatusMessage: text('line_status_message'),
   isLineUser: boolean('is_line_user').default(false),
 
+  // email 驗證相關欄位
   isVerifiedEmail: boolean("is_verified_email").default(false),
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  lastVerificationEmailSent: timestamp("last_verification_email_sent"),
+
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),
   avatarUrl: varchar("avatar_url", { length: 255 }),
@@ -131,6 +136,34 @@ const eventTags = pgTable('event_tags', {
   pk: primaryKey({ columns: [table.eventId, table.tagId] })
 }));
 
+const barTags = pgTable('bar_tags', {
+  bar_id: integer('bar_id').notNull().primaryKey().references(() => barsTable.id, { onDelete: 'cascade' }),
+  sport: boolean('sport').notNull(),
+  music: boolean('music').notNull(),
+  student: boolean('student').notNull(),
+  bistro: boolean('bistro').notNull(),
+  drink: boolean('drink').notNull(),
+  joy: boolean('joy').notNull(),
+  romantic: boolean('romantic').notNull(),
+  oldschool: boolean('oldschool').notNull(),
+  highlevel: boolean('highlevel').notNull(),
+  easy: boolean('easy').notNull(),
+},);
+
+const userTags = pgTable('user_tags', {
+  user_id: integer('user_id').notNull().primaryKey().references(() => usersTable.id, { onDelete: 'cascade' }),
+  sport: boolean('sport').notNull(),
+  music: boolean('music').notNull(),
+  student: boolean('student').notNull(),
+  bistro: boolean('bistro').notNull(),
+  drink: boolean('drink').notNull(),
+  joy: boolean('joy').notNull(),
+  romantic: boolean('romantic').notNull(),
+  oldschool: boolean('oldschool').notNull(),
+  highlevel: boolean('highlevel').notNull(),
+  easy: boolean('easy').notNull(),
+},);
+
 const orders = pgTable('orders', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderNumber: varchar('order_number', { length: 255 }).notNull().unique(),
@@ -139,9 +172,12 @@ const orders = pgTable('orders', {
   status: varchar('status', { length: 20 }).default('pending').notNull(),
   paymentMethod: varchar('payment_method', { length: 20 }),
   paymentId: varchar('payment_id', { length: 255 }),
+  transactionId: varchar('transaction_id', { length: 255 }), 
   paidAt: timestamp('paid_at', { withTimezone: true }),
   cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
   cancellationReason: varchar('cancellation_reason', { length: 255 }),
+  refundId: varchar('refund_id', { length: 255 }), 
+  refundedAt: timestamp('refunded_at', { withTimezone: true }), 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
@@ -161,6 +197,14 @@ const orderItems = pgTable('order_items', {
   subtotal: integer('subtotal').notNull() 
 });
 
+const messages = pgTable('messages', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  userId: integer('user_id').references(() => usersTable.id, { onDelete: 'cascade' }).notNull(),
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
+});
+
 const subTable = pgTable('subs', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
@@ -175,4 +219,4 @@ const subTable = pgTable('subs', {
   userIdx: index('idx_user').on(table.userId),
 }));
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, subTable };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags, orders, orderItems, messages, subTable };
