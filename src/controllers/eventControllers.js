@@ -1,4 +1,3 @@
-const bucket = require('../config/firebase');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
