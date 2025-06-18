@@ -20,16 +20,26 @@ const addTagsToUser = async (req, res) => {
     const existing = await db.select().from(userTags).where(eq(userTags.user_id, userId)).limit(1);
 
     if (existing.length > 0) {
-      return res.status(400).json({ error: '使用者標籤資料已存在' });
-    }
+      await db.update(userTags)
+        .set(validTags)
+        .where(eq(userTags.user_id, userId));
 
-    // 新增一筆
+        return res.status(200).json({ 
+        message: '更新酒吧偏好成功',
+        action: 'updated'
+      });
+    } else {
+      // 新增一筆
     await db.insert(userTags).values({
       user_id: userId,
       ...validTags,
     });
 
-    return res.status(201).json({ message: '新增酒吧偏好成功' });
+      return res.status(201).json({ 
+        message: '新增酒吧偏好成功',
+        action: 'created'
+      });
+    }
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
