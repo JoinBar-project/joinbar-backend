@@ -14,8 +14,6 @@ const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const cookieParser = require('cookie-parser');
-const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
-const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
@@ -27,9 +25,6 @@ const app = express();
 app.use(cookieParser()); 
 app.use(express.json());
 app.use(cors(corsOptions));
-
-app.use(formatBigIntResponse);
-app.use(withTaiwanTime);
 
 app.use('/api/auth/line', lineAuthRoutes);
 app.use('/api/auth', authRoutes);

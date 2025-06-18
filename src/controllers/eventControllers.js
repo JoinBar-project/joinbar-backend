@@ -3,18 +3,12 @@ const intformat = require('biguint-format');
 const db = require('../config/db');
 const { events, eventTags, tags } = require('../models/schema');
 const { eq } = require('drizzle-orm');
-
-const dayjs = require('dayjs')
-const utc = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone')
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
-const tz = 'Asia/Taipei'
+const { dayjs, tz } = require('../utils/dateFormatter');
 
 const flake = new FlakeId({ id: 1 });
 
 const createEvent = async (req, res) => {
+
   const parsedStart = dayjs(req.body.startAt);
   const parsedEnd = dayjs(req.body.endAt);
 
@@ -47,6 +41,10 @@ const createEvent = async (req, res) => {
     //新增活動
     const [ createdEvent ] = await db.insert(events).values(newEvent).returning();
 
+    console.log('🧪 createdEvent:', createdEvent);
+    console.log('🧪 typeof createdEvent.startAt:', typeof createdEvent.startAt);
+    console.log('🧪 typeof createdEvent.start_at:', typeof createdEvent.start_at);
+
     //新增活動標籤
     if( req.body.tags && req.body.tags.length > 0){
       const tagsList = req.body.tags.map(tagId => ({
@@ -61,13 +59,15 @@ const createEvent = async (req, res) => {
         return res.status(400).json({ message: '活動新增成功，但標籤失敗，請確認 tag 是否存在', error: tagErr.message });
       }
     }
-    res.status(201).json({ message: '活動已建立', event: newEvent });
+    res.status(201).json({ message: '活動已建立', event: createdEvent  });
       
     }catch (err) {
     console.error('建立活動時發生錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
   }
 };
+
+
 
 const getEvent = async (req, res) => {
 
@@ -82,9 +82,15 @@ const getEvent = async (req, res) => {
       return res.status(404).json({ message: '找不到活動'})
     }
     
-    if( event.status == 1 && event.endDate < dayjs().tz(tz).toDate()){
+    if( event.status == 1 && event.endAt < dayjs().tz(tz).toDate()){
       event.status = 3
     }
+
+    // event.startAt = dayjs(event.startAt).tz(tz).tz(tz).toDate(); 
+    // event.endAt = dayjs(event.endAt).tz(tz).tz(tz).toDate();
+    // event.createAt = dayjs(event.createAt).tz(tz).tz(tz).toDate();
+    // event.modifyAt = dayjs(event.modifyAt).tz(tz).tz(tz).toDate();
+
     // 撈取活動標籤
     const getEventTags  = await db
     .select({ 
