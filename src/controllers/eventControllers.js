@@ -35,6 +35,11 @@ const createEvent = async (req, res) => {
   if (!cleanBody.name) return res.status(400).json({ message: 'name 欄位是必填的' });
   if (!cleanBody.barName) return res.status(400).json({ message: 'barName 欄位是必填的' });
 
+  const userRole = req.user.role;
+  if (userRole === 'user' && Number(cleanBody.price) > 0) {
+    return res.status(403).json({ message: '一般用戶無法建立付費活動' });
+  }
+
   try {
     imageUrl = await uploadImage(
       imageFile.buffer,
