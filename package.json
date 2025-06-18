@@ -33,6 +33,7 @@
     "firebase-admin": "^13.4.0",
     "flake-idgen": "^1.4.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.3",
     "multer": "^2.0.1",
     "pg": "^8.16.0",
     "swagger-jsdoc": "^6.2.8",

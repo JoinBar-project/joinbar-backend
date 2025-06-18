@@ -89,6 +89,18 @@
           "notNull": false,
           "default": false
         },
+        "email_verification_token": {
+          "name": "email_verification_token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_verification_expires": {
+          "name": "email_verification_expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
         "provider_type": {
           "name": "provider_type",
           "type": "varchar(20)",
