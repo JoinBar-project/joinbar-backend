@@ -3,16 +3,9 @@ const { createEvent, getEvent, updateEvent, softDeleteEvent, getAllEvents } = re
 const { joinEvent } = require('../controllers/joinEventController');
 const eventMessageRoutes = require('./eventMessageRoutes');
 const authenticateToken = require('../middlewares/authenticateToken');
-const withTaiwanTime = require('../middlewares/withTaiwanTime');
-const formatBigIntResponse = require('../middlewares/formatBigIntResponse')
+const formatApiResponse = require('../middlewares/formatApiResponse');
 
 const router = express.Router();
-
-router.get('/all', withTaiwanTime, formatBigIntResponse, getAllEvents);
-router.post('/create', authenticateToken, formatBigIntResponse, withTaiwanTime, createEvent);
-router.get('/:id', formatBigIntResponse, withTaiwanTime, getEvent);
-router.put('/update/:id', authenticateToken, formatBigIntResponse, withTaiwanTime,  updateEvent);
-router.delete('/delete/:id', authenticateToken, formatBigIntResponse, withTaiwanTime, softDeleteEvent);
 
 /**
  * @swagger
@@ -117,7 +110,7 @@ router.delete('/delete/:id', authenticateToken, formatBigIntResponse, withTaiwan
  *       500:
  *         description: 伺服器錯誤
  */
-router.post('/create', authenticateToken, createEvent);
+router.post('/create', authenticateToken, formatApiResponse, createEvent);
 
 /**
  * @swagger
@@ -189,7 +182,7 @@ router.post('/create', authenticateToken, createEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.get('/:id', getEvent);
+router.get('/:id', formatApiResponse, getEvent);
 
 /**
  * @swagger
@@ -300,7 +293,7 @@ router.get('/:id', getEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.put('/:id/update', authenticateToken, updateEvent);
+router.put('/update/:id', authenticateToken, formatApiResponse,  updateEvent);
 
 /**
  * @swagger
@@ -332,7 +325,7 @@ router.put('/:id/update', authenticateToken, updateEvent);
  *       500:
  *         description: 伺服器錯誤
  */
-router.delete('/:id/delete', authenticateToken, softDeleteEvent);
+router.delete('/delete/:id', authenticateToken, formatApiResponse, softDeleteEvent);
 
 
 //下面API等大家API都差不多後再補上API文件

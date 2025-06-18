@@ -1,5 +1,5 @@
 {
-  "id": "1f0c1cda-5dbd-431c-8d58-22533169a384",
+  "id": "6281c033-9bbd-46dd-a4eb-298bae27c825",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -912,192 +912,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bar_tags": {
-      "name": "bar_tags",
-      "schema": "",
-      "columns": {
-        "bar_id": {
-          "name": "bar_id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "sport": {
-          "name": "sport",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "music": {
-          "name": "music",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student": {
-          "name": "student",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bistro": {
-          "name": "bistro",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "drink": {
-          "name": "drink",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "joy": {
-          "name": "joy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "romantic": {
-          "name": "romantic",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "oldschool": {
-          "name": "oldschool",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "highlevel": {
-          "name": "highlevel",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "easy": {
-          "name": "easy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "bar_tags_bar_id_bars_id_fk": {
-          "name": "bar_tags_bar_id_bars_id_fk",
-          "tableFrom": "bar_tags",
-          "tableTo": "bars",
-          "columnsFrom": [
-            "bar_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.user_tags": {
-      "name": "user_tags",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "sport": {
-          "name": "sport",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "music": {
-          "name": "music",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student": {
-          "name": "student",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bistro": {
-          "name": "bistro",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "drink": {
-          "name": "drink",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "joy": {
-          "name": "joy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "romantic": {
-          "name": "romantic",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "oldschool": {
-          "name": "oldschool",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "highlevel": {
-          "name": "highlevel",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "easy": {
-          "name": "easy",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_tags_user_id_users_id_fk": {
-          "name": "user_tags_user_id_users_id_fk",
-          "tableFrom": "user_tags",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.orders": {
       "name": "orders",
       "schema": "",
@@ -1409,6 +1223,192 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.bar_tags": {
+      "name": "bar_tags",
+      "schema": "",
+      "columns": {
+        "bar_id": {
+          "name": "bar_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bar_tags_bar_id_bars_id_fk": {
+          "name": "bar_tags_bar_id_bars_id_fk",
+          "tableFrom": "bar_tags",
+          "tableTo": "bars",
+          "columnsFrom": [
+            "bar_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_tags": {
+      "name": "user_tags",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sport": {
+          "name": "sport",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "music": {
+          "name": "music",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student": {
+          "name": "student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bistro": {
+          "name": "bistro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "drink": {
+          "name": "drink",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joy": {
+          "name": "joy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "romantic": {
+          "name": "romantic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oldschool": {
+          "name": "oldschool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "highlevel": {
+          "name": "highlevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "easy": {
+          "name": "easy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_tags_user_id_users_id_fk": {
+          "name": "user_tags_user_id_users_id_fk",
+          "tableFrom": "user_tags",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.subs": {
       "name": "subs",
       "schema": "",
@@ -1493,6 +1493,136 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.benefitRedeems": {
+      "name": "benefitRedeems",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sub_id": {
+          "name": "sub_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bar_id": {
+          "name": "bar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "benefit": {
+          "name": "benefit",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redeem_at": {
+          "name": "redeem_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "create_at": {
+          "name": "create_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "idx_sub": {
+          "name": "idx_sub",
+          "columns": [
+            {
+              "expression": "sub_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "benefitRedeems_user_id_users_id_fk": {
+          "name": "benefitRedeems_user_id_users_id_fk",
+          "tableFrom": "benefitRedeems",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "benefitRedeems_sub_id_subs_id_fk": {
+          "name": "benefitRedeems_sub_id_subs_id_fk",
+          "tableFrom": "benefitRedeems",
+          "tableTo": "subs",
+          "columnsFrom": [
+            "sub_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "benefitRedeems_bar_id_bars_id_fk": {
+          "name": "benefitRedeems_bar_id_bars_id_fk",
+          "tableFrom": "benefitRedeems",
+          "tableTo": "bars",
+          "columnsFrom": [
+            "bar_id"
           ],
           "columnsTo": [
             "id"

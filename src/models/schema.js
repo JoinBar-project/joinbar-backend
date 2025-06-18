@@ -219,4 +219,20 @@ const subTable = pgTable('subs', {
   userIdx: index('idx_user').on(table.userId),
 }));
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, barTags, userTags, orders, orderItems, messages, subTable };
+const benefitRedeemsTable = pgTable('benefitRedeems',{
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  subId: bigint('sub_id', { mode: 'string' }).notNull().references(() => subTable.id, { onDelete: "cascade" }),
+  barId: integer('bar_id').references(() => barsTable.id, {onDelete: 'cascade'}),
+  benefit: varchar('benefit', { length: 255 }).notNull(),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
+  redeemAt: timestamp('redeem_at', { withTimezone: true, nullable: true }), //未核銷設為 null
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
+  status: smallint('status').default(0).notNull(), // 0:尚未生成優惠券, 1: 未使用, 2: 已使用
+}, (table) => ({
+  subIdx: index('idx_sub').on(table.subId),
+})); 
+
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable };
+
