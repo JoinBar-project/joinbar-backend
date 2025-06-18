@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, getUserById, patchUserById, getDeletedUsers } = require('../controllers/usersControllers');
+const { getAllUsers, getUserById, patchUserById, getDeletedUsers, updateUserAvatar } = require('../controllers/usersControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
 const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
+const upload = require('../middlewares/imageUpload');
 
 /**
  * @swagger
@@ -225,5 +226,7 @@ router.get('/:id', getUserById);
  *         description: 伺服器錯誤
  */
 router.patch('/:id', validateUpdateUserData, patchUserById);
+
+router.patch('/:id/avatar',upload.single('image'), updateUserAvatar);
 
 module.exports = router;

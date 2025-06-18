@@ -4,6 +4,8 @@ const { eq, and } = require('drizzle-orm');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
+
 const getAllUsers = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -168,10 +170,10 @@ const getDeletedUsers = async (req, res) => {
         role: usersTable.role,
         status: usersTable.status,
         createdAt: usersTable.createdAt,
-        updatedAt: usersTable.updatedAt 
+        updatedAt: usersTable.updatedAt,
       })
       .from(usersTable)
-      .where(eq(usersTable.status, 2)); 
+      .where(eq(usersTable.status, 2));
 
     res.status(200).json({
       success: true,
@@ -187,4 +189,67 @@ const getDeletedUsers = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, getUserById, patchUserById, getDeletedUsers };
+const updateUserAvatar = async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: '無權限修改',
+      });
+    }
+
+    const avatarFile = req.file;
+
+    if (!avatarFile) {
+      return res.status(400).json({
+        success: false,
+        message: '請提供會員頭像檔案',
+      });
+    }
+    // 先確認資料庫是否舊頭像 URL，有的話先刪掉再換成新的
+    const [userResult] = await db
+      .select({ avatarUrl: usersTable.avatarUrl })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+
+    if (userResult.avatarUrl) {
+      await deleteImageByUrl(userResult.avatarUrl);
+    }
+
+    const imageUrl = await uploadImage(
+      avatarFile.buffer,
+      avatarFile.mimetype,
+      avatarFile.originalname,
+      'user-avatars'
+    );
+
+    const [updatedAvatar] = await db
+      .update(usersTable)
+      .set({
+        avatarUrl: imageUrl,
+        avatarLastUpdated: new Date(),
+      })
+      .where(eq(usersTable.id, userId))
+      .returning({
+        id: usersTable.id,
+        avatarUrl: usersTable.avatarUrl,
+        avatarLastUpdated: usersTable.avatarLastUpdated,
+      });
+
+    res.status(200).json({
+      success: true,
+      message: '更新會員頭像成功',
+      data: updatedAvatar,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: '伺服器錯誤',
+    });
+  }
+};
+
+module.exports = { getAllUsers, getUserById, patchUserById, getDeletedUsers, updateUserAvatar };
