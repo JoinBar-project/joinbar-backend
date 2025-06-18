@@ -128,10 +128,21 @@ const updateEvent = async (req, res) => {
     const imageFile = req.file;
     let imageUrl = event.imageUrl;
 
+    //  檢查圖片欄位有上傳，避免被 multer 擋掉產生 undefined
+    if (req.body.image && !imageFile) {
+      return res.status(400).json({
+        message: '圖片格式錯誤，請上傳 jpeg/png/webp/jfif',
+      });
+    }
+
     if (imageFile) {
       try {
-        await deleteImageByUrl(imageUrl);
-        imageUrl = await uploadImage(imageFile.buffer, imageFile.mimetype, imageFile.originalname);
+        await deleteImageByUrl(imageUrl); // 先刪原圖
+        imageUrl = await uploadImage(
+          imageFile.buffer,
+          imageFile.mimetype,
+          imageFile.originalname
+        );
       } catch (err) {
         console.error('圖片處理錯誤:', err);
         return res.status(500).json({ message: '圖片處理錯誤' });

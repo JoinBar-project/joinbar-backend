@@ -1,10 +1,11 @@
-// middleware/upload.js
 const multer = require('multer');
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jfif'];
   if (!allowedTypes.includes(file.mimetype)) {
-    return cb(new Error('不支援的圖片格式'), false);
+    const error = new multer.MulterError('LIMIT_UNEXPECTED_FILE');
+    error.message = '不支援的圖片格式';
+    return cb(error);
   }
   cb(null, true);
 };
