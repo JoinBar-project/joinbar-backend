@@ -1,4 +1,4 @@
-CREATE TABLE "orders" (
+CREATE TABLE IF NOT EXISTS "orders" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"order_number" varchar(255) NOT NULL,
 	"user_id" integer,
@@ -14,7 +14,7 @@ CREATE TABLE "orders" (
 	CONSTRAINT "orders_order_number_unique" UNIQUE("order_number")
 );
 --> statement-breakpoint
-CREATE TABLE "order_items" (
+CREATE TABLE IF NOT EXISTS "order_items" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"order_id" bigint NOT NULL,
 	"event_id" bigint NOT NULL,
@@ -29,7 +29,4 @@ CREATE TABLE "order_items" (
 	"subtotal" integer NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "messages" ALTER COLUMN "id" SET DATA TYPE bigint;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE restrict ON UPDATE no action;
+ALTER TABLE "messages" ALTER COLUMN "id" SET DATA TYPE bigint;

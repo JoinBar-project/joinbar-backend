@@ -1,4 +1,4 @@
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"username" varchar(100) NOT NULL,
 	"nickname" varchar(100),
@@ -18,7 +18,7 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "user_notification" (
+CREATE TABLE IF NOT EXISTS "user_notification" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
 	"notification_type" varchar(20) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE "user_notification" (
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "bars" (
+CREATE TABLE IF NOT EXISTS "bars" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"address" varchar(255),
@@ -38,14 +38,14 @@ CREATE TABLE "bars" (
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "user_bar_folders" (
+CREATE TABLE IF NOT EXISTS "user_bar_folders" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
 	"folder_name" varchar(50),
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "user_bar_collection" (
+CREATE TABLE IF NOT EXISTS "user_bar_collection" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
 	"bar_id" integer,
@@ -54,7 +54,7 @@ CREATE TABLE "user_bar_collection" (
 	CONSTRAINT "user_bar_collection_user_id_bar_id_unique" UNIQUE("user_id","bar_id")
 );
 --> statement-breakpoint
-CREATE TABLE "user_event_collection" (
+CREATE TABLE IF NOT EXISTS "user_event_collection" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
 	"event_id" bigint,
@@ -63,7 +63,7 @@ CREATE TABLE "user_event_collection" (
 	CONSTRAINT "user_event_collection_user_id_event_id_unique" UNIQUE("user_id","event_id")
 );
 --> statement-breakpoint
-CREATE TABLE "user_event_participation" (
+CREATE TABLE IF NOT EXISTS "user_event_participation" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
 	"event_id" bigint,
@@ -71,21 +71,9 @@ CREATE TABLE "user_event_participation" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "user_event_folders" (
+CREATE TABLE IF NOT EXISTS "user_event_folders" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer,
 	"folder_name" varchar(50),
 	"created_at" timestamp DEFAULT now()
 );
---> statement-breakpoint
-ALTER TABLE "user_notification" ADD CONSTRAINT "user_notification_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_bar_folders" ADD CONSTRAINT "user_bar_folders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_bar_collection" ADD CONSTRAINT "user_bar_collection_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_bar_collection" ADD CONSTRAINT "user_bar_collection_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_bar_collection" ADD CONSTRAINT "user_bar_collection_folder_id_user_bar_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."user_bar_folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_collection" ADD CONSTRAINT "user_event_collection_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_collection" ADD CONSTRAINT "user_event_collection_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_collection" ADD CONSTRAINT "user_event_collection_folder_id_user_event_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."user_event_folders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_participation" ADD CONSTRAINT "user_event_participation_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_participation" ADD CONSTRAINT "user_event_participation_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_event_folders" ADD CONSTRAINT "user_event_folders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
