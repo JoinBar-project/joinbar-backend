@@ -100,7 +100,7 @@ router.post('/create', authenticateToken, formatApiResponse, upload.single('imag
 
 // getAllEvents 為優先讀取順序
 // 避免 "all" 被當 id 導致錯誤（後續補 Swagger 文件）
-router.get('/all', getAllEvents);
+router.get('/all', formatApiResponse, getAllEvents);
 router.get('/:id', formatApiResponse, getEvent);
 
 /**
