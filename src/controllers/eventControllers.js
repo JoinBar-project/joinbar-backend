@@ -1,4 +1,3 @@
-// eventControllers.js
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
@@ -23,8 +22,8 @@ const createEvent = async (req, res) => {
     return res.status(400).json({ message: '開始或結束時間格式錯誤' });
   }
 
-  if (!cleanBody.name || !cleanBody.barName) {
-    return res.status(400).json({ message: 'name 與 barName 為必填欄位' });
+  if (!cleanBody.name || !cleanBody.barName || !cleanBody.location || !cleanBody.startAt || !cleanBody.endAt) {
+    return res.status(400).json({ message: 'name、barName、location、startAt、endAt 為必填欄位' });
   }
 
   if (!imageFile) {
@@ -34,6 +33,13 @@ const createEvent = async (req, res) => {
   const userRole = req.user.role;
   if (userRole === 'user' && Number(cleanBody.price) > 0) {
     return res.status(403).json({ message: '一般用戶無法建立付費活動' });
+  }
+
+  if (typeof cleanBody.tags === 'string') {
+    cleanBody.tags = [cleanBody.tags];
+  }
+  if (!Array.isArray(cleanBody.tags)) {
+    cleanBody.tags = [];
   }
 
   let imageUrl = '';
@@ -72,7 +78,11 @@ const createEvent = async (req, res) => {
       await db.insert(eventTags).values(tagsList);
     }
 
-    res.status(201).json({ message: '活動已建立', event: createdEvent, imagePreview: imageUrl });
+    res.status(201).json({
+      message: '活動已建立',
+      event: createdEvent,
+      imagePreview: imageUrl
+    });
   } catch (err) {
     console.error('建立活動錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
@@ -82,7 +92,10 @@ const createEvent = async (req, res) => {
 const getEvent = async (req, res) => {
   const eventId = req.params.id;
   try {
-    const [event] = await db.select().from(events).where(eq(events.id, eventId));
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.id, eventId), eq(events.status, 1)));
     if (!event) return res.status(404).json({ message: '找不到活動' });
 
     if (event.status === 1 && event.endAt < dayjs().tz(tz).toDate()) {
@@ -116,19 +129,24 @@ const updateEvent = async (req, res) => {
     let imageUrl = event.imageUrl;
 
     if (imageFile) {
-      await deleteImageByUrl(imageUrl);
-      imageUrl = await uploadImage(imageFile.buffer, imageFile.mimetype, imageFile.originalname);
+      try {
+        await deleteImageByUrl(imageUrl);
+        imageUrl = await uploadImage(imageFile.buffer, imageFile.mimetype, imageFile.originalname);
+      } catch (err) {
+        console.error('圖片處理錯誤:', err);
+        return res.status(500).json({ message: '圖片處理錯誤' });
+      }
     }
 
     const updatedData = {
-      name: req.body.name,
-      barName: req.body.barName,
-      location: req.body.location,
-      startAt: dayjs(req.body.startAt).tz(tz).toDate(),
-      endAt: dayjs(req.body.endAt).tz(tz).toDate(),
-      maxPeople: req.body.maxPeople,
+      ...(req.body.name && { name: req.body.name }),
+      ...(req.body.barName && { barName: req.body.barName }),
+      ...(req.body.location && { location: req.body.location }),
+      ...(req.body.startAt && { startAt: dayjs(req.body.startAt).tz(tz).toDate() }),
+      ...(req.body.endAt && { endAt: dayjs(req.body.endAt).tz(tz).toDate() }),
+      ...(req.body.maxPeople && { maxPeople: req.body.maxPeople }),
+      ...(req.body.price && { price: req.body.price }),
       imageUrl,
-      price: req.body.price,
       hostUser: req.user.id,
       modifyAt: dayjs().tz(tz).toDate(),
     };
@@ -204,6 +222,7 @@ const getAllEvents = async (req, res) => {
     const rows = await db
       .select({ eventId: events.id, eventData: events, tagId: eventTags.tagId })
       .from(events)
+      .where(eq(events.status, 1))
       .leftJoin(eventTags, eq(events.id, eventTags.eventId));
 
     const eventMap = new Map();
