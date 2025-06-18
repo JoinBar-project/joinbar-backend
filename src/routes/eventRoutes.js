@@ -4,9 +4,6 @@ const { joinEvent } = require('../controllers/joinEventController');
 const eventMessageRoutes = require('./eventMessageRoutes');
 const authenticateToken = require('../middlewares/authenticateToken');
 const formatApiResponse = require('../middlewares/formatApiResponse');
-// const formatBigIntResponse = require('../middlewares/formatBigIntResponse')
-// const withTaiwanTime = require('../middlewares/withTaiwanTime');
-
 
 const router = express.Router();
 

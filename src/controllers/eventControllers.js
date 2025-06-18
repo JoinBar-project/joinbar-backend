@@ -67,8 +67,6 @@ const createEvent = async (req, res) => {
   }
 };
 
-
-
 const getEvent = async (req, res) => {
 
   const eventId = req.params.id
@@ -85,11 +83,6 @@ const getEvent = async (req, res) => {
     if( event.status == 1 && event.endAt < dayjs().tz(tz).toDate()){
       event.status = 3
     }
-
-    // event.startAt = dayjs(event.startAt).tz(tz).tz(tz).toDate(); 
-    // event.endAt = dayjs(event.endAt).tz(tz).tz(tz).toDate();
-    // event.createAt = dayjs(event.createAt).tz(tz).tz(tz).toDate();
-    // event.modifyAt = dayjs(event.modifyAt).tz(tz).tz(tz).toDate();
 
     // 撈取活動標籤
     const getEventTags  = await db
