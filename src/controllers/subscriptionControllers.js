@@ -4,7 +4,7 @@ const { eq, and, gt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
-const dayjs = require('dayjs');
+const { dayjs, tz } = require('../utils/dateFormatter');
 
 const flake = new FlakeId({ id: 1 });
 
@@ -23,7 +23,7 @@ const createSubscription = async (req, res) => {
       return res.status(400).json({ error: '不支援的訂閱方案' });
     }
 
-    const now = dayjs();
+    const now = dayjs().tz(tz);
     const startAt = now.toDate();
     const endAt = now.add(plan.duration, 'day').toDate();
     const id = intformat(flake.next(), 'dec');
@@ -60,13 +60,7 @@ const createSubscription = async (req, res) => {
 
     return res.status(201).json({
       message: '訂閱成功',
-      subscription: {
-        ...newSub,
-        startAt: dayjs(newSub.startAt).format('YYYY-MM-DD HH:mm:ss'),
-        endAt: dayjs(newSub.endAt).format('YYYY-MM-DD HH:mm:ss'),
-        createAt: dayjs(newSub.createAt).format('YYYY-MM-DD HH:mm:ss'),
-        modifyAt: dayjs(newSub.modifyAt).format('YYYY-MM-DD HH:mm:ss'),
-      }
+      subscription: newSub
     });
 
   } catch (err) {
@@ -128,7 +122,7 @@ const getPlan = async (req, res) => {
 
     return res.status(200).json({
       message: '查詢成功',
-      subscriptions: formattedPlans,
+      subscriptions: plans
     });
 
   } catch (err) {

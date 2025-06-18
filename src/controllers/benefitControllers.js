@@ -5,7 +5,7 @@ const { eq, and, gt, lt } = require('drizzle-orm');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
-const dayjs = require('dayjs');
+const { dayjs, tz } = require('../utils/dateFormatter');
 
 const flake = new FlakeId({ id: 1 });
 
@@ -129,22 +129,13 @@ const getBenefitList = async (req, res) => {
 
   try{
     const sortGetAllBenefit = GetAllBenefit
-    .sort( (couponA, couponB) => {
-      if( couponA.status != couponB.status ){
+    .sort((couponA, couponB) => {
+      if (couponA.status !== couponB.status) {
         return couponA.status - couponB.status;
       }
-      return  dayjs(couponA.endAt).isBefore(couponB.endAt) ? -1 : 1;
-    })
-
-    .map( benefit => ({
-        id: benefit.id,
-        userId: benefit.userId,
-        benefit: benefit.benefit,
-        status: benefit.status,
-        startAt: dayjs(benefit.startAt).format('YYYY-MM-DD HH:mm:ss'),
-        endAt: dayjs(benefit.endAt).format('YYYY-MM-DD HH:mm:ss')
-    }));
-
+      return dayjs(couponA.endAt).isBefore(couponB.endAt) ? -1 : 1;
+    });
+    
     res.status(200).json({ benefits: sortGetAllBenefit });
 
   }catch(err){

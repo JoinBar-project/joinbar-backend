@@ -118,34 +118,6 @@ CREATE TABLE "event_tags" (
 	CONSTRAINT "event_tags_event_id_tag_id_pk" PRIMARY KEY("event_id","tag_id")
 );
 --> statement-breakpoint
-CREATE TABLE "bar_tags" (
-	"bar_id" integer PRIMARY KEY NOT NULL,
-	"sport" boolean NOT NULL,
-	"music" boolean NOT NULL,
-	"student" boolean NOT NULL,
-	"bistro" boolean NOT NULL,
-	"drink" boolean NOT NULL,
-	"joy" boolean NOT NULL,
-	"romantic" boolean NOT NULL,
-	"oldschool" boolean NOT NULL,
-	"highlevel" boolean NOT NULL,
-	"easy" boolean NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "user_tags" (
-	"user_id" integer PRIMARY KEY NOT NULL,
-	"sport" boolean NOT NULL,
-	"music" boolean NOT NULL,
-	"student" boolean NOT NULL,
-	"bistro" boolean NOT NULL,
-	"drink" boolean NOT NULL,
-	"joy" boolean NOT NULL,
-	"romantic" boolean NOT NULL,
-	"oldschool" boolean NOT NULL,
-	"highlevel" boolean NOT NULL,
-	"easy" boolean NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "orders" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"order_number" varchar(255) NOT NULL,
@@ -188,6 +160,34 @@ CREATE TABLE "messages" (
 	"event_id" bigint NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "bar_tags" (
+	"bar_id" integer PRIMARY KEY NOT NULL,
+	"sport" boolean NOT NULL,
+	"music" boolean NOT NULL,
+	"student" boolean NOT NULL,
+	"bistro" boolean NOT NULL,
+	"drink" boolean NOT NULL,
+	"joy" boolean NOT NULL,
+	"romantic" boolean NOT NULL,
+	"oldschool" boolean NOT NULL,
+	"highlevel" boolean NOT NULL,
+	"easy" boolean NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "user_tags" (
+	"user_id" integer PRIMARY KEY NOT NULL,
+	"sport" boolean NOT NULL,
+	"music" boolean NOT NULL,
+	"student" boolean NOT NULL,
+	"bistro" boolean NOT NULL,
+	"drink" boolean NOT NULL,
+	"joy" boolean NOT NULL,
+	"romantic" boolean NOT NULL,
+	"oldschool" boolean NOT NULL,
+	"highlevel" boolean NOT NULL,
+	"easy" boolean NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "subs" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
@@ -198,6 +198,19 @@ CREATE TABLE "subs" (
 	"status" smallint DEFAULT 1 NOT NULL,
 	"create_at" timestamp with time zone NOT NULL,
 	"modify_at" timestamp with time zone NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "benefitRedeems" (
+	"id" bigint PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"sub_id" bigint NOT NULL,
+	"bar_id" integer,
+	"benefit" varchar(255) NOT NULL,
+	"start_at" timestamp with time zone NOT NULL,
+	"end_at" timestamp with time zone NOT NULL,
+	"redeem_at" timestamp with time zone,
+	"create_at" timestamp with time zone NOT NULL,
+	"status" smallint DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "user_notification" ADD CONSTRAINT "user_notification_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -214,13 +227,17 @@ ALTER TABLE "user_event_folders" ADD CONSTRAINT "user_event_folders_user_id_user
 ALTER TABLE "events" ADD CONSTRAINT "events_host_user_users_id_fk" FOREIGN KEY ("host_user") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_tags" ADD CONSTRAINT "event_tags_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_tags" ADD CONSTRAINT "event_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "bar_tags" ADD CONSTRAINT "bar_tags_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_tags" ADD CONSTRAINT "user_tags_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bar_tags" ADD CONSTRAINT "bar_tags_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_tags" ADD CONSTRAINT "user_tags_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subs" ADD CONSTRAINT "subs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_sub_id_subs_id_fk" FOREIGN KEY ("sub_id") REFERENCES "public"."subs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_host_user" ON "events" USING btree ("host_user");--> statement-breakpoint
-CREATE INDEX "idx_user" ON "subs" USING btree ("user_id");
+CREATE INDEX "idx_user" ON "subs" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_sub" ON "benefitRedeems" USING btree ("sub_id");
