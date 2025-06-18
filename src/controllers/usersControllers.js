@@ -4,6 +4,13 @@ const { eq, and } = require('drizzle-orm');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const tz = 'Asia/Taipei';
+
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
 
 const getAllUsers = async (req, res) => {
@@ -28,7 +35,7 @@ const getAllUsers = async (req, res) => {
       .from(usersTable)
       .where(eq(usersTable.status, 1));
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: userResult,
     });
@@ -125,6 +132,7 @@ const patchUserById = async (req, res) => {
     if (nickname) fieldsToUpdate.nickname = nickname;
     if (birthday) fieldsToUpdate.birthday = birthday;
     if (avatarUrl) fieldsToUpdate.avatarUrl = avatarUrl;
+    fieldsToUpdate.updatedAt = dayjs().tz(tz).toDate();
 
     const [updatedUser] = await db
       .update(usersTable)
@@ -137,9 +145,11 @@ const patchUserById = async (req, res) => {
         birthday: usersTable.birthday,
         avatarUrl: usersTable.avatarUrl,
         email: usersTable.email,
+        createdAt: usersTable.createdAt,
+        updatedAt: usersTable.updatedAt,
       });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: '更新資料成功',
       data: updatedUser,
@@ -215,6 +225,13 @@ const updateUserAvatar = async (req, res) => {
       .where(eq(usersTable.id, userId))
       .limit(1);
 
+    if (!userResult) {
+      return res.status(404).json({
+        success: false,
+        message: '查無此使用者',
+      });
+    }
+    // 刪除舊頭像
     if (userResult.avatarUrl) {
       await deleteImageByUrl(userResult.avatarUrl);
     }
@@ -230,7 +247,7 @@ const updateUserAvatar = async (req, res) => {
       .update(usersTable)
       .set({
         avatarUrl: imageUrl,
-        avatarLastUpdated: new Date(),
+        avatarLastUpdated: dayjs().tz(tz).toDate(),
       })
       .where(eq(usersTable.id, userId))
       .returning({
@@ -245,11 +262,65 @@ const updateUserAvatar = async (req, res) => {
       data: updatedAvatar,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: '伺服器錯誤',
     });
   }
 };
 
-module.exports = { getAllUsers, getUserById, patchUserById, getDeletedUsers, updateUserAvatar };
+const deleteUserAvatar = async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: '無權限刪除',
+      });
+    }
+
+    const [userResult] = await db
+      .select({ avatarUrl: usersTable.avatarUrl })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+
+    if (userResult.avatarUrl) {
+      await deleteImageByUrl(userResult.avatarUrl);
+    }
+
+    const [updatedUser] = await db
+      .update(usersTable)
+      .set({
+        avatarUrl: null,
+        avatarLastUpdated: dayjs().tz(tz).toDate(),
+      })
+      .where(eq(usersTable.id, userId))
+      .returning({
+        id: usersTable.id,
+        avatarUrl: usersTable.avatarUrl,
+        avatarLastUpdated: usersTable.avatarLastUpdated,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message: '刪除會員頭像成功',
+      data: updatedUser,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: '伺服器錯誤',
+    });
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  patchUserById,
+  getDeletedUsers,
+  updateUserAvatar,
+  deleteUserAvatar,
+};
