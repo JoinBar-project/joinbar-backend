@@ -5,6 +5,7 @@ const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
+const subRoutes = require('./src/routes/subRoutes');
 const linePayRoutes = require('./src/routes/linePayRoutes');
 const barTagsRoutes = require('./src/routes/barTagsRoutes');
 const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
@@ -38,6 +39,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/linepay', linePayRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api/sub', subRoutes);
 app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

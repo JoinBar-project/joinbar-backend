@@ -24,8 +24,15 @@ function convertBigIntToString(obj) {
 function formatBigIntResponse(req, res, next) {
   const oldJson = res.json;
   res.json = function (data) {
-    const converted = convertBigIntToString(data);
-    oldJson.call(this, converted);
+    try{
+      const converted = convertBigIntToString(data);
+      oldJson.call(this, converted);
+    }catch{
+      oldJson.call(this, {
+        error: '格式轉換失敗',
+        detail: err.message
+      });
+    }    
   };
   next();
 }
