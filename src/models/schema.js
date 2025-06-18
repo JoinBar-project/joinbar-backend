@@ -20,6 +20,7 @@ const usersTable = pgTable("users", {
   isVerifiedEmail: boolean("is_verified_email").default(false),
   emailVerificationToken: varchar("email_verification_token", { length: 255 }),
   emailVerificationExpires: timestamp("email_verification_expires"),
+  lastVerificationEmailSent: timestamp("last_verification_email_sent"),
 
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),

@@ -34,6 +34,7 @@ const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    const now = new Date();
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
 
     const [newUser] = await db.insert(usersTable).values({
@@ -45,6 +46,7 @@ const signup = async (req, res) => {
       isVerifiedEmail: false,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires,
+      lastVerificationEmailSent: now,
       providerType: "email",
     }).returning({
       id: usersTable.id,
@@ -176,6 +178,7 @@ const verifyEmail = async (req, res) => {
         isVerifiedEmail: true,
         emailVerificationToken: null,
         emailVerificationExpires: null,
+        lastVerificationEmailSent: null,
         updatedAt: new Date()
       })
       .where(eq(usersTable.id, user.id));
@@ -218,19 +221,15 @@ const resendVerificationEmail = async (req, res) => {
       });
     }
 
-    // 檢查是否在短時間內重複請求（防止濫用）
-    const now = new Date();
-    const lastSentEmailTime = user.emailVerificationExpires;
-
-    if (lastSentEmailTime) {
-      // 計算距離上次寄送的時間
-      const TimeOfFlight = now - (lastSentEmailTime.getTime() - 24 * 60 * 60 * 1000);
-      const cooldownTimeMinutes = 5; // 5分鐘冷卻時間
-
-      if (TimeOfFlight < cooldownTimeMinutes * 60 * 1000) {
-        const remainingTime = Math.ceil((cooldownTimeMinutes * 60 * 1000 - TimeOfFlight) / 1000 / 60);
+    // 冷卻時間
+    if (user.lastVerificationEmailSent) {
+      const cooldownMs = 2 * 60 * 1000; // 2分鐘冷卻時間
+      const timePassed = Date.now() - user.lastVerificationEmailSent.getTime();
+      
+      if (timePassed < cooldownMs) {
+        const remainingMinutes = Math.ceil((cooldownMs - timePassed) / 60000);
         return res.status(429).json({ 
-          error: `請等待 ${remainingTime} 分鐘後再重新寄送驗證信` 
+          error: `請等待 ${remainingMinutes} 分鐘後再重新寄送驗證信` 
         });
       }
     }
@@ -238,6 +237,7 @@ const resendVerificationEmail = async (req, res) => {
     // 產生新的驗證 token
     const newVerificationToken = crypto.randomBytes(32).toString('hex');
     const newVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
+    const now = new Date();
 
     // 更新資料庫中的 token
     await db
@@ -245,6 +245,7 @@ const resendVerificationEmail = async (req, res) => {
       .set({
         emailVerificationToken: newVerificationToken,
         emailVerificationExpires: newVerificationExpires,
+        lastVerificationEmailSent: now,
         updatedAt: new Date()
       })
       .where(eq(usersTable.id, user.id));
