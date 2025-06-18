@@ -1,1 +1,0 @@
-ALTER TABLE "events" RENAME COLUMN "creat_at" TO "create_at";
