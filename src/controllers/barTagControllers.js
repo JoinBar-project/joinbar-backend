@@ -4,7 +4,7 @@ const { userTags, barTags ,barsTable } = require('../models/schema');
 const { eq, and ,inArray} = require('drizzle-orm');
 
 // 新增標籤到個人推薦
-const addTagsToUser = async (req, res) => {
+const setUserPreferences = async (req, res) => {
   const userId = Number(req.params.id);
   const inputTags = req.body;
 
@@ -23,8 +23,8 @@ const addTagsToUser = async (req, res) => {
       await db.update(userTags)
         .set(validTags)
         .where(eq(userTags.user_id, userId));
-
-        return res.status(200).json({ 
+      
+      return res.status(200).json({ 
         message: '更新酒吧偏好成功',
         action: 'updated'
       });
@@ -141,4 +141,4 @@ const updateTagsFromUser = async (req, res) => {
 //   }
 // };
 
-module.exports = { addTagsToUser, getBarTagsFromUser, updateTagsFromUser};
+module.exports = { setUserPreferences, getBarTagsFromUser, updateTagsFromUser};
