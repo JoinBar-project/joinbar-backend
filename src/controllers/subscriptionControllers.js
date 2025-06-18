@@ -37,6 +37,7 @@ const createSubscription = async (req, res) => {
           eq(subTable.subType, subType),
           eq(subTable.status, 1),
           gt(subTable.endAt, now.toDate()) // 已過期
+
         )
       )
       .execute();

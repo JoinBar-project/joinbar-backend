@@ -16,7 +16,12 @@ const usersTable = pgTable("users", {
   lineStatusMessage: text('line_status_message'),
   isLineUser: boolean('is_line_user').default(false),
 
+  // email 驗證相關欄位
   isVerifiedEmail: boolean("is_verified_email").default(false),
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  lastVerificationEmailSent: timestamp("last_verification_email_sent"),
+
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),
   avatarUrl: varchar("avatar_url", { length: 255 }),
@@ -167,9 +172,12 @@ const orders = pgTable('orders', {
   status: varchar('status', { length: 20 }).default('pending').notNull(),
   paymentMethod: varchar('payment_method', { length: 20 }),
   paymentId: varchar('payment_id', { length: 255 }),
+  transactionId: varchar('transaction_id', { length: 255 }), 
   paidAt: timestamp('paid_at', { withTimezone: true }),
   cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
   cancellationReason: varchar('cancellation_reason', { length: 255 }),
+  refundId: varchar('refund_id', { length: 255 }), 
+  refundedAt: timestamp('refunded_at', { withTimezone: true }), 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
@@ -227,3 +235,4 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
 })); 
 
 module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable };
+
