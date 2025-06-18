@@ -8,7 +8,8 @@
     "start": "nodemon index.js",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "seed": "node src/seeds/seed.js"
+    "seed": "node src/seeds/seed.js",
+    "seed-events": "node src/seeds/seedEvents.js"
   },
   "repository": {
     "type": "git",
