@@ -71,7 +71,7 @@ async function seedEvents() {
 
       // 交錯使用 hostUser 1 or 2
       const hostUser = i % 2 === 0 ? 1 : 2;
-      const price = hostUser === 2 ? 500 : 0;
+      const price = hostUser === 1 ? 500 : 0;
 
       const name = faker.helpers.arrayElement(eventNames);
       const barName = faker.helpers.arrayElement(barNames);
