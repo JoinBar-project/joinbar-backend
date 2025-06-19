@@ -1,4 +1,3 @@
-// controllers/linePayControllers.js
 const db = require('../config/db');
 const { orders, orderItems, userEventParticipationTable } = require('../models/schema');
 const { eq, and, inArray } = require('drizzle-orm');
@@ -217,130 +216,128 @@ const confirmLinePayment = async (req, res) => {
 };
 
 const checkLinePaymentStatus = async (req, res) => {
- try {
-   const { orderId } = req.params;
-   const userId = req.user.id;
+  try {
+    const { orderId } = req.params;
+    const userId = req.user.id;
 
-   const [order] = await db
-     .select()
-     .from(orders)
-     .where(and(
-       eq(orders.id, orderId),
-       eq(orders.userId, userId)
-     ));
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(
+        eq(orders.id, orderId),
+        eq(orders.userId, userId)
+      ));
 
-   if (!order) {
-     return res.status(404).json({
-       error: '找不到訂單',
-       code: 'ORDER_NOT_FOUND'
-     });
-   }
+    if (!order) {
+      return res.status(404).json({
+        error: '找不到訂單',
+        code: 'ORDER_NOT_FOUND'
+      });
+    }
 
-   let linePayStatus = null;
-   
-   if (order.paymentMethod === 'linepay') {
-     const transactionId = order.transactionId || order.paymentId;
-     
-     if (transactionId) {
-       console.log('🔍 查詢 LINE Pay 狀態:', transactionId);
-       
-       try {
-         const statusResult = await LinePayProvider.checkPaymentStatus(transactionId);
-         
-         if (statusResult.success) {
-           linePayStatus = {
-             transactionId: transactionId,
-             status: statusResult.status,
-             isPaid: statusResult.isPaid,
-             amount: statusResult.amount,
-             currency: statusResult.currency
-           };
+    const response = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      amount: order.totalAmount,
+      paymentMethod: order.paymentMethod,
+      paymentId: order.paymentId,
+      transactionId: order.transactionId,
+      paidAt: order.paidAt ? dayjs(order.paidAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt ? dayjs(order.updatedAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
+      linePayStatus: null
+    };
 
-           if (statusResult.isPaid && order.status === 'pending') {
-             console.log('🔄 同步付款狀態:', orderId);
-             
-             await db.transaction(async (tx) => {
-               await tx.update(orders).set({
-                 status: 'confirmed',
-                 paidAt: dayjs().tz('Asia/Taipei').toDate(),
-                 updatedAt: dayjs().tz('Asia/Taipei').toDate()
-               }).where(eq(orders.id, orderId));
+    if (order.paymentMethod === 'linepay') {
+      const transactionId = order.transactionId || order.paymentId;
+      
+      if (transactionId) {
+        console.log('🔍 查詢 LINE Pay 狀態:', transactionId);
+        
+        try {
+          const statusResult = await LinePayProvider.checkPaymentStatus(transactionId);
+          
+          if (statusResult.success) {
+            response.linePayStatus = {
+              transactionId: transactionId,
+              status: statusResult.status,
+              isPaid: statusResult.isPaid,
+              amount: statusResult.amount,
+              currency: statusResult.currency
+            };
 
-               const orderItemsList = await db
-                 .select()
-                 .from(orderItems)
-                 .where(eq(orderItems.orderId, orderId));
+            if (statusResult.isPaid && order.status === 'pending') {
+              console.log('🔄 同步付款狀態:', orderId);
+              
+              await db.transaction(async (tx) => {
+                await tx.update(orders).set({
+                  status: 'confirmed',
+                  paidAt: dayjs().tz('Asia/Taipei').toDate(),
+                  updatedAt: dayjs().tz('Asia/Taipei').toDate()
+                }).where(eq(orders.id, orderId));
 
-               const participationData = orderItemsList.map(item => ({
-                 userId: order.userId,
-                 eventId: item.eventId,
-                 joinedAt: dayjs().tz('Asia/Taipei').toDate(),
-                 updatedAt: dayjs().tz('Asia/Taipei').toDate()
-               }));
+                const orderItemsList = await db
+                  .select()
+                  .from(orderItems)
+                  .where(eq(orderItems.orderId, orderId));
 
-               if (participationData.length > 0) {
-                 await tx.insert(userEventParticipationTable).values(participationData);
-               }
-             });
+                if (orderItemsList.length > 0) {
+                  const participationData = orderItemsList.map(item => ({
+                    userId: order.userId,
+                    eventId: item.eventId,
+                    joinedAt: dayjs().tz('Asia/Taipei').toDate(),
+                    updatedAt: dayjs().tz('Asia/Taipei').toDate()
+                  }));
 
-             order.status = 'confirmed';
-             order.paidAt = dayjs().tz('Asia/Taipei').toDate();
-           }
-         } else {
-           console.warn('⚠️ LINE Pay 狀態查詢失敗:', statusResult.message);
-           
-           linePayStatus = {
-             transactionId: transactionId,
-             status: 'LOCAL_RECORD_ONLY',
-             isPaid: order.status === 'confirmed',
-             amount: order.totalAmount,
-             currency: 'TWD',
-             note: '無法查詢 LINE Pay 即時狀態，顯示本地記錄'
-           };
-         }
-       } catch (error) {
-         console.error('❌ LINE Pay 狀態查詢異常:', error);
-         
-         linePayStatus = {
-           transactionId: transactionId,
-           status: 'API_ERROR',
-           isPaid: order.status === 'confirmed',
-           amount: order.totalAmount,
-           currency: 'TWD',
-           error: '查詢 LINE Pay 狀態時發生錯誤'
-         };
-       }
-     } else {
-       console.warn('⚠️ LINE Pay 訂單但無交易 ID:', orderId);
-       
-       linePayStatus = {
-         transactionId: null,
-         status: 'NO_TRANSACTION_ID',
-         isPaid: order.status === 'confirmed',
-         amount: order.totalAmount,
-         currency: 'TWD',
-         note: 'LINE Pay 訂單但無交易記錄'
-       };
-     }
-   }
+                  await tx.insert(userEventParticipationTable).values(participationData);
+                }
+              });
 
-   res.json({
-     orderId: order.id,
-     orderNumber: order.orderNumber,
-     status: order.status,
-     amount: order.totalAmount,
-     paymentMethod: order.paymentMethod,
-     paymentId: order.paymentId,
-     transactionId: order.transactionId,
-     paidAt: order.paidAt ? dayjs(order.paidAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
-     createdAt: order.createdAt,
-     updatedAt: order.updatedAt ? dayjs(order.updatedAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss') : null,
-     linePayStatus: linePayStatus
-   });
+              response.status = 'confirmed';
+              response.paidAt = dayjs().tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
+              
+              console.log('✅ 付款狀態已同步');
+            }
+          } else {
+            response.linePayStatus = {
+              transactionId: transactionId,
+              status: 'QUERY_FAILED',
+              isPaid: order.status === 'confirmed',
+              amount: order.totalAmount,
+              currency: 'TWD',
+              error: '無法查詢 LINE Pay 即時狀態，顯示本地記錄'
+            };
+          }
+        } catch (error) {
+          console.error('❌ LINE Pay 狀態查詢異常:', error);
+          
+          response.linePayStatus = {
+            transactionId: transactionId,
+            status: 'API_ERROR',
+            isPaid: order.status === 'confirmed',
+            amount: order.totalAmount,
+            currency: 'TWD',
+            error: 'LINE Pay API 查詢失敗'
+          };
+        }
+      } else {
+        response.linePayStatus = {
+          transactionId: null,
+          status: 'NO_TRANSACTION_ID',
+          isPaid: order.status === 'confirmed',
+          amount: order.totalAmount,
+          currency: 'TWD',
+          note: 'LINE Pay 訂單但無交易記錄'
+        };
+      }
+    }
 
- } catch (error) {
-   return handleError(error, res);
- }
+    res.json(response);
+
+  } catch (error) {
+    return handleError(error, res);
+  }
 };
 
 const refundLinePayment = async (req, res) => {

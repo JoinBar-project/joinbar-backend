@@ -492,6 +492,53 @@ const confirmPayment = async (req, res) => {
   }
 };
 
+const getUserOrderHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log(`📋 獲取用戶 ${userId} 的訂單歷史`);
+
+    const userOrders = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersWithDetails = await Promise.all(
+      userOrders.map(async (order) => {
+        const orderItems = await db
+          .select()
+          .from(orderItems)
+          .where(eq(orderItems.orderId, order.id));
+
+        return {
+          ...stringifyBigInts(order),
+          items: orderItems.map(item => stringifyBigInts(item))
+        };
+      })
+    );
+
+    console.log(`✅ 找到 ${ordersWithDetails.length} 筆訂單`);
+
+    res.json({
+      success: true,
+      orders: ordersWithDetails,
+      total: ordersWithDetails.length,
+      summary: {
+        totalOrders: ordersWithDetails.length,
+        pendingCount: ordersWithDetails.filter(order => order.status === 'pending').length,
+        confirmedCount: ordersWithDetails.filter(order => order.status === 'confirmed').length,
+        totalAmount: ordersWithDetails
+          .filter(order => ['confirmed', 'paid'].includes(order.status))
+          .reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ 獲取訂單歷史失敗:', error);
+    return handleError(error, res);
+  }
+};
+
 module.exports = { 
   createOrder,
   getOrder,
@@ -499,5 +546,6 @@ module.exports = {
   updateOrderStatus,
   cancelOrder,
   confirmPayment,
+  getUserOrderHistory,
   ORDER_STATUS
 };
