@@ -20,8 +20,8 @@ CREATE TABLE "users" (
 	"avatar_url" varchar(255),
 	"avatar_key" varchar(255),
 	"avatar_last_updated" timestamp DEFAULT now(),
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now(),
 	"status" smallint DEFAULT 1 NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email"),
 	CONSTRAINT "users_line_user_id_unique" UNIQUE("line_user_id")
@@ -33,7 +33,7 @@ CREATE TABLE "user_notification" (
 	"notification_type" varchar(20) NOT NULL,
 	"content" text NOT NULL,
 	"is_read" boolean DEFAULT false,
-	"created_at" timestamp DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "bars" (

@@ -39,9 +39,9 @@ async function generateAdmin() {
       providerType: 'email',
       status: 1,
     });
-    console.log('✅ 管理員帳號建立成功');
+    console.log('管理員帳號建立成功');
   } else {
-    console.log('ℹ️ 管理員已存在，不重複建立');
+    console.log('管理員已存在，不重複建立');
   }
 }
 
@@ -68,9 +68,9 @@ async function generateUsers(count = 10) {
       });
     }
 
-    console.log('✅ 一般會員資料已寫入');
+    console.log('一般會員資料已寫入');
   } catch (err) {
-    console.error('❌ 一般會員建立失敗', err);
+    console.error('一般會員建立失敗', err);
   }
 }
 
