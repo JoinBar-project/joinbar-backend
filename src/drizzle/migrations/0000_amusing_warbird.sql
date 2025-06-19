@@ -213,6 +213,16 @@ CREATE TABLE "benefitRedeems" (
 	"status" smallint DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "user_cart" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"event_id" bigint NOT NULL,
+	"quantity" integer DEFAULT 1 NOT NULL,
+	"added_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now(),
+	CONSTRAINT "user_cart_user_id_event_id_unique" UNIQUE("user_id","event_id")
+);
+--> statement-breakpoint
 ALTER TABLE "user_notification" ADD CONSTRAINT "user_notification_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_bar_folders" ADD CONSTRAINT "user_bar_folders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_bar_collection" ADD CONSTRAINT "user_bar_collection_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -238,6 +248,9 @@ ALTER TABLE "subs" ADD CONSTRAINT "subs_user_id_users_id_fk" FOREIGN KEY ("user_
 ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_sub_id_subs_id_fk" FOREIGN KEY ("sub_id") REFERENCES "public"."subs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "benefitRedeems" ADD CONSTRAINT "benefitRedeems_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_cart" ADD CONSTRAINT "user_cart_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_cart" ADD CONSTRAINT "user_cart_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_host_user" ON "events" USING btree ("host_user");--> statement-breakpoint
 CREATE INDEX "idx_user" ON "subs" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_sub" ON "benefitRedeems" USING btree ("sub_id");
+CREATE INDEX "idx_sub" ON "benefitRedeems" USING btree ("sub_id");--> statement-breakpoint
+CREATE INDEX "user_cart_user_id_idx" ON "user_cart" USING btree ("user_id");
