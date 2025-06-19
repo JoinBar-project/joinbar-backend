@@ -205,6 +205,22 @@ const messages = pgTable('messages', {
   eventId: bigint('event_id', { mode: 'string' }).references(() => events.id).notNull()
 });
 
+const userCartTable = pgTable('user_cart', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => usersTable.id, { onDelete: 'cascade' })
+    .notNull(),
+  eventId: bigint('event_id', { mode: 'string' })
+    .references(() => events.id, { onDelete: 'cascade' })
+    .notNull(),
+  quantity: integer('quantity').default(1).notNull(),
+  addedAt: timestamp('added_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  userEventUnique: unique().on(table.userId, table.eventId),
+  userIdIdx: index('user_cart_user_id_idx').on(table.userId),
+}));
+
 const subTable = pgTable('subs', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
@@ -234,5 +250,5 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   subIdx: index('idx_sub').on(table.subId),
 })); 
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable };
 

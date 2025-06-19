@@ -12,6 +12,8 @@ const linePayRoutes = require('./src/routes/linePayRoutes');
 const barTagsRoutes = require('./src/routes/barTagsRoutes');
 const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
 const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
+const cartRoutes = require('./src/routes/cartRoutes');
+
 
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
@@ -39,6 +41,7 @@ app.use('/api/sub', subRoutes);
 app.use('/api/benefit', benefitRoutes);
 app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/cart', cartRoutes);
 
 app.get('/health', (req, res) => {
   res.json({
