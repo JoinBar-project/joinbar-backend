@@ -6,6 +6,8 @@ const usersRoutes = require('./src/routes/usersRoutes')
 const eventRoutes = require('./src/routes/eventRoutes');
 const tagsRoutes = require('./src/routes/tagsRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
+const subRoutes = require('./src/routes/subRoutes');
+const benefitRoutes = require('./src/routes/benefitRoutes');
 const linePayRoutes = require('./src/routes/linePayRoutes');
 const barTagsRoutes = require('./src/routes/barTagsRoutes');
 const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
@@ -14,8 +16,6 @@ const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const cookieParser = require('cookie-parser');
-const formatBigIntResponse = require('./src/middlewares/formatBigIntResponse');
-const withTaiwanTime = require('./src/middlewares/withTaiwanTime');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
@@ -28,9 +28,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
 
-app.use(formatBigIntResponse);
-app.use(withTaiwanTime);
-
 app.use('/api/auth/line', lineAuthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
@@ -39,6 +36,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/linepay', linePayRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api/sub', subRoutes);
+app.use('/api/benefit', benefitRoutes);
 app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
