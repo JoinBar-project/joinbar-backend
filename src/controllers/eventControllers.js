@@ -2,7 +2,7 @@ const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
 const { events, eventTags, tags } = require('../models/schema');
-const { eq } = require('drizzle-orm');
+const { eq, and } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
 
