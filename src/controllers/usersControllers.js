@@ -281,6 +281,13 @@ const deleteUserAvatar = async (req, res) => {
       .where(eq(usersTable.id, userId))
       .limit(1);
 
+    if (!userResult) {
+      return res.status(404).json({
+        success: false,
+        message: '查無此使用者',
+      });
+    }
+
     if (userResult.avatarUrl) {
       await deleteImageByUrl(userResult.avatarUrl);
     }
