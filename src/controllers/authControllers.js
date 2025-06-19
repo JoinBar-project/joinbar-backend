@@ -134,7 +134,8 @@ const login = async (req, res) => {
         username: userResult.username,
         email: userResult.email,
         role: userResult.role,
-        isVerifiedEmail: userResult.isVerifiedEmail
+        isVerifiedEmail: userResult.isVerifiedEmail,
+        avatarUrl: userResult.avatarUrl
       },
     });
   } catch (err) {

@@ -2,14 +2,8 @@ const db = require('../config/db');
 const { usersTable } = require('../models/schema');
 const { eq, and } = require('drizzle-orm');
 const dotenv = require('dotenv');
+const { dayjs, tz } = require('../utils/dateFormatter');
 dotenv.config();
-
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-dayjs.extend(utc);
-dayjs.extend(timezone);
-const tz = 'Asia/Taipei';
 
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
 
@@ -155,6 +149,7 @@ const patchUserById = async (req, res) => {
       data: updatedUser,
     });
   } catch (err) {
+    console.error('更新會員資料時發生錯誤:', err);
     res.status(500).json({
       success: false,
       message: '伺服器錯誤',
