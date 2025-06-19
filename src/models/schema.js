@@ -27,8 +27,8 @@ const usersTable = pgTable("users", {
   avatarUrl: varchar("avatar_url", { length: 255 }),
   avatarKey: varchar("avatar_key", { length: 255 }),
   avatarLastUpdated: timestamp("avatar_last_updated").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at",{ withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at",{ withTimezone: true }).defaultNow(),
   status: smallint("status").default(1).notNull(), // 1: 正常 2: 刪除帳號
 });
 
@@ -38,7 +38,7 @@ const userNotificationTable = pgTable("user_notification", {
   notificationType: varchar("notification_type", { length: 20 }).notNull(), // 通知類型: 新的活動參加者 / 新的留言
   content: text("content").notNull(),
   isRead: boolean("is_read").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at",{ withTimezone: true }).defaultNow(),
 });
 
 const barsTable = pgTable("bars", {
