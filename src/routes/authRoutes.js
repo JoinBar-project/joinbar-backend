@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { signup, login } = require('../controllers/authControllers.js');
 const validateSignup = require('../middlewares/validateSignup.js');
+const { signup, login, verifyEmail, resendVerificationEmail } = require("../controllers/authControllers.js");
 
-router.post('/signup', validateSignup, signup);
-router.post('/login', login);
+router.post("/signup", validateSignup, signup);
+router.get("/verify-email", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
+router.post("/login", login);
 
 /**
  * @swagger
@@ -161,4 +163,3 @@ router.post("/signup", validateSignup, signup);
 router.post("/login", login);
 
 module.exports = router;
-

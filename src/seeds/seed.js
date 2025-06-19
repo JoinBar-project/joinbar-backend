@@ -17,43 +17,39 @@ function generatePassword() {
 }
 
 async function generateAdmin() {
-  try {
-    const email = 'admin@test.com';
-    const password = 'Aa201201';
-    const hashedPassword = await bcrypt.hash(password, 10);
+  const adminEmail = 'admin@test.com';
+  const adminPassword = 'Aa201201';
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    const [findAdmin] = await db
-    .select({ email: usersTable.email })
+  const [adminUser] = await db
+    .select()
     .from(usersTable)
-    .where(eq(usersTable.email, email))
+    .where(eq(usersTable.email, adminEmail))
     .limit(1);
 
-    if (!findAdmin) {
-      await db.insert(usersTable).values({
-        username: '管理員',
-        nickname: 'admin',
-        email: email,
-        password: hashedPassword,
-        birthday: new Date('2025-01-01'),
-        role: 'admin',
-        isVerifiedEmail: true,
-        providerType: 'email',
-        status: 1,
-      });
-      console.log('管理員帳號建立成功');
-    } else {
-      console.log('管理員已存在');
-    }
-  } catch (err) {
-    console.error('管理員帳號建立失敗', err);
+  if (!adminUser) {
+    await db.insert(usersTable).values({
+      username: '管理員',
+      nickname: 'admin',
+      email: adminEmail,
+      password: hashedPassword,
+      birthday: new Date('2025-01-01'),
+      role: 'admin',
+      isVerifiedEmail: true,
+      providerType: 'email',
+      status: 1,
+    });
+    console.log('✅ 管理員帳號建立成功');
+  } else {
+    console.log('ℹ️ 管理員已存在，不重複建立');
   }
 }
 
-async function generateUsers() {
+async function generateUsers(count = 10) {
   try {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < count; i++) {
       const username = faker.person.fullName();
-      const nickname = faker.internet.username();
+      const nickname = faker.internet.userName();
       const email = faker.internet.email();
       const password = generatePassword();
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,17 +61,21 @@ async function generateUsers() {
         email,
         password: hashedPassword,
         birthday: new Date(birthday),
+        role: 'user',
         isVerifiedEmail: false,
         providerType: 'email',
         status: 1,
       });
     }
 
-    console.log('假資料已寫入資料庫');
+    console.log('✅ 一般會員資料已寫入');
   } catch (err) {
-    console.error('假資料寫入失敗',err);
+    console.error('❌ 一般會員建立失敗', err);
   }
 }
 
-generateAdmin();
-generateUsers();
+
+(async () => {
+  await generateAdmin();
+  await generateUsers(10);
+})();

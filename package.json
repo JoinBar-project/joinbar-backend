@@ -8,7 +8,8 @@
     "start": "nodemon index.js",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "seed": "node src/seeds/seed.js"
+    "seed": "node src/seeds/seed.js",
+    "seed-events": "node src/seeds/seedEvents.js"
   },
   "repository": {
     "type": "git",
@@ -30,8 +31,11 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.0",
     "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
     "flake-idgen": "^1.4.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.3",
+    "multer": "^2.0.1",
     "pg": "^8.16.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",

@@ -1,5 +1,5 @@
 {
-  "id": "f402cf61-8b6c-40b2-98d6-0111d8044112",
+  "id": "6281c033-9bbd-46dd-a4eb-298bae27c825",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -88,6 +88,24 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "email_verification_token": {
+          "name": "email_verification_token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_verification_expires": {
+          "name": "email_verification_expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_verification_email_sent": {
+          "name": "last_verification_email_sent",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "provider_type": {
           "name": "provider_type",
@@ -715,14 +733,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "start_date": {
-          "name": "start_date",
+        "start_at": {
+          "name": "start_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         },
-        "end_date": {
-          "name": "end_date",
+        "end_at": {
+          "name": "end_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
@@ -751,8 +769,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
+        "create_at": {
+          "name": "create_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
@@ -941,6 +959,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "paid_at": {
           "name": "paid_at",
           "type": "timestamp with time zone",
@@ -956,6 +980,18 @@
         "cancellation_reason": {
           "name": "cancellation_reason",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refund_id": {
+          "name": "refund_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refunded_at": {
+          "name": "refunded_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1373,13 +1409,13 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_cart": {
-      "name": "user_cart",
+    "public.subs": {
+      "name": "subs",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "bigint",
           "primaryKey": true,
           "notNull": true
         },
@@ -1389,37 +1425,53 @@
           "primaryKey": false,
           "notNull": true
         },
-        "event_id": {
-          "name": "event_id",
-          "type": "bigint",
+        "sub_type": {
+          "name": "sub_type",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
-        "quantity": {
-          "name": "quantity",
+        "price": {
+          "name": "price",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "smallint",
           "primaryKey": false,
           "notNull": true,
           "default": 1
         },
-        "added_at": {
-          "name": "added_at",
+        "create_at": {
+          "name": "create_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": true
         },
-        "updated_at": {
-          "name": "updated_at",
+        "modify_at": {
+          "name": "modify_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {
-        "user_cart_user_id_idx": {
-          "name": "user_cart_user_id_idx",
+        "idx_user": {
+          "name": "idx_user",
           "columns": [
             {
               "expression": "user_id",
@@ -1435,9 +1487,113 @@
         }
       },
       "foreignKeys": {
-        "user_cart_user_id_users_id_fk": {
-          "name": "user_cart_user_id_users_id_fk",
-          "tableFrom": "user_cart",
+        "subs_user_id_users_id_fk": {
+          "name": "subs_user_id_users_id_fk",
+          "tableFrom": "subs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.benefitRedeems": {
+      "name": "benefitRedeems",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sub_id": {
+          "name": "sub_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bar_id": {
+          "name": "bar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "benefit": {
+          "name": "benefit",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redeem_at": {
+          "name": "redeem_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "create_at": {
+          "name": "create_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "idx_sub": {
+          "name": "idx_sub",
+          "columns": [
+            {
+              "expression": "sub_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "benefitRedeems_user_id_users_id_fk": {
+          "name": "benefitRedeems_user_id_users_id_fk",
+          "tableFrom": "benefitRedeems",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -1448,12 +1604,25 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "user_cart_event_id_events_id_fk": {
-          "name": "user_cart_event_id_events_id_fk",
-          "tableFrom": "user_cart",
-          "tableTo": "events",
+        "benefitRedeems_sub_id_subs_id_fk": {
+          "name": "benefitRedeems_sub_id_subs_id_fk",
+          "tableFrom": "benefitRedeems",
+          "tableTo": "subs",
           "columnsFrom": [
-            "event_id"
+            "sub_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "benefitRedeems_bar_id_bars_id_fk": {
+          "name": "benefitRedeems_bar_id_bars_id_fk",
+          "tableFrom": "benefitRedeems",
+          "tableTo": "bars",
+          "columnsFrom": [
+            "bar_id"
           ],
           "columnsTo": [
             "id"
@@ -1463,16 +1632,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_cart_user_id_event_id_unique": {
-          "name": "user_cart_user_id_event_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "event_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

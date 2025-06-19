@@ -16,7 +16,12 @@ const usersTable = pgTable("users", {
   lineStatusMessage: text('line_status_message'),
   isLineUser: boolean('is_line_user').default(false),
 
+  // email 驗證相關欄位
   isVerifiedEmail: boolean("is_verified_email").default(false),
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  lastVerificationEmailSent: timestamp("last_verification_email_sent"),
+
   providerType: varchar("provider_type", { length: 20 }), // 註冊方式: Email / Line / Google
   providerId: varchar("provider_id", { length: 100 }),
   avatarUrl: varchar("avatar_url", { length: 255 }),
@@ -106,13 +111,13 @@ const events = pgTable('events', {
   name: varchar('name', { length: 50 }).notNull(),
   barName: varchar('bar_name', { length: 100 }).notNull(),
   location: varchar('location', { length: 100 }).notNull(),
-  startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-  endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
   maxPeople: integer('max_people'),
   imageUrl: varchar('image_url', { length: 255 }),
   price: integer('price'),
   hostUser: integer('host_user').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
   modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
   status: smallint('status').default(1).notNull(), //1: 正常，2: 刪除， 3: 活動結束(程式判斷沒存DB)
 }, (table) => ({
@@ -167,9 +172,12 @@ const orders = pgTable('orders', {
   status: varchar('status', { length: 20 }).default('pending').notNull(),
   paymentMethod: varchar('payment_method', { length: 20 }),
   paymentId: varchar('payment_id', { length: 255 }),
+  transactionId: varchar('transaction_id', { length: 255 }), 
   paidAt: timestamp('paid_at', { withTimezone: true }),
   cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
   cancellationReason: varchar('cancellation_reason', { length: 255 }),
+  refundId: varchar('refund_id', { length: 255 }), 
+  refundedAt: timestamp('refunded_at', { withTimezone: true }), 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
@@ -213,5 +221,34 @@ const userCartTable = pgTable('user_cart', {
   userIdIdx: index('user_cart_user_id_idx').on(table.userId),
 }));
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages,barTags, userTags, userCartTable };
+const subTable = pgTable('subs', {
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  subType: varchar('sub_type', { length: 100 }).notNull(),
+  price: integer('price'),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
+  status: smallint('status').default(1).notNull(), // 1: 已訂閱，2: 取消，3: 到期
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
+  modifyAt: timestamp('modify_at', { withTimezone: true }).notNull(),
+}, (table) => ({
+  userIdx: index('idx_user').on(table.userId),
+}));
+
+const benefitRedeemsTable = pgTable('benefitRedeems',{
+  id: bigint('id', { mode: 'string' }).primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  subId: bigint('sub_id', { mode: 'string' }).notNull().references(() => subTable.id, { onDelete: "cascade" }),
+  barId: integer('bar_id').references(() => barsTable.id, {onDelete: 'cascade'}),
+  benefit: varchar('benefit', { length: 255 }).notNull(),
+  startAt: timestamp('start_at', { withTimezone: true }).notNull(),
+  endAt: timestamp('end_at', { withTimezone: true }).notNull(),
+  redeemAt: timestamp('redeem_at', { withTimezone: true, nullable: true }), //未核銷設為 null
+  createAt: timestamp('create_at', { withTimezone: true }).notNull(),
+  status: smallint('status').default(0).notNull(), // 0:尚未生成優惠券, 1: 未使用, 2: 已使用
+}, (table) => ({
+  subIdx: index('idx_sub').on(table.subId),
+})); 
+
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable };
 
