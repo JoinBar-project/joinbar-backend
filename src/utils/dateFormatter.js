@@ -7,8 +7,6 @@ dayjs.extend(timezone);
 
 const tz = 'Asia/Taipei';
 
-const allowedFields = ['startDate', 'endDate', 'createdAt', 'modifyAt'];
-
 function formatToTaiwanTime(data) {
   if (Array.isArray(data)) {
     return data.map(formatToTaiwanTime);
@@ -19,7 +17,13 @@ function formatToTaiwanTime(data) {
     for (const key in data) {
       const value = data[key];
 
-      if (allowedFields.includes(key) && (value instanceof Date || (typeof value === 'string' && dayjs(value).isValid()))) {
+      const isDateObject =
+        Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime());
+
+      const isISODateString =
+        typeof value === 'string' && dayjs(value).isValid() && value.includes('T');
+
+      if (isDateObject || isISODateString) {
         result[key] = dayjs.utc(value).tz(tz).format('YYYY-MM-DD HH:mm:ss');
       } else if (typeof value === 'object') {
         result[key] = formatToTaiwanTime(value);
@@ -34,5 +38,7 @@ function formatToTaiwanTime(data) {
 }
 
 module.exports = {
+  dayjs,
+  tz,
   formatToTaiwanTime,
 };
