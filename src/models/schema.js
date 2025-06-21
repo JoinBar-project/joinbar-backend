@@ -185,17 +185,18 @@ const orders = pgTable('orders', {
 const orderItems = pgTable('order_items', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderId: bigint('order_id', { mode: 'string' }).references(() => orders.id, { onDelete: 'cascade' }).notNull(),
-  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }).notNull(),
-  eventName: varchar('event_name', { length: 255 }).notNull(),
-  barName: varchar('bar_name', { length: 100 }).notNull(),
-  location: varchar('location', { length: 255 }).notNull(),
-  eventStartDate: timestamp('event_start_date', { withTimezone: true }).notNull(),
-  eventEndDate: timestamp('event_end_date', { withTimezone: true }).notNull(),
-  hostUserId: integer('host_user_id').notNull(),
+  itemType: smallint('item_type').notNull(), // 1: event, 2: subscription
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }),
+  subscriptionId: bigint('subscription_id', { mode: 'string' }).references(() => subTable.id, { onDelete: 'restrict' }),
   price: integer('price').notNull(),
   quantity: integer('quantity').notNull(),
-  subtotal: integer('subtotal').notNull() 
+  subtotal: integer('subtotal').notNull(),
 });
+
+const ITEM_TYPES = {
+  EVENT: 1,
+  SUBSCRIPTION: 2
+};
 
 const messages = pgTable('messages', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
@@ -250,5 +251,5 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   subIdx: index('idx_sub').on(table.subId),
 })); 
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable, ITEM_TYPES };
 
