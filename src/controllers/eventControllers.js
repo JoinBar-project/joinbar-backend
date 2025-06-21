@@ -36,10 +36,12 @@ const createEvent = async (req, res) => {
   }
 
   if (typeof cleanBody.tags === 'string') {
-    cleanBody.tags = [cleanBody.tags];
-  }
-  if (!Array.isArray(cleanBody.tags)) {
-    cleanBody.tags = [];
+    try {
+      cleanBody.tags = JSON.parse(cleanBody.tags);
+    } catch (e) {
+      console.warn('tags JSON.parse 失敗:', cleanBody.tags);
+      cleanBody.tags = [];
+    }
   }
 
   let imageUrl = '';
