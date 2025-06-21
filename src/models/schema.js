@@ -1,5 +1,10 @@
 const { pgTable, varchar, bigint, timestamp, integer, index, smallint, serial, primaryKey, date, boolean, text, numeric, unique } = require('drizzle-orm/pg-core');
 
+const ITEM_TYPES = {
+  EVENT: 1,
+  SUBSCRIPTION: 2
+};
+
 const usersTable = pgTable("users", {
   id: serial().primaryKey(),
   username: varchar({ length: 100 }).notNull(),
@@ -192,11 +197,6 @@ const orderItems = pgTable('order_items', {
   quantity: integer('quantity').notNull(),
   subtotal: integer('subtotal').notNull(),
 });
-
-const ITEM_TYPES = {
-  EVENT: 1,
-  SUBSCRIPTION: 2
-};
 
 const messages = pgTable('messages', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
