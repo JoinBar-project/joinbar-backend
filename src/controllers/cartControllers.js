@@ -18,14 +18,16 @@ const getUserCart = async (req, res) => {
         eventPrice: events.price,
         eventImageUrl: events.imageUrl,
         barName: events.barName,
-        eventStartDate: events.startDate,
-        eventEndDate: events.endDate,
+        eventStartDate: events.startAt,    
+        eventEndDate: events.endAt,       
         eventStatus: events.status,
       })
       .from(userCartTable)
       .innerJoin(events, eq(userCartTable.eventId, events.id))
       .where(eq(userCartTable.userId, userId))
       .orderBy(userCartTable.addedAt);
+    
+    console.log('🛒 購物車查詢結果:', cartItems.length);
     
     const validItems = cartItems.filter(item => {
       const isActive = item.eventStatus === 1;
