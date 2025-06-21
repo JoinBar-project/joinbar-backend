@@ -35,9 +35,11 @@ const getUserCart = async (req, res) => {
       return isActive && notExpired;
     });
     
+    
     const formattedItems = validItems.map(item => ({
-      id: item.cartId,
-      eventId: item.eventId,
+      id: String(item.eventId),       
+      cartId: item.cartId,             
+      eventId: String(item.eventId),   
       name: item.eventName,
       price: item.eventPrice,
       imageUrl: item.eventImageUrl,
@@ -118,9 +120,12 @@ const removeFromCart = async (req, res) => {
     const userId = req.user.id;
     const { eventId } = req.params;
     
-    const result = await db
+    await db
       .delete(userCartTable)
-      .where(and(eq(userCartTable.userId, userId), eq(userCartTable.eventId, eventId)));
+      .where(and(
+        eq(userCartTable.userId, userId), 
+        eq(userCartTable.eventId, eventId)
+      ));
     
     res.json({
       success: true,
