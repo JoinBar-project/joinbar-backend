@@ -15,11 +15,11 @@ const { checkOrderOwnership, checkAdminRole } = require('../middlewares/checkPer
 const router = express.Router();
 
 router.post('/create', authenticateToken, createOrder);
-router.get('/:id', authenticateToken, checkOrderOwnership, getOrder);
-router.get('/:id/details', authenticateToken, checkOrderOwnership, getOrderWithDetails);
 router.get('/history', authenticateToken, getUserOrderHistory);
 router.put('/update-status/:id', authenticateToken, checkAdminRole, updateOrderStatus);
 router.put('/confirm-payment/:id', authenticateToken, checkOrderOwnership, confirmPayment);
+router.get('/:id/details', authenticateToken, checkOrderOwnership, getOrderWithDetails);
+router.get('/:id', authenticateToken, checkOrderOwnership, getOrder);
 router.delete('/:id', authenticateToken, cancelOrder);
 
 module.exports = router;
