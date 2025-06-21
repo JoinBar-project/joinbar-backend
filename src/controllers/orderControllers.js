@@ -2,7 +2,7 @@ const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
 const { orders, orderItems, events, userEventParticipationTable } = require('../models/schema');
-const { eq, and, inArray, count } = require('drizzle-orm');
+const { eq, and, inArray, count, desc } = require('drizzle-orm');
 const { checkUserExists } = require('../middlewares/checkPermission');
 
 const dayjs = require('dayjs');
@@ -507,14 +507,14 @@ const getUserOrderHistory = async (req, res) => {
 
     const ordersWithDetails = await Promise.all(
       userOrders.map(async (order) => {
-        const orderItems = await db
+        const orderItemsList = await db
           .select()
-          .from(orderItems)
+          .from(orderItems) 
           .where(eq(orderItems.orderId, order.id));
 
         return {
           ...stringifyBigInts(order),
-          items: orderItems.map(item => stringifyBigInts(item))
+          items: orderItemsList.map(item => stringifyBigInts(item))  
         };
       })
     );
