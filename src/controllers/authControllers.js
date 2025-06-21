@@ -277,8 +277,8 @@ const resendVerificationEmail = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-  const emailToken = req.body.refreshToken;
-  const lineToken = req.cookies.refresh_token;
+  const emailToken = req.body?.refreshToken;
+  const lineToken = req.cookies?.refresh_token;
   const refreshToken = emailToken || lineToken;
 
   if (!refreshToken) {
@@ -323,7 +323,7 @@ const refreshToken = async (req, res) => {
       accessToken: newAccessToken,
     });
   } catch (err) {
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: 'refresh token 無效或過期',
     });
