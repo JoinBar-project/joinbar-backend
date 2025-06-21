@@ -43,13 +43,11 @@ const userNotificationTable = pgTable("user_notification", {
 
 const barsTable = pgTable("bars", {
   id: serial().primaryKey(),
+  googlePlaceId: varchar('google_place_id', { length: 255 }).unique().notNull(),
   name: varchar({ length: 100 }).notNull(),
   address: varchar({ length: 255 }),
-  phone: varchar({ length: 20 }),
-  description: text(),
-  tags: varchar({ length: 20 }),
-  rating: numeric("rating", { precision: 2, scale: 1 }), // 計算至小數點後一位
-  openHours: varchar("open_hours", { length: 50 }),
+  latitude: numeric('latitude', { precision: 10, scale: 7 }),
+  longitude: numeric('longitude', { precision: 10, scale: 7 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
