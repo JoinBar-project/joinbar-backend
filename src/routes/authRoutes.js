@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const validateSignup = require('../middlewares/validateSignup.js');
-const { signup, login, verifyEmail, resendVerificationEmail } = require("../controllers/authControllers.js");
+const { signup, login, verifyEmail, resendVerificationEmail, refreshToken } = require('../controllers/authControllers.js');
 
-router.post("/signup", validateSignup, signup);
-router.get("/verify-email", verifyEmail);
-router.post("/resend-verification", resendVerificationEmail);
-router.post("/login", login);
+router.get('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerificationEmail);
+router.post('/refresh-token', refreshToken);
 
 /**
  * @swagger
@@ -29,7 +28,7 @@ router.post("/login", login);
  *             type: object
  *             required:
  *               - username
- *               - nickname 
+ *               - nickname
  *               - email
  *               - password
  *             properties:
@@ -101,7 +100,7 @@ router.post("/login", login);
  *       409:
  *         description: 此信箱已被註冊
  */
-router.post("/signup", validateSignup, signup);
+router.post('/signup', validateSignup, signup);
 
 /**
  * @swagger
@@ -160,6 +159,7 @@ router.post("/signup", validateSignup, signup);
  *       401:
  *         description: 信箱或密碼錯誤
  */
-router.post("/login", login);
+router.post('/login', login);
+
 
 module.exports = router;
