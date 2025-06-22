@@ -18,8 +18,8 @@ const getUserCart = async (req, res) => {
         eventPrice: events.price,
         eventImageUrl: events.imageUrl,
         barName: events.barName,
-        eventStartDate: events.startDate,
-        eventEndDate: events.endDate,
+        eventStartDate: events.startAt,    
+        eventEndDate: events.endAt,       
         eventStatus: events.status,
       })
       .from(userCartTable)
@@ -27,15 +27,19 @@ const getUserCart = async (req, res) => {
       .where(eq(userCartTable.userId, userId))
       .orderBy(userCartTable.addedAt);
     
+    console.log('🛒 購物車查詢結果:', cartItems.length);
+    
     const validItems = cartItems.filter(item => {
       const isActive = item.eventStatus === 1;
       const notExpired = !item.eventEndDate || dayjs(item.eventEndDate).isAfter(dayjs());
       return isActive && notExpired;
     });
     
+    
     const formattedItems = validItems.map(item => ({
-      id: item.cartId,
-      eventId: item.eventId,
+      id: String(item.eventId),       
+      cartId: item.cartId,             
+      eventId: String(item.eventId),   
       name: item.eventName,
       price: item.eventPrice,
       imageUrl: item.eventImageUrl,
@@ -116,9 +120,12 @@ const removeFromCart = async (req, res) => {
     const userId = req.user.id;
     const { eventId } = req.params;
     
-    const result = await db
+    await db
       .delete(userCartTable)
-      .where(and(eq(userCartTable.userId, userId), eq(userCartTable.eventId, eventId)));
+      .where(and(
+        eq(userCartTable.userId, userId), 
+        eq(userCartTable.eventId, eventId)
+      ));
     
     res.json({
       success: true,
