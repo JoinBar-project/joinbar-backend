@@ -190,9 +190,10 @@ const orders = pgTable('orders', {
 const orderItems = pgTable('order_items', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderId: bigint('order_id', { mode: 'string' }).references(() => orders.id, { onDelete: 'cascade' }).notNull(),
-  itemType: smallint('item_type').notNull(), // 1: event, 2: subscription
+  itemType: smallint('item_type').notNull(), 
   eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }),
   subscriptionId: bigint('subscription_id', { mode: 'string' }).references(() => subTable.id, { onDelete: 'restrict' }),
+  subscriptionType: varchar('subscription_type', { length: 50 }), 
   price: integer('price').notNull(),
   quantity: integer('quantity').notNull(),
   subtotal: integer('subtotal').notNull(),

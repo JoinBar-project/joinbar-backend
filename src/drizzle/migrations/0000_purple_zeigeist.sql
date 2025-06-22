@@ -143,6 +143,7 @@ CREATE TABLE "order_items" (
 	"item_type" smallint NOT NULL,
 	"event_id" bigint,
 	"subscription_id" bigint,
+	"subscription_type" varchar(50),
 	"price" integer NOT NULL,
 	"quantity" integer NOT NULL,
 	"subtotal" integer NOT NULL

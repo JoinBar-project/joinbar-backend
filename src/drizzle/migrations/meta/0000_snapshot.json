@@ -1,5 +1,5 @@
 {
-  "id": "a797b333-107a-4030-be44-e016834f2cd6",
+  "id": "197d7e97-6755-4d4b-b2c5-ae0116f27579",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1071,6 +1071,12 @@
         "subscription_id": {
           "name": "subscription_id",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_type": {
+          "name": "subscription_type",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": false
         },
