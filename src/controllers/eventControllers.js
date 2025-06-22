@@ -22,6 +22,14 @@ const createEvent = async (req, res) => {
     return res.status(400).json({ message: '開始或結束時間格式錯誤' });
   }
 
+  if (parsedStart.isAfter(parsedEnd)) {
+  return res.status(400).json({ message: '開始時間不可晚於結束時間' });
+}
+
+  if (parsedStart.isBefore(dayjs().tz(tz))) {
+    return res.status(400).json({ message: '開始時間不可早於現在時間' });
+  }
+
   if (!cleanBody.name || !cleanBody.barName || !cleanBody.location || !cleanBody.startAt || !cleanBody.endAt) {
     return res.status(400).json({ message: 'name、barName、location、startAt、endAt 為必填欄位' });
   }
@@ -136,6 +144,21 @@ const updateEvent = async (req, res) => {
       return res.status(400).json({
         message: '圖片格式錯誤，請上傳 jpeg/png/webp/jfif',
       });
+    }
+
+    const parsedStart = req.body.startAt ? dayjs(req.body.startAt) : dayjs(event.startAt);
+    const parsedEnd = req.body.endAt ? dayjs(req.body.endAt) : dayjs(event.endAt);
+
+    if (!parsedStart.isValid() || !parsedEnd.isValid()) {
+      return res.status(400).json({ message: '開始或結束時間格式錯誤' });
+    }
+
+    if (parsedStart.isAfter(parsedEnd)) {
+      return res.status(400).json({ message: '開始時間不可晚於結束時間' });
+    }
+
+    if (parsedStart.isBefore(dayjs().tz(tz))) {
+      return res.status(400).json({ message: '開始時間不可早於現在時間' });
     }
 
     if (imageFile) {

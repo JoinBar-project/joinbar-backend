@@ -8,7 +8,6 @@ const { dayjs, tz } = require('../utils/dateFormatter');
 const faker = new Faker({ locale: [zh_TW] });
 const flake = new FlakeId({ id: 1 });
 
-// ✅ Firebase 圖片 URL 陣列（請使用你自己的真實圖片）
 const firebaseImageUrls = [
   "https://firebasestorage.googleapis.com/v0/b/joinbar-2cf9f.firebasestorage.app/o/events%2Fevent-01.jpg?alt=media&token=2b7a7e6f-fdf2-43c7-a61c-5b9859fe5083",
   "https://firebasestorage.googleapis.com/v0/b/joinbar-2cf9f.firebasestorage.app/o/events%2Fevent-02.jpg?alt=media&token=b48214d3-695f-4df8-a152-cd34780ea090",
