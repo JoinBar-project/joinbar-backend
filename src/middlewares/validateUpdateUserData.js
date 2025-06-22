@@ -7,8 +7,8 @@ const updateUserDataSchema = z.object({
     z.undefined()]),
   nickname: z.union([
     z.string()
-      .min(1, '使用者名稱至少需要 1 個字元')
-      .max(100, '使用者名稱不可超過 100 個字元'),
+      .min(1, '暱稱至少需要 1 個字元')
+      .max(100, '暱稱不可超過 100 個字元'),
       z.undefined()]),
   birthday: z.union([
     z.string()
@@ -23,9 +23,10 @@ const updateUserDataSchema = z.object({
         return birthDate <= today;
         }, '生日不能是未來日期'),
     z.undefined()]),
-  avatarUrl: z.union([
-    z.string().url('請輸入正確的頭像網址格式'),
-    z.undefined()]),
+  avatarUrl: z.string()
+      .url('請輸入正確的頭像網址格式')
+      .nullable()
+      .optional(),
 });
 
 const validateUpdateUserData = (req, res, next) => {

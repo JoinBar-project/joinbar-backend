@@ -119,13 +119,12 @@ const patchUserById = async (req, res) => {
       });
     }
 
-    const { username, nickname, birthday, avatarUrl } = req.body;
+    const { username, nickname, birthday } = req.body;
 
     const fieldsToUpdate = {};
     if (username) fieldsToUpdate.username = username;
     if (nickname) fieldsToUpdate.nickname = nickname;
     if (birthday) fieldsToUpdate.birthday = birthday;
-    if (avatarUrl) fieldsToUpdate.avatarUrl = avatarUrl;
     fieldsToUpdate.updatedAt = dayjs().tz(tz).toDate();
 
     const [updatedUser] = await db
@@ -137,7 +136,6 @@ const patchUserById = async (req, res) => {
         username: usersTable.username,
         nickname: usersTable.nickname,
         birthday: usersTable.birthday,
-        avatarUrl: usersTable.avatarUrl,
         email: usersTable.email,
         createdAt: usersTable.createdAt,
         updatedAt: usersTable.updatedAt,
