@@ -9,7 +9,8 @@ const updateUserDataSchema = z.object({
     z.string()
       .min(1, '暱稱至少需要 1 個字元')
       .max(100, '暱稱不可超過 100 個字元'),
-      z.undefined()]),
+    z.null(),
+    z.undefined()]),
   birthday: z.union([
     z.string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, '生日格式錯誤，請輸入 YYYY-MM-DD 格式')

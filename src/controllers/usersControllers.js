@@ -123,23 +123,28 @@ const patchUserById = async (req, res) => {
 
     const fieldsToUpdate = {};
     if (username) fieldsToUpdate.username = username;
-    if (nickname) fieldsToUpdate.nickname = nickname;
-    if (birthday) fieldsToUpdate.birthday = birthday;
+    if (nickname !== undefined) {
+      fieldsToUpdate.nickname = nickname === '' ? null : nickname;
+    }
+    if (birthday !== undefined) {
+      fieldsToUpdate.birthday = birthday === '' ? null : birthday;
+    }
+    
     fieldsToUpdate.updatedAt = dayjs().tz(tz).toDate();
 
     const [updatedUser] = await db
-      .update(usersTable)
-      .set(fieldsToUpdate)
-      .where(eq(usersTable.id, userId))
-      .returning({
-        id: usersTable.id,
-        username: usersTable.username,
-        nickname: usersTable.nickname,
-        birthday: usersTable.birthday,
-        email: usersTable.email,
-        createdAt: usersTable.createdAt,
-        updatedAt: usersTable.updatedAt,
-      });
+    .update(usersTable)
+    .set(fieldsToUpdate)
+    .where(eq(usersTable.id, userId))
+    .returning({
+      id: usersTable.id,
+      username: usersTable.username,
+      nickname: usersTable.nickname,
+      birthday: usersTable.birthday,
+      email: usersTable.email,
+      createdAt: usersTable.createdAt,
+      updatedAt: usersTable.updatedAt,
+    });
 
     return res.status(200).json({
       success: true,
@@ -213,10 +218,10 @@ const updateUserAvatar = async (req, res) => {
     }
     // 先確認資料庫是否舊頭像 URL，有的話先刪掉再換成新的
     const [userResult] = await db
-      .select({ avatarUrl: usersTable.avatarUrl })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId))
-      .limit(1);
+    .select({ avatarUrl: usersTable.avatarUrl })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
 
     if (!userResult) {
       return res.status(404).json({
@@ -274,10 +279,10 @@ const deleteUserAvatar = async (req, res) => {
     }
 
     const [userResult] = await db
-      .select({ avatarUrl: usersTable.avatarUrl })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId))
-      .limit(1);
+    .select({ avatarUrl: usersTable.avatarUrl })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
 
     if (!userResult) {
       return res.status(404).json({
