@@ -1,4 +1,3 @@
-// src/services/googleMaps.js
 const axios = require('axios');
 require('dotenv').config({ path: '../.env' });
 
@@ -13,7 +12,7 @@ const getBarsFromGoogleMaps = async (query, location, radius = 5000) => {
         radius: radius,
         type: 'bar',
         language: 'zh-TW',
-        key: process.env.Maps_API_KEY,
+        key: process.env.VITE_GOOGLE_MAPS_API_KEY,
       },
       timeout: 2000,
     });
