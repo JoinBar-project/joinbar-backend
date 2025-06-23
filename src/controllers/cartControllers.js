@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const { userCartTable, events } = require('../models/schema');
-const { eq, and } = require('drizzle-orm');
+const { eq, and, inArray } = require('drizzle-orm');
 const dayjs = require('dayjs');
 
 const getUserCart = async (req, res) => {
