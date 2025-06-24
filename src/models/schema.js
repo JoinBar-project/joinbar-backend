@@ -48,7 +48,8 @@ const barsTable = pgTable("bars", {
   address: varchar({ length: 255 }),
   latitude: numeric('latitude', { precision: 10, scale: 7 }),
   longitude: numeric('longitude', { precision: 10, scale: 7 }),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at",{ withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at",{ withTimezone: true }).defaultNow(),
 });
 
 const userBarFoldersTable = pgTable("user_bar_folders", {
@@ -237,8 +238,6 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   id: bigint('id', { mode: 'string' }).primaryKey(),
   userId: integer('user_id').notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   subId: bigint('sub_id', { mode: 'string' }).notNull().references(() => subTable.id, { onDelete: "cascade" }),
-  selectedGooglePlaceId: varchar('selected_google_place_id', { length: 255 }), // 用戶選擇的 Google Place ID
-  selectedBarName: varchar('selected_bar_name', { length: 255 }), // 用戶選擇的酒吧名稱
   barId: integer('bar_id').references(() => barsTable.id, {onDelete: 'cascade'}),
   benefit: varchar('benefit', { length: 255 }).notNull(),
   startAt: timestamp('start_at', { withTimezone: true }).notNull(),
