@@ -8,4 +8,8 @@ const barController = require("../controllers/barController");
 router.get("/bars", /* authMiddleware, */ barController.getBars); // 新增：定義 GET /api/bars 路由
 router.post("/bars", /* authMiddleware, */ barController.createBar);
 
+router.get("/favorites", favoritesController.getFavorites);
+router.post("/favorites", favoritesController.addFavorite);
+router.delete("/favorites/:barId", favoritesController.removeFavorite);
+
 module.exports = router;
