@@ -122,9 +122,15 @@ const validateOrderInput = async (userId, items) => {
   }
   
   for (const item of items) {
-    if (!item.itemType || ![ITEM_TYPES.EVENT, ITEM_TYPES.SUBSCRIPTION].includes(item.itemType)) {
-      throw new Error('商品類型無效');
+    // 👈 轉換為數字並驗證
+    const itemType = parseInt(item.itemType);
+    
+    if (!itemType || ![ITEM_TYPES.EVENT, ITEM_TYPES.SUBSCRIPTION].includes(itemType)) {
+      throw new Error(`商品類型無效: 收到 ${item.itemType}, 期望 ${ITEM_TYPES.EVENT} 或 ${ITEM_TYPES.SUBSCRIPTION}`);
     }
+    
+    // 👈 統一轉換為數字
+    item.itemType = itemType;
     
     if (item.itemType === ITEM_TYPES.EVENT && !item.eventId) {
       throw new Error('活動商品需要 eventId');
@@ -134,9 +140,11 @@ const validateOrderInput = async (userId, items) => {
       throw new Error('訂閱商品需要 subscriptionType');
     }
     
-    if (item.quantity !== 1) {
+    if (item.quantity !== 1 && parseInt(item.quantity) !== 1) {
       throw new Error('每個商品只能購買1個');
     }
+    
+    item.quantity = 1;
   }
   
   return true;
@@ -303,13 +311,6 @@ const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
     subscriptionId: item.subscriptionId,
     subscriptionType: item.subscriptionType, 
     price: item.price,
-    eventName: item.eventName,
-    barName: item.barName,
-    location: item.location,
-    eventStartDate: item.startAt || item.startDate,  
-    eventEndDate: item.endAt || item.endDate,        
-    hostUserId: item.hostUserId,
-    price: item.price, 
     quantity: 1,
     subtotal: item.price
   }));

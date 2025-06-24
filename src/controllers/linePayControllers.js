@@ -38,102 +38,128 @@ const handleError = (err, res) => {
 };
 
 const createLinePayment = async (req, res) => {
- try {
-   const { orderId } = req.body;
-   const userId = req.user.id;
-   
-   const [order] = await db
-     .select()
-     .from(orders)
-     .where(and(
-       eq(orders.id, orderId),
-       eq(orders.userId, userId),
-       eq(orders.status, 'pending')
-     ));
-   
-   if (!order) {
-     return res.status(404).json({
-       error: '找不到待付款訂單',
-       code: 'ORDER_NOT_FOUND'
-     });
-   }
+  try {
+    const { orderId } = req.body;
+    const userId = req.user.id;
+    
+    console.log('🔄 創建 LINE Pay，訂單 ID:', String(orderId)); 
+    
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(
+        eq(orders.id, String(orderId)), 
+        eq(orders.userId, userId),
+        eq(orders.status, 'pending')
+      ));
+    
+    if (!order) {
+      return res.status(404).json({
+        error: '找不到待付款訂單',
+        code: 'ORDER_NOT_FOUND'
+      });
+    }
 
-   if (order.paymentId && order.paymentMethod === 'linepay') {
-     const statusCheck = await LinePayProvider.checkPaymentStatus(order.paymentId);
-     if (statusCheck.success && !statusCheck.isPaid) {
-       return res.json({
-         success: true,
-         message: '使用現有付款交易',
-         data: {
-           orderId: order.id,
-           transactionId: order.paymentId,
-           message: '請完成您的 LINE Pay 付款'
-         }
-       });
-     }
-   }
+    if (order.paymentId && order.paymentMethod === 'linepay') {
+      const statusCheck = await LinePayProvider.checkPaymentStatus(order.paymentId);
+      if (statusCheck.success && !statusCheck.isPaid) {
+        return res.json({
+          success: true,
+          message: '使用現有付款交易',
+          data: {
+            orderId: order.id,
+            transactionId: order.paymentId,
+            message: '請完成您的 LINE Pay 付款'
+          }
+        });
+      }
+    }
 
-   const orderItemsList = await db
-     .select()
-     .from(orderItems)
-     .where(eq(orderItems.orderId, orderId));
+    const orderItemsList = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, orderId));
 
-   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-   
-   const paymentData = {
-     orderId: order.id,
-     orderNumber: order.orderNumber,
-     amount: order.totalAmount,
-     currency: 'TWD',
-     description: `活動訂票 - ${orderItemsList.length} 個活動`,
-     returnUrl: `${backendUrl}/api/linepay/confirm?orderId=${order.id}`,
-     cancelUrl: `${frontendUrl}/payment/cancel?orderId=${order.id}`,
-     packages: [{
-       id: `package_${order.id}`,
-       amount: order.totalAmount,
-       name: '活動票券',
-       products: orderItemsList.map((item, index) => ({
-         id: `product_${item.id}`,
-         name: `${item.eventName} - ${item.barName}`,
-         quantity: item.quantity,
-         price: item.price
-       }))
-     }]
-   };
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    
+    const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
+    const isAllEvent = orderItemsList.every(item => item.itemType === 1);
+    
+    let returnUrl = `${backendUrl}/api/linepay/confirm?orderId=${order.id}`;
+    let description = `活動訂票 - ${orderItemsList.length} 個活動`;
+    let packageName = '活動票券';
+    let products = orderItemsList.map((item, index) => ({
+      id: `product_${String(item.id)}`, 
+      name: item.eventName ? `${item.eventName} - ${item.barName || ''}` : `活動 ${index + 1}`,
+      quantity: Number(item.quantity),   
+      price: Number(item.price)           
+    }));
+    
+    if (isAllSubscription) {
+      returnUrl = `${frontendUrl}/linepay/return`;
+      description = `訂閱方案 - ${orderItemsList.length} 項`;
+      packageName = '訂閱服務';
+      products = orderItemsList.map((item, index) => ({
+        id: `product_${String(item.id)}`,   
+        name: item.subscriptionType ? `訂閱：${item.subscriptionType}` : `訂閱方案 ${index + 1}`,
+        quantity: Number(item.quantity),     
+        price: Number(item.price)           
+      }));
+    }
 
-   const paymentResult = await LinePayProvider.createPayment(paymentData);
-   
-   if (!paymentResult.success) {
-     return res.status(400).json({
-       error: 'LINE Pay 付款創建失敗',
-       message: paymentResult.message,
-       code: paymentResult.code || 'LINEPAY_ERROR'
-     });
-   }
+    const paymentData = {
+      orderId: String(order.id),
+      orderNumber: order.orderNumber,
+      amount: Number(order.totalAmount),
+      currency: 'TWD',
+      description: description,
+      returnUrl: returnUrl,
+      cancelUrl: `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`,
+      packages: [{
+        id: `package_${String(order.id)}`,
+        amount: Number(order.totalAmount),
+        name: packageName,
+        products: products
+      }]
+    };
 
-   await db.update(orders).set({
-     paymentMethod: 'linepay',
-     paymentId: paymentResult.transactionId,
-     updatedAt: dayjs().tz('Asia/Taipei').toDate()
-   }).where(eq(orders.id, orderId));
+    console.log('🔍 paymentData:', JSON.stringify(paymentData, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value, 2
+    ));
 
-   res.json({
-     success: true,
-     message: 'LINE Pay 付款創建成功',
-     data: {
-       orderId: order.id,
-       orderNumber: order.orderNumber,
-       amount: order.totalAmount,
-       transactionId: paymentResult.transactionId,
-       paymentUrl: paymentResult.paymentUrl,
-       expireTime: dayjs().add(15, 'minute').toISOString()
-     }
-   });
+    const paymentResult = await LinePayProvider.createPayment(paymentData);
+    
+    if (!paymentResult.success) {
+      return res.status(400).json({
+        error: 'LINE Pay 付款創建失敗',
+        message: paymentResult.message,
+        code: paymentResult.code || 'LINEPAY_ERROR'
+      });
+    }
 
- } catch (error) {
-   return handleError(error, res);
- }
+    await db.update(orders).set({
+      paymentMethod: 'linepay',
+      paymentId: paymentResult.transactionId,
+      updatedAt: dayjs().tz('Asia/Taipei').toDate()
+    }).where(eq(orders.id, orderId));
+
+    res.json({
+      success: true,
+      message: 'LINE Pay 付款創建成功',
+      data: {
+        orderId: String(order.id),          
+        orderNumber: order.orderNumber,
+        amount: Number(order.totalAmount),  
+        transactionId: paymentResult.transactionId,
+        paymentUrl: paymentResult.paymentUrl,
+        expireTime: dayjs().add(15, 'minute').toISOString()
+      }
+    });
+
+  } catch (error) {
+    return handleError(error, res);
+  }
 };
 
 const confirmLinePayment = async (req, res) => {
