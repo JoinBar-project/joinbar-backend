@@ -86,7 +86,6 @@ const createLinePayment = async (req, res) => {
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     const isAllEvent = orderItemsList.every(item => item.itemType === 1);
     
-    // ✅ 統一使用後端回調，根據訂單類型在後端決定跳轉
     let returnUrl = `${backendUrl}/api/linepay/confirm?orderId=${order.id}`;
     const cancelUrl = `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`;
     
@@ -101,7 +100,7 @@ const createLinePayment = async (req, res) => {
         quantity: Number(item.quantity),     
         price: Number(item.price)           
       }));
-    } else {
+    } else if (isAllEvent) {
       description = `活動訂票 - ${orderItemsList.length} 個活動`;
       packageName = '活動票券';
       products = orderItemsList.map((item, index) => ({
@@ -118,7 +117,7 @@ const createLinePayment = async (req, res) => {
       amount: Number(order.totalAmount),
       currency: 'TWD',
       description: description,
-      returnUrl: returnUrl,  // ✅ 統一使用後端回調
+      returnUrl: returnUrl,  
       cancelUrl: cancelUrl,
       packages: [{
         id: `package_${String(order.id)}`,
@@ -166,7 +165,6 @@ const createLinePayment = async (req, res) => {
   }
 };
 
-// ✅ 完整修復的確認付款流程
 const confirmLinePayment = async (req, res) => {
   try {
     const { transactionId, orderId } = req.query;
@@ -189,11 +187,9 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=找不到訂單`);
     }
 
-    // ✅ 如果已經確認過，直接跳轉到對應的成功頁面
     if (order.status === 'confirmed') {
       console.log('✅ 訂單已確認，直接跳轉:', orderId);
       
-      // 檢查訂單類型，決定跳轉位置
       const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
       const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
       
@@ -209,7 +205,6 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=訂單狀態異常`);
     }
 
-    // ✅ 確認 LINE Pay 付款
     const confirmResult = await LinePayProvider.confirmPayment(
       transactionId,
       order.totalAmount,
@@ -221,9 +216,7 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=${confirmResult.message}`);
     }
 
-    // ✅ 完整的訂單確認流程（包含活動參與記錄 + 訂閱處理）
     await db.transaction(async (tx) => {
-      // 更新訂單狀態
       await tx.update(orders).set({
         status: 'confirmed',
         paidAt: dayjs().tz('Asia/Taipei').toDate(),
@@ -231,7 +224,6 @@ const confirmLinePayment = async (req, res) => {
         updatedAt: dayjs().tz('Asia/Taipei').toDate()
       }).where(eq(orders.id, orderId));
 
-      // 獲取訂單項目
       const orderItemsList = await db
         .select()
         .from(orderItems)
@@ -239,7 +231,6 @@ const confirmLinePayment = async (req, res) => {
 
       console.log('📋 訂單項目:', orderItemsList);
 
-      // ✅ 處理活動參與記錄
       const eventItems = orderItemsList.filter(item => item.eventId && item.itemType === 1);
       if (eventItems.length > 0) {
         const participationData = eventItems.map(item => ({
@@ -253,12 +244,10 @@ const confirmLinePayment = async (req, res) => {
         console.log(`✅ 已加入 ${participationData.length} 個活動參與記錄`);
       }
 
-      // ✅ 處理訂閱方案
       const subscriptionItems = orderItemsList.filter(item => item.itemType === 2 && item.subscriptionType);
       if (subscriptionItems.length > 0) {
         console.log('📋 處理訂閱項目:', subscriptionItems);
         
-        // 導入訂閱方案配置
         const { subPlans } = require('../utils/subPlans');
         const FlakeId = require('flake-idgen');
         const intformat = require('biguint-format');
@@ -273,7 +262,6 @@ const confirmLinePayment = async (req, res) => {
             const startAt = now;
             const endAt = dayjs(now).add(plan.duration, 'day').toDate();
 
-            // 建立訂閱記錄
             await tx.insert(subTable).values({
               id: subId,
               userId: order.userId,
@@ -286,7 +274,6 @@ const confirmLinePayment = async (req, res) => {
               modifyAt: now,
             });
 
-            // 更新訂單項目的訂閱 ID
             await tx.update(orderItems)
               .set({ subscriptionId: subId })
               .where(eq(orderItems.id, item.id));
@@ -301,15 +288,12 @@ const confirmLinePayment = async (req, res) => {
 
     console.log('✅ LINE Pay 付款確認成功 (包含訂閱處理):', orderId);
     
-    // ✅ 根據訂單類型決定跳轉位置
     const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     
     if (isAllSubscription) {
-      // ✅ 訂閱方案跳轉到訂閱成功頁面
       res.redirect(`${frontendUrl}/subscription-success?orderId=${orderId}&orderNumber=${order.orderNumber}&transactionId=${transactionId}`);
     } else {
-      // 活動訂單跳轉到一般成功頁面
       res.redirect(`${frontendUrl}/order-success/${order.orderNumber}?orderId=${orderId}&transactionId=${transactionId}`);
     }
 
