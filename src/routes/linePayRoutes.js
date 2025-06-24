@@ -3,13 +3,10 @@ const router = express.Router();
 const {
  createLinePayment,
  confirmLinePayment,
- checkLinePaymentStatus,
- refundLinePayment
+ checkLinePaymentStatus
 } = require('../controllers/linePayControllers');
 
-const { handlePaymentWebhook, handleRefundWebhook } = require('../controllers/webhookControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
-const { checkAdminRole } = require('../middlewares/checkPermission');
 const formatApiResponse = require('../middlewares/formatApiResponse'); 
 
 const { 
@@ -45,27 +42,6 @@ router.get('/status/:orderId',
  checkPaymentAccess,
  formatApiResponse,        
  checkLinePaymentStatus
-);
-
-router.post('/refund/:orderId', 
- checkBasicSecurity,
- authenticateToken,
- logPaymentRequests,
- checkAdminRole,
- formatApiResponse,        
- refundLinePayment
-);
-
-router.post('/webhook', 
- checkBasicSecurity,
- logPaymentRequests,
- handlePaymentWebhook
-);
-
-router.post('/webhook/refund', 
- checkBasicSecurity,
- logPaymentRequests,
- handleRefundWebhook
 );
 
 module.exports = router;
