@@ -25,16 +25,14 @@ const ORDER_STATUS = {
   PAID: 'paid', 
   CONFIRMED: 'confirmed',
   CANCELLED: 'cancelled',
-  REFUNDED: 'refunded',
   EXPIRED: 'expired'
 };
 
 const STATE_TRANSITIONS = {
   [ORDER_STATUS.PENDING]: [ORDER_STATUS.PAID, ORDER_STATUS.CANCELLED, ORDER_STATUS.EXPIRED],
-  [ORDER_STATUS.PAID]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.REFUNDED],
-  [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.REFUNDED],
+  [ORDER_STATUS.PAID]: [ORDER_STATUS.CONFIRMED],
+  [ORDER_STATUS.CONFIRMED]: [],
   [ORDER_STATUS.CANCELLED]: [],
-  [ORDER_STATUS.REFUNDED]: [],
   [ORDER_STATUS.EXPIRED]: []
 };
 
@@ -462,9 +460,6 @@ const updateOrderStatus = async (req, res) => {
         
       } else if (newStatus === ORDER_STATUS.CONFIRMED) {
         await processOrderCompletion(tx, req.params.id, order.userId);
-        
-      } else if (newStatus === ORDER_STATUS.REFUNDED) {
-        await processOrderRefund(tx, req.params.id, order.userId);
       }
       
       await tx.update(orders).set(updateData).where(eq(orders.id, req.params.id));
@@ -530,30 +525,6 @@ const processOrderCompletion = async (tx, orderId, userId) => {
         console.error(`❌ 訂單項目缺少 subscriptionType: ${item.id}`);
       }
     }
-  }
-};
-
-const processOrderRefund = async (tx, orderId, userId) => {
-  const orderItemsList = await getOrderItemsByOrderId(orderId);
-  
-  const eventItems = orderItemsList.filter(item => item.itemType === ITEM_TYPES.EVENT);
-  if (eventItems.length > 0) {
-    const eventIds = eventItems.map(item => item.eventId);
-    await tx
-      .delete(userEventParticipationTable)
-      .where(and(
-        eq(userEventParticipationTable.userId, userId),
-        inArray(userEventParticipationTable.eventId, eventIds)
-      ));
-  }
-  
-  const subscriptionItems = orderItemsList.filter(item => item.itemType === ITEM_TYPES.SUBSCRIPTION && item.subscriptionId);
-  if (subscriptionItems.length > 0) {
-    const subscriptionIds = subscriptionItems.map(item => item.subscriptionId);
-    await tx
-      .update(subTable)
-      .set({ status: 2, modifyAt: dayjs().tz('Asia/Taipei').toDate() })
-      .where(inArray(subTable.id, subscriptionIds));
   }
 };
 
