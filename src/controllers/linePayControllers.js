@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { orders, orderItems, userEventParticipationTable } = require('../models/schema');
+const { orders, orderItems, userEventParticipationTable, subTable } = require('../models/schema');
 const { eq, and, inArray } = require('drizzle-orm');
 const LinePayProvider = require('../utils/linePayProvider');
 const dayjs = require('dayjs');
@@ -86,24 +86,28 @@ const createLinePayment = async (req, res) => {
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     const isAllEvent = orderItemsList.every(item => item.itemType === 1);
     
+    // ✅ 統一使用後端回調，根據訂單類型在後端決定跳轉
     let returnUrl = `${backendUrl}/api/linepay/confirm?orderId=${order.id}`;
-    let description = `活動訂票 - ${orderItemsList.length} 個活動`;
-    let packageName = '活動票券';
-    let products = orderItemsList.map((item, index) => ({
-      id: `product_${String(item.id)}`, 
-      name: item.eventName ? `${item.eventName} - ${item.barName || ''}` : `活動 ${index + 1}`,
-      quantity: Number(item.quantity),   
-      price: Number(item.price)           
-    }));
+    const cancelUrl = `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`;
+    
+    let description, packageName, products;
     
     if (isAllSubscription) {
-      returnUrl = `${frontendUrl}/linepay/return`;
       description = `訂閱方案 - ${orderItemsList.length} 項`;
       packageName = '訂閱服務';
       products = orderItemsList.map((item, index) => ({
         id: `product_${String(item.id)}`,   
         name: item.subscriptionType ? `訂閱：${item.subscriptionType}` : `訂閱方案 ${index + 1}`,
         quantity: Number(item.quantity),     
+        price: Number(item.price)           
+      }));
+    } else {
+      description = `活動訂票 - ${orderItemsList.length} 個活動`;
+      packageName = '活動票券';
+      products = orderItemsList.map((item, index) => ({
+        id: `product_${String(item.id)}`, 
+        name: item.eventName ? `${item.eventName} - ${item.barName || ''}` : `活動 ${index + 1}`,
+        quantity: Number(item.quantity),   
         price: Number(item.price)           
       }));
     }
@@ -114,8 +118,8 @@ const createLinePayment = async (req, res) => {
       amount: Number(order.totalAmount),
       currency: 'TWD',
       description: description,
-      returnUrl: returnUrl,
-      cancelUrl: `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`,
+      returnUrl: returnUrl,  // ✅ 統一使用後端回調
+      cancelUrl: cancelUrl,
       packages: [{
         id: `package_${String(order.id)}`,
         amount: Number(order.totalAmount),
@@ -162,83 +166,158 @@ const createLinePayment = async (req, res) => {
   }
 };
 
+// ✅ 完整修復的確認付款流程
 const confirmLinePayment = async (req, res) => {
- try {
-   const { transactionId, orderId } = req.query;
-   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  try {
+    const { transactionId, orderId } = req.query;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-   console.log('LINE Pay 確認回調:', { transactionId, orderId });
+    console.log('🔄 LINE Pay 確認回調:', { transactionId, orderId });
 
-   if (!transactionId || !orderId) {
-     console.error('缺少必要參數:', { transactionId, orderId });
-     return res.redirect(`${frontendUrl}/payment/error?message=缺少付款參數`);
-   }
+    if (!transactionId || !orderId) {
+      console.error('❌ 缺少必要參數:', { transactionId, orderId });
+      return res.redirect(`${frontendUrl}/payment/error?message=缺少付款參數`);
+    }
 
-   const [order] = await db
-     .select()
-     .from(orders)
-     .where(eq(orders.id, orderId));
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId));
 
-   if (!order) {
-     console.error('找不到訂單:', orderId);
-     return res.redirect(`${frontendUrl}/payment/error?message=找不到訂單`);
-   }
+    if (!order) {
+      console.error('❌ 找不到訂單:', orderId);
+      return res.redirect(`${frontendUrl}/payment/error?message=找不到訂單`);
+    }
 
-   if (order.status === 'confirmed') {
-     console.log('訂單已確認:', orderId);
-     return res.redirect(`${frontendUrl}/payment/success?orderId=${orderId}`);
-   }
+    // ✅ 如果已經確認過，直接跳轉到對應的成功頁面
+    if (order.status === 'confirmed') {
+      console.log('✅ 訂單已確認，直接跳轉:', orderId);
+      
+      // 檢查訂單類型，決定跳轉位置
+      const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+      const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
+      
+      if (isAllSubscription) {
+        return res.redirect(`${frontendUrl}/subscription-success?orderId=${orderId}&orderNumber=${order.orderNumber}&transactionId=${transactionId}`);
+      } else {
+        return res.redirect(`${frontendUrl}/order-success/${order.orderNumber}?orderId=${orderId}&transactionId=${transactionId}`);
+      }
+    }
 
-   if (order.status !== 'pending') {
-     console.log('訂單狀態異常:', order.status);
-     return res.redirect(`${frontendUrl}/payment/error?message=訂單狀態異常`);
-   }
+    if (order.status !== 'pending') {
+      console.log('⚠️ 訂單狀態異常:', order.status);
+      return res.redirect(`${frontendUrl}/payment/error?message=訂單狀態異常`);
+    }
 
-   const confirmResult = await LinePayProvider.confirmPayment(
-     transactionId,
-     order.totalAmount,
-     'TWD'
-   );
+    // ✅ 確認 LINE Pay 付款
+    const confirmResult = await LinePayProvider.confirmPayment(
+      transactionId,
+      order.totalAmount,
+      'TWD'
+    );
 
-   if (!confirmResult.success) {
-     console.error('LINE Pay 確認失敗:', confirmResult);
-     return res.redirect(`${frontendUrl}/payment/error?message=${confirmResult.message}`);
-   }
+    if (!confirmResult.success) {
+      console.error('❌ LINE Pay 確認失敗:', confirmResult);
+      return res.redirect(`${frontendUrl}/payment/error?message=${confirmResult.message}`);
+    }
 
-   await db.transaction(async (tx) => {
-     await tx.update(orders).set({
-       status: 'confirmed',
-       paidAt: dayjs().tz('Asia/Taipei').toDate(),
-       transactionId: confirmResult.transactionId,
-       updatedAt: dayjs().tz('Asia/Taipei').toDate()
-     }).where(eq(orders.id, orderId));
+    // ✅ 完整的訂單確認流程（包含活動參與記錄 + 訂閱處理）
+    await db.transaction(async (tx) => {
+      // 更新訂單狀態
+      await tx.update(orders).set({
+        status: 'confirmed',
+        paidAt: dayjs().tz('Asia/Taipei').toDate(),
+        transactionId: confirmResult.transactionId,
+        updatedAt: dayjs().tz('Asia/Taipei').toDate()
+      }).where(eq(orders.id, orderId));
 
-     const orderItemsList = await db
-       .select()
-       .from(orderItems)
-       .where(eq(orderItems.orderId, orderId));
+      // 獲取訂單項目
+      const orderItemsList = await db
+        .select()
+        .from(orderItems)
+        .where(eq(orderItems.orderId, orderId));
 
-     const participationData = orderItemsList.map(item => ({
-       userId: order.userId,
-       eventId: item.eventId,
-       joinedAt: dayjs().tz('Asia/Taipei').toDate(),
-       updatedAt: dayjs().tz('Asia/Taipei').toDate()
-     }));
+      console.log('📋 訂單項目:', orderItemsList);
 
-     if (participationData.length > 0) {
-       await tx.insert(userEventParticipationTable).values(participationData);
-     }
-   });
+      // ✅ 處理活動參與記錄
+      const eventItems = orderItemsList.filter(item => item.eventId && item.itemType === 1);
+      if (eventItems.length > 0) {
+        const participationData = eventItems.map(item => ({
+          userId: order.userId,
+          eventId: item.eventId,
+          joinedAt: dayjs().tz('Asia/Taipei').toDate(),
+          updatedAt: dayjs().tz('Asia/Taipei').toDate()
+        }));
 
-   console.log('LINE Pay 付款確認成功:', orderId);
-   
-   res.redirect(`${frontendUrl}/payment/success?orderId=${orderId}&transactionId=${transactionId}`);
+        await tx.insert(userEventParticipationTable).values(participationData);
+        console.log(`✅ 已加入 ${participationData.length} 個活動參與記錄`);
+      }
 
- } catch (error) {
-   console.error('LINE Pay 確認處理失敗:', error);
-   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-   return res.redirect(`${frontendUrl}/payment/error?message=付款確認失敗`);
- }
+      // ✅ 處理訂閱方案
+      const subscriptionItems = orderItemsList.filter(item => item.itemType === 2 && item.subscriptionType);
+      if (subscriptionItems.length > 0) {
+        console.log('📋 處理訂閱項目:', subscriptionItems);
+        
+        // 導入訂閱方案配置
+        const { subPlans } = require('../utils/subPlans');
+        const FlakeId = require('flake-idgen');
+        const intformat = require('biguint-format');
+        const flake = new FlakeId({ id: 1 });
+
+        for (const item of subscriptionItems) {
+          const plan = subPlans[item.subscriptionType];
+          
+          if (plan) {
+            const subId = intformat(flake.next(), 'dec');
+            const now = dayjs().tz('Asia/Taipei').toDate();
+            const startAt = now;
+            const endAt = dayjs(now).add(plan.duration, 'day').toDate();
+
+            // 建立訂閱記錄
+            await tx.insert(subTable).values({
+              id: subId,
+              userId: order.userId,
+              subType: item.subscriptionType,
+              price: item.price,
+              startAt,
+              endAt,
+              status: 1,
+              createAt: now,
+              modifyAt: now,
+            });
+
+            // 更新訂單項目的訂閱 ID
+            await tx.update(orderItems)
+              .set({ subscriptionId: subId })
+              .where(eq(orderItems.id, item.id));
+
+            console.log(`✅ 已建立訂閱: ${item.subscriptionType}, ID: ${subId}`);
+          } else {
+            console.error(`❌ 找不到訂閱方案: ${item.subscriptionType}`);
+          }
+        }
+      }
+    });
+
+    console.log('✅ LINE Pay 付款確認成功 (包含訂閱處理):', orderId);
+    
+    // ✅ 根據訂單類型決定跳轉位置
+    const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
+    
+    if (isAllSubscription) {
+      // ✅ 訂閱方案跳轉到訂閱成功頁面
+      res.redirect(`${frontendUrl}/subscription-success?orderId=${orderId}&orderNumber=${order.orderNumber}&transactionId=${transactionId}`);
+    } else {
+      // 活動訂單跳轉到一般成功頁面
+      res.redirect(`${frontendUrl}/order-success/${order.orderNumber}?orderId=${orderId}&transactionId=${transactionId}`);
+    }
+
+  } catch (error) {
+    console.error('❌ LINE Pay 確認處理失敗:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/payment/error?message=付款確認失敗`);
+  }
 };
 
 const checkLinePaymentStatus = async (req, res) => {
@@ -308,15 +387,47 @@ const checkLinePaymentStatus = async (req, res) => {
                   .from(orderItems)
                   .where(eq(orderItems.orderId, orderId));
 
-                if (orderItemsList.length > 0) {
-                  const participationData = orderItemsList.map(item => ({
+                const eventItems = orderItemsList.filter(item => item.eventId && item.itemType === 1);
+                if (eventItems.length > 0) {
+                  const participationData = eventItems.map(item => ({
                     userId: order.userId,
                     eventId: item.eventId,
                     joinedAt: dayjs().tz('Asia/Taipei').toDate(),
                     updatedAt: dayjs().tz('Asia/Taipei').toDate()
                   }));
-
                   await tx.insert(userEventParticipationTable).values(participationData);
+                }
+
+                const subscriptionItems = orderItemsList.filter(item => item.itemType === 2 && item.subscriptionType);
+                if (subscriptionItems.length > 0) {
+                  const { subPlans } = require('../utils/subPlans');
+                  const FlakeId = require('flake-idgen');
+                  const intformat = require('biguint-format');
+                  const flake = new FlakeId({ id: 1 });
+
+                  for (const item of subscriptionItems) {
+                    const plan = subPlans[item.subscriptionType];
+                    if (plan) {
+                      const subId = intformat(flake.next(), 'dec');
+                      const now = dayjs().tz('Asia/Taipei').toDate();
+                      
+                      await tx.insert(subTable).values({
+                        id: subId,
+                        userId: order.userId,
+                        subType: item.subscriptionType,
+                        price: item.price,
+                        startAt: now,
+                        endAt: dayjs(now).add(plan.duration, 'day').toDate(),
+                        status: 1,
+                        createAt: now,
+                        modifyAt: now,
+                      });
+
+                      await tx.update(orderItems)
+                        .set({ subscriptionId: subId })
+                        .where(eq(orderItems.id, item.id));
+                    }
+                  }
                 }
               });
 
@@ -432,8 +543,7 @@ const refundLinePayment = async (req, res) => {
        .from(orderItems)
        .where(eq(orderItems.orderId, orderId));
 
-     const eventIds = orderItemsList.map(item => item.eventId);
-
+     const eventIds = orderItemsList.map(item => item.eventId).filter(Boolean);
      if (eventIds.length > 0) {
        await tx
          .delete(userEventParticipationTable)
@@ -441,6 +551,17 @@ const refundLinePayment = async (req, res) => {
            eq(userEventParticipationTable.userId, order.userId),
            inArray(userEventParticipationTable.eventId, eventIds)
          ));
+     }
+
+     const subscriptionIds = orderItemsList.map(item => item.subscriptionId).filter(Boolean);
+     if (subscriptionIds.length > 0) {
+       await tx
+         .update(subTable)
+         .set({ 
+           status: 2, 
+           modifyAt: dayjs().tz('Asia/Taipei').toDate() 
+         })
+         .where(inArray(subTable.id, subscriptionIds));
      }
    });
 

@@ -122,14 +122,12 @@ const validateOrderInput = async (userId, items) => {
   }
   
   for (const item of items) {
-    // 👈 轉換為數字並驗證
     const itemType = parseInt(item.itemType);
     
     if (!itemType || ![ITEM_TYPES.EVENT, ITEM_TYPES.SUBSCRIPTION].includes(itemType)) {
       throw new Error(`商品類型無效: 收到 ${item.itemType}, 期望 ${ITEM_TYPES.EVENT} 或 ${ITEM_TYPES.SUBSCRIPTION}`);
     }
     
-    // 👈 統一轉換為數字
     item.itemType = itemType;
     
     if (item.itemType === ITEM_TYPES.EVENT && !item.eventId) {
@@ -690,10 +688,88 @@ const getUserOrderHistory = async (req, res) => {
   }
 };
 
+const getOrderByNumber = async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const userId = req.user.id;
+    
+    console.log(`🔍 查詢訂單號: ${orderNumber}, 用戶 ID: ${userId}`);
+    
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(
+        eq(orders.orderNumber, orderNumber),
+        eq(orders.userId, userId)
+      ))
+      .limit(1);
+    
+    if (!order) {
+      console.log(`❌ 找不到訂單: ${orderNumber}`);
+      return res.status(404).json({ 
+        message: '找不到訂單',
+        code: 'ORDER_NOT_FOUND'
+      });
+    }
+    
+    console.log(`✅ 找到訂單: ${order.orderNumber}, 狀態: ${order.status}`);
+    const allowedNextStates = STATE_TRANSITIONS[order.status] || [];
+    
+    res.json({ order: stringifyBigInts({ ...order, allowedNextStates }) });
+  } catch (err) {
+    console.error('❌ 查詢訂單失敗:', err);
+    return handleError(err, res);
+  }
+};
+
+const getOrderByNumberWithDetails = async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const userId = req.user.id;
+    
+    console.log(`🔍 查詢訂單詳情: ${orderNumber}, 用戶 ID: ${userId}`);
+    
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(
+        eq(orders.orderNumber, orderNumber),
+        eq(orders.userId, userId)
+      ))
+      .limit(1);
+    
+    if (!order) {
+      console.log(`❌ 找不到訂單: ${orderNumber}`);
+      return res.status(404).json({ 
+        message: '找不到訂單',
+        code: 'ORDER_NOT_FOUND'
+      });
+    }
+    
+    const items = await getOrderItemsByOrderId(order.id);
+    const allowedNextStates = STATE_TRANSITIONS[order.status] || [];
+    
+    console.log(`✅ 找到訂單詳情: ${order.orderNumber}, 項目數: ${items.length}`);
+    
+    res.json({ 
+      order: stringifyBigInts({ 
+        ...order, 
+        items, 
+        allowedNextStates
+      }) 
+    });
+  } catch (err) {
+    console.error('❌ 查詢訂單詳情失敗:', err);
+    return handleError(err, res);
+  }
+};
+
 module.exports = { 
   createOrder,
   getOrder,
   getOrderWithDetails,
+  getOrderByNumber,       
+  getOrderByNumberWithDetails, 
   updateOrderStatus,
   cancelOrder,
   confirmPayment,
