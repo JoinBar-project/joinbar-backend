@@ -190,6 +190,14 @@ const validateAndGetEventItems = async (eventItems) => {
       subscriptionId: null,
       subscriptionType: null, 
       itemName: event.name,
+      eventName: event.name,
+      barName: event.barName,
+      location: event.location,
+      startAt: event.startAt,      
+      endAt: event.endAt,          
+      startDate: event.startAt,    
+      endDate: event.endAt,       
+      hostUserId: event.hostUser,
       price: event.price,
       quantity: 1
     });
@@ -295,6 +303,13 @@ const createOrderItemsBatch = async (tx, orderId, validatedItems) => {
     subscriptionId: item.subscriptionId,
     subscriptionType: item.subscriptionType, 
     price: item.price,
+    eventName: item.eventName,
+    barName: item.barName,
+    location: item.location,
+    eventStartDate: item.startAt || item.startDate,  
+    eventEndDate: item.endAt || item.endDate,        
+    hostUserId: item.hostUserId,
+    price: item.price, 
     quantity: 1,
     subtotal: item.price
   }));
