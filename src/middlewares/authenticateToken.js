@@ -14,6 +14,63 @@ if (!SECRET_KEY || !REFRESH_SECRET) {
   process.exit(1); // 沒有環境變數則直接終止程式
 }
 
+const handleRefreshToken = (req, res, next) => {
+  const refreshToken = req.cookies.refresh_token;
+  if (!refreshToken) {
+    console.log('沒有 Refresh Token');
+    return res.status(401).json({ error: 'Refresh token required', message: '需要重新登入' });
+  }
+
+  jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+    if(err) {
+      console.log('Refresh Token 驗證失敗:', { error: err.name, message: err.message });
+      return res.status(401).json({ error: 'Invalid refresh token', message: '請重新登入' });
+    }
+
+    console.log('Refresh Token 驗證成功:', { userId: user.id, tokenType: user.type });
+
+    if(user.type && user.type !== 'refresh') {
+      console.log('Refresh Token 類型錯誤:', user.type);
+      return res.status(403).json({ error: 'Invalid refresh token type', message: 'Refresh Token 類型無效' });
+    }
+
+    try {
+      const newAccessToken = jwt.sign({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role || 'user',
+        type: 'access'
+      }, SECRET_KEY, { 
+        expiresIn: "15m" 
+      });
+
+      res.cookie('access_token', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+        path: '/'
+      });
+      console.log('Access Token 已自動刷新');
+
+      req.user = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role || 'user',
+        authMethod: 'cookie-refreshed'
+      };
+
+      console.log('用戶認證已刷新，設定 req.user:', { id: req.user.id, username: req.user.username, role: req.user.role, authMethod: req.user.authMethod });
+      next();
+    } catch(err) {
+      console.error('刷新 Token 過程發生錯誤:', err);
+      return res.status(500).json({ error: 'Token refresh error', message: '刷新認證失敗' });
+    }
+  });
+};
+
 const authenticateToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
