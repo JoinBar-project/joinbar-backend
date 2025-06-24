@@ -1,13 +1,12 @@
 const axios = require("axios");
 require("dotenv").config({ path: "../.env" });
 
-// 新增輔助函數：從 Google Place Details API 獲取詳細資訊
 async function getPlaceDetailsFromGoogleApi(placeId) {
     try {
         const response = await axios.get(GOOGLE_PLACES_DETAILS_API_BASE_URL, {
             params: {
                 place_id: placeId,
-                fields: "name,formatted_address,geometry/location,rating,user_ratings_total,opening_hours,types,international_phone_number,website,price_level,photos", // 保持 price_level 查詢，但不在返回中
+                fields: "name,formatted_address,geometry/location,rating,user_ratings_total,opening_hours,types,website,photos",
                 language: "zh-TW",
                 key: process.env.VITE_Maps_API_KEY,
             },
@@ -24,19 +23,21 @@ async function getPlaceDetailsFromGoogleApi(placeId) {
 
         const openingHoursText = detail.opening_hours?.weekday_text ? detail.opening_hours.weekday_text.join('\n') : null;
 
+        // 修正圖片 URL 處理
+        let imageUrl = null;
+        if (detail.photos && detail.photos.length > 0) {
+            imageUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${detail.photos[0].photo_reference}&key=${process.env.VITE_Maps_API_KEY}`;
+        }
+
         return {
             place_id: placeId,
             name: detail.name,
             address: detail.formatted_address || "",
             latitude: detail.geometry?.location?.lat || null,
             longitude: detail.geometry?.location?.lng || null,
-            imageUrl: detail.photos && detail.photos.length > 0
-                ? detail.photos[0].getUrl({ maxWidth: 400, maxHeight: 400 })
-                : null,
+            imageUrl: imageUrl,  // 使用正確的圖片 URL
             rating: detail.rating || null,
             reviews: detail.user_ratings_total || null,
-            // 移除 priceLevel 相關的返回
-            phone: detail.international_phone_number || null,
             website: detail.website || null,
             openingHoursText: openingHoursText,
             tags: detail.types || [],
@@ -47,7 +48,7 @@ async function getPlaceDetailsFromGoogleApi(placeId) {
     }
 }
 
-// MODIFIED: getBarsFromGoogleMaps - 現在會先 textsearch，然後對每個結果調用 Place Details API
+// 保持原有的 getBarsFromGoogleMaps 函數
 const getBarsFromGoogleMaps = async (query, location, radius = 5000) => {
   try {
     const textSearchResponse = await axios.get(GOOGLE_PLACES_TEXTSEARCH_API_BASE_URL, {

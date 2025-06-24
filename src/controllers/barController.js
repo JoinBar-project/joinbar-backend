@@ -175,4 +175,4 @@ const createBar = async (req, res) => {
   }
 };
 
-module.exports = { getBars, createBar };
+module.exports = { getBars, createBar, syncBarFromGoogle };

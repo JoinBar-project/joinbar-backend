@@ -2,14 +2,17 @@
 const { db } = require("../drizzle/db");
 const { userBarCollectionTable, barsTable } = require("../schema");
 const { eq, and } = require("drizzle-orm");
+const { syncBarFromGoogle } = require("./barController");
+const { getPlaceDetailsFromGoogleApi } = require("../services/googleMaps");
 
 const ANONYMOUS_USER_ID = 1;
 
-// MODIFIED: getFavorites - 不再選擇 priceLevel
+// 獲取收藏列表（結合資料庫和 Google API 資料）
 const getFavorites = async (req, res) => {
   const userId = req.query.userId || ANONYMOUS_USER_ID;
 
   try {
+    // 從資料庫獲取收藏的基本資訊
     const favorites = await db
       .select({
         id: userBarCollectionTable.id,
@@ -17,84 +20,137 @@ const getFavorites = async (req, res) => {
         userId: userBarCollectionTable.userId,
         folderId: userBarCollectionTable.folderId,
         createdAt: userBarCollectionTable.createdAt,
+        googlePlaceId: barsTable.googlePlaceId,
         name: barsTable.name,
         address: barsTable.address,
         latitude: barsTable.latitude,
         longitude: barsTable.longitude,
-        imageUrl: barsTable.imageUrl,
-        rating: barsTable.rating,
-        reviews: barsTable.reviews,
-        // 移除 priceLevel
-        phone: barsTable.phone,
-        website: barsTable.website,
-        openingHoursText: barsTable.openingHoursText,
-        tags: barsTable.tags,
-        googlePlaceId: barsTable.googlePlaceId,
       })
       .from(userBarCollectionTable)
       .leftJoin(barsTable, eq(userBarCollectionTable.barId, barsTable.id))
       .where(eq(userBarCollectionTable.userId, userId));
 
-    res.status(200).json({ favorites });
+    // 批次從 Google API 獲取即時資料
+    const detailPromises = favorites.map(async (fav) => {
+      if (fav.googlePlaceId) {
+        try {
+          const googleData = await getPlaceDetailsFromGoogleApi(fav.googlePlaceId);
+          return {
+            ...fav,
+            // 合併 Google API 的即時資料
+            imageUrl: googleData?.imageUrl,
+            rating: googleData?.rating,
+            reviews: googleData?.reviews,
+            phone: googleData?.phone,
+            website: googleData?.website,
+            openingHoursText: googleData?.openingHoursText,
+            tags: googleData?.tags || [],
+          };
+        } catch (error) {
+          console.error(`Failed to fetch details for ${fav.googlePlaceId}:`, error);
+          return fav; // 如果 API 失敗，返回基本資料
+        }
+      }
+      return fav;
+    });
+
+    const favoritesWithDetails = await Promise.all(detailPromises);
+
+    res.status(200).json({ favorites: favoritesWithDetails });
   } catch (error) {
     console.error("Error fetching favorites:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
+// 新增收藏
 const addFavorite = async (req, res) => {
-  const { barId } = req.body;
+  const { barId, googlePlaceId, barData } = req.body;
   const userId = req.body.userId || ANONYMOUS_USER_ID;
 
-  if (!barId || !userId) {
-    return res.status(400).json({ message: "Bar ID 和 User ID 為必填項目" });
-  }
-
   try {
-    const existingBarInBarsTable = await db
-      .select()
-      .from(barsTable)
-      .where(eq(barsTable.id, barId))
-      .limit(1);
+    let finalBarId = barId;
 
-    if (existingBarInBarsTable.length === 0) {
-      return res.status(404).json({ message: "找不到對應的酒吧資訊，無法收藏。" });
+    // 如果只有 googlePlaceId，需要先同步到資料庫
+    if (!barId && googlePlaceId) {
+      const existingBar = await db
+        .select()
+        .from(barsTable)
+        .where(eq(barsTable.googlePlaceId, googlePlaceId))
+        .limit(1);
+
+      if (existingBar.length > 0) {
+        finalBarId = existingBar[0].id;
+      } else if (barData) {
+        // 準備同步資料（只包含 schema 中有的欄位）
+        const syncData = {
+          place_id: googlePlaceId,
+          name: barData.name,
+          address: barData.address,
+          latitude: barData.latitude,
+          longitude: barData.longitude,
+        };
+        
+        const syncedBar = await syncBarFromGoogle(syncData);
+        if (syncedBar) {
+          finalBarId = syncedBar.id;
+        } else {
+          return res.status(500).json({ message: "無法同步酒吧資料" });
+        }
+      } else {
+        return res.status(400).json({ message: "缺少酒吧資料" });
+      }
     }
 
+    if (!finalBarId) {
+      return res.status(400).json({ message: "無法確定酒吧 ID" });
+    }
+
+    // 檢查是否已經收藏
     const existingFavorite = await db
       .select()
       .from(userBarCollectionTable)
       .where(and(
         eq(userBarCollectionTable.userId, userId),
-        eq(userBarCollectionTable.barId, barId)
-      ));
+        eq(userBarCollectionTable.barId, finalBarId)
+      ))
+      .limit(1);
 
     if (existingFavorite.length > 0) {
-      return res.status(200).json({ message: "該酒吧已被收藏", favorite: existingFavorite[0] });
+      return res.status(200).json({ 
+        message: "該酒吧已被收藏", 
+        favorite: existingFavorite[0],
+        alreadyFavorited: true 
+      });
     }
 
+    // 新增收藏
     const [newFavorite] = await db
       .insert(userBarCollectionTable)
       .values({
         userId,
-        barId,
+        barId: finalBarId,
         createdAt: new Date(),
       })
       .returning();
 
-    res.status(201).json({ message: "收藏成功", favorite: newFavorite });
+    res.status(201).json({ 
+      message: "收藏成功", 
+      favorite: newFavorite 
+    });
   } catch (error) {
     console.error("Error adding favorite:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
+// 移除收藏
 const removeFavorite = async (req, res) => {
   const { barId } = req.params;
   const userId = req.query.userId || ANONYMOUS_USER_ID;
 
-  if (!barId || !userId) {
-    return res.status(400).json({ message: "Bar ID 和 User ID 為必填項目" });
+  if (!barId) {
+    return res.status(400).json({ message: "Bar ID 為必填項目" });
   }
 
   try {
@@ -102,7 +158,7 @@ const removeFavorite = async (req, res) => {
       .delete(userBarCollectionTable)
       .where(and(
         eq(userBarCollectionTable.userId, userId),
-        eq(userBarCollectionTable.barId, barId)
+        eq(userBarCollectionTable.barId, parseInt(barId))
       ))
       .returning();
 

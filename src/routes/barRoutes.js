@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const barController = require("../controllers/barController");
+const favoritesController = require("../controllers/favoritesController");
 // const authMiddleware = require('../middlewares/auth'); // 如果需要身份驗證，可以在這裡引入並使用
 
 // 獲取酒吧列表的路由
