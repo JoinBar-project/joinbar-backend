@@ -60,6 +60,7 @@ const userNotificationTable = pgTable('user_notification', {
 
 const barsTable = pgTable('bars', {
   id: serial().primaryKey(),
+  googlePlaceId: varchar('google_place_id', { length: 255 }).notNull().unique(),
   name: varchar({ length: 100 }).notNull(),
   address: varchar({ length: 255 }),
   latitude: numeric('latitude', { precision: 10, scale: 7 }),
