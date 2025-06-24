@@ -1,84 +1,110 @@
 // src/controllers/barController.js
-const { getBarsFromGoogleMaps } = require('../services/googleMaps');
-const { db } = require('../drizzle/db');
-const { barsTable } = require('../schema');
-const { eq } = require('drizzle-orm');
+const { getBarsFromGoogleMaps } = require("../services/googleMaps");
+const { db } = require("../drizzle/db");
+const { barsTable } = require("../schema");
+const { eq, and } = require("drizzle-orm");
 
-async function saveOrUpdateBar(barData) {
-    const { googlePlaceId, name, address, latitude, longitude, phone } = barData;
-    try {
-        const existingBar = await db
-            .select()
-            .from(barsTable)
-            .where(eq(barsTable.googlePlaceId, googlePlaceId))
-            .limit(1);
+async function syncBarFromGoogle(barData) {
+  const { name, address, latitude, longitude } = barData;
+  try {
+    const existingBar = await db
+      .select()
+      .from(barsTable)
+      .where(and(eq(barsTable.name, name), eq(barsTable.address, address)))
+      .limit(1);
 
-        if (existingBar.length > 0) {
-            await db.update(barsTable)
-                .set({
-                    name,
-                    address,
-                    latitude,
-                    longitude,
-                    phone,
-                    updatedAt: new Date(),
-                })
-                .where(eq(barsTable.googlePlaceId, googlePlaceId));
-        } else {
-            await db.insert(barsTable).values({
-                googlePlaceId,
-                name,
-                address,
-                latitude,
-                longitude,
-                phone,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            });
-        }
-        const [updatedOrInsertedBar] = await db.select().from(barsTable).where(eq(barsTable.googlePlaceId, googlePlaceId)).limit(1);
-        return updatedOrInsertedBar;
-
-    } catch (err) {
-        console.error("Error saving/updating bar in DB:", err);
-        throw err;
+    let resultBar;
+    if (existingBar.length > 0) {
+      [resultBar] = await db
+        .update(barsTable)
+        .set({
+          latitude,
+          longitude,
+          updatedAt: new Date(),
+        })
+        .where(eq(barsTable.id, existingBar[0].id))
+        .returning();
+    } else {
+      [resultBar] = await db
+        .insert(barsTable)
+        .values({
+          name,
+          address,
+          latitude,
+          longitude,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
     }
+    return resultBar;
+  } catch (err) {
+    console.error("Error syncing bar from Google to DB:", err);
+    throw err;
+  }
 }
 
 const getBars = async (req, res) => {
-    try {
-        const cachedBars = await db
-            .select({
-                barId: barsTable.googlePlaceId,
-                barName: barsTable.name,
-                address: barsTable.address,
-            })
-            .from(barsTable)
-            .orderBy(barsTable.name);
+  try {
+    const location = { lat: 24.986064, lng: 121.536762 };
+    const query = "酒吧";
 
-        if (cachedBars.length > 0) {
-            return res.json({ bars: cachedBars });
-        }
+    const googleBars = await getBarsFromGoogleMaps(query, location);
 
-        const location = { lat: 24.986064, lng: 121.536762 };
-        const query = '酒吧';
+    await Promise.allSettled(googleBars.map((bar) => syncBarFromGoogle(bar)));
 
-        const googleBars = await getBarsFromGoogleMaps(query, location);
+    const finalBars = await db
+      .select({
+        barId: barsTable.id,
+        barName: barsTable.name,
+        address: barsTable.address,
+        latitude: barsTable.latitude,
+        longitude: barsTable.longitude,
+      })
+      .from(barsTable)
+      .orderBy(barsTable.name);
 
-        await Promise.allSettled(googleBars.map(bar => saveOrUpdateBar(bar)));
-
-        res.json({
-            bars: googleBars.map(b => ({
-                barId: b.googlePlaceId,
-                barName: b.name,
-                address: b.address
-            }))
-        });
-
-    } catch (error) {
-        console.error('Error in getBars controller:', error);
-        res.status(500).json({ message: 'Internal server error', error: error.message });
+    if (finalBars.length === 0) {
+      return res.status(404).json({ message: "目前沒有可用的酒吧資訊" });
     }
+
+    res.json({ bars: finalBars });
+  } catch (error) {
+    console.error("Error in getBars controller:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 };
 
-module.exports = { getBars };
+// MODIFIED: createBar - 建立新酒吧的控制器函數
+const createBar = async (req, res) => {
+  const { name, address, latitude, longitude } = req.body;
+
+  if (!name || !address) {
+    return res.status(400).json({ message: "酒吧名稱和地址為必填項目" });
+  }
+
+  try {
+    const [newBar] = await db
+      .insert(barsTable)
+      .values({
+        name,
+        address,
+        latitude,
+        longitude,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json({ message: "酒吧新增成功", bar: newBar });
+  } catch (error) {
+    console.error("Error creating bar:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+module.exports = { getBars, createBar };

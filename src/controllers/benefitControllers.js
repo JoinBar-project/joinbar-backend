@@ -1,36 +1,31 @@
-const { benefitRedeemsTable, barsTable } = require('../models/schema');
-const { subTable } = require('../models/schema');
-const { subPlans } = require('../utils/subPlans');
-const { eq, and, gt, lt } = require('drizzle-orm');
-const FlakeId = require('flake-idgen');
-const intformat = require('biguint-format');
-const db = require('../config/db');
-const { dayjs, tz } = require('../utils/dateFormatter');
+const { benefitRedeemsTable, barsTable } = require("../models/schema");
+const { subTable } = require("../models/schema");
+const { subPlans } = require("../utils/subPlans");
+const { eq, and, gt, lt } = require("drizzle-orm");
+const FlakeId = require("flake-idgen");
+const intformat = require("biguint-format");
+const db = require("../config/db");
+const { dayjs, tz } = require("../utils/dateFormatter");
 
 const flake = new FlakeId({ id: 1 });
 
 const createBenefit = async (req, res) => {
   const userId = req.user?.id;
   const subId = req.body?.subId;
-  
+
   if (!userId) {
-    return res.status(401).json({ error: '未授權，請先登入' });
+    return res.status(401).json({ error: "未授權，請先登入" });
   }
 
   try {
     const [sub] = await db
       .select()
       .from(subTable)
-      .where(
-        and(
-          eq(subTable.userId, userId),
-          eq(subTable.id, subId)
-        )
-      )
+      .where(and(eq(subTable.userId, userId), eq(subTable.id, subId)))
       .limit(1);
 
     if (!sub) {
-      return res.status(404).json({ error: '查無訂閱' });
+      return res.status(404).json({ error: "查無訂閱" });
     }
 
     const benefit = await db
@@ -39,24 +34,24 @@ const createBenefit = async (req, res) => {
       .where(eq(benefitRedeemsTable.subId, sub.id));
 
     if (benefit.length > 0) {
-      return res.status(400).json({ error: '此訂閱已經領取過優惠券' });
+      return res.status(400).json({ error: "此訂閱已經領取過優惠券" });
     }
 
-    const plan = subPlans[sub.subType]; 
+    const plan = subPlans[sub.subType];
     if (!plan) {
-      return res.status(404).json({ error: '此訂閱方案無效或不存在' });
+      return res.status(404).json({ error: "此訂閱方案無效或不存在" });
     }
 
-    const now = dayjs()
+    const now = dayjs();
     const startAt = now.toDate();
-    const endAt = now.add(plan.duration, 'day').toDate(); 
+    const endAt = now.add(plan.duration, "day").toDate();
 
     // 建立優惠券
     const valuesToInsert = [];
 
     for (const benefit of plan.benefits) {
       for (let i = 0; i < benefit.counts; i++) {
-        const id = intformat(flake.next(), 'dec');
+        const id = intformat(flake.next(), "dec");
         valuesToInsert.push({
           id,
           userId,
@@ -75,45 +70,37 @@ const createBenefit = async (req, res) => {
     if (valuesToInsert.length > 0) {
       createdCoupons = await db
         .insert(benefitRedeemsTable)
-        .values(valuesToInsert)
+        .values(valuesToInsert);
     }
 
     res.status(201).json({
-      message: '優惠券建立成功'
+      message: "優惠券建立成功",
     });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 const getBenefitList = async (req, res) => {
-  
   const userId = req.user?.id;
   const { status } = req.query;
   const now = dayjs().toDate();
 
   if (!userId) {
-    return res.status(401).json({ error: '未授權，請先登入' });
+    return res.status(401).json({ error: "未授權，請先登入" });
   }
 
   let conditions = [eq(benefitRedeemsTable.userId, userId)];
 
-  if (status == '1') {
+  if (status == "1") {
     conditions.push(
-      and(
-        eq(benefitRedeemsTable.status, 1),
-        gt(benefitRedeemsTable.endAt, now)
-      )
+      and(eq(benefitRedeemsTable.status, 1), gt(benefitRedeemsTable.endAt, now))
     );
-  } else if (status == '2') {
+  } else if (status == "2") {
     conditions.push(eq(benefitRedeemsTable.status, 2));
-  } else if (status == '3') {
+  } else if (status == "3") {
     conditions.push(
-      and(
-        eq(benefitRedeemsTable.status, 1),
-        lt(benefitRedeemsTable.endAt, now)
-      )
+      and(eq(benefitRedeemsTable.status, 1), lt(benefitRedeemsTable.endAt, now))
     );
   }
 
@@ -122,34 +109,31 @@ const getBenefitList = async (req, res) => {
     .from(benefitRedeemsTable)
     .where(and(...conditions));
 
-
-  if( GetAllBenefit.length == 0 ){
-    return res.status(404).json({ error: '目前尚未擁有優惠券' });
+  if (GetAllBenefit.length == 0) {
+    return res.status(404).json({ error: "目前尚未擁有優惠券" });
   }
 
-  try{
-    const sortGetAllBenefit = GetAllBenefit
-    .sort((couponA, couponB) => {
+  try {
+    const sortGetAllBenefit = GetAllBenefit.sort((couponA, couponB) => {
       if (couponA.status !== couponB.status) {
         return couponA.status - couponB.status;
       }
       return dayjs(couponA.endAt).isBefore(couponB.endAt) ? -1 : 1;
     });
-    
-    res.status(200).json({ benefits: sortGetAllBenefit });
 
-  }catch(err){
+    res.status(200).json({ benefits: sortGetAllBenefit });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 const updateBenefit = async (req, res) => {
   const userId = req.user?.id;
   const benefitId = req.body?.benefitId;
-  const barId = req.body?.barId;
-  
+  const selectedBarIdFromFrontend = req.body?.barId;
+
   if (!userId) {
-    return res.status(401).json({ error: '未授權，請先登入' });
+    return res.status(401).json({ error: "未授權，請先登入" });
   }
 
   try {
@@ -162,45 +146,45 @@ const updateBenefit = async (req, res) => {
       .limit(1);
 
     if (!benefit) {
-      return res.status(404).json({ error: '查無此優惠券' });
+      return res.status(404).json({ error: "查無此優惠券" });
     }
 
     if (benefit.userId != userId) {
-      return res.status(403).json({ error: '無權限核銷此優惠券' });
+      return res.status(403).json({ error: "無權限核銷此優惠券" });
     }
 
     if (benefit.status != 1) {
-      return res.status(400).json({ error: '此優惠券無法使用' });
+      return res.status(400).json({ error: "此優惠券無法使用" });
     }
 
     if (dayjs(benefit.endAt).isBefore(now)) {
-      return res.status(400).json({ error: '此優惠券已過期，無法使用' });
+      return res.status(400).json({ error: "此優惠券已過期，無法使用" });
     }
-    
+
     const [bar] = await db
       .select()
       .from(barsTable)
-      .where(eq(barsTable.id, barId))
+      .where(eq(barsTable.id, selectedBarIdFromFrontend))
       .limit(1);
 
-    if (bar.length === 0) {
-      return res.status(404).json({ error: '查無此酒吧' });
+    if (!bar) {
+      return res.status(404).json({ error: "查無此酒吧" });
     }
 
     await db
       .update(benefitRedeemsTable)
       .set({
         status: 2,
-        barId,
+        barId: bar.id,
+        selectedBarName: bar.name,
         redeemAt: now,
         modifyAt: now,
       })
       .where(eq(benefitRedeemsTable.id, benefitId));
 
-    return res.status(200).json(
-      { message: '優惠券已成功核銷',
-        barName: bar.name
-      });
+    return res
+      .status(200)
+      .json({ message: "優惠券已成功核銷", barName: bar.name });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
