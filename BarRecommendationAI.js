@@ -1,8 +1,17 @@
-import { GoogleGenAI } from "@google/genai";
-import dotenv from "dotenv";
-dotenv.config();
+require('dotenv').config();
+const { GoogleGenAI } = require('@google/genai');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// 除錯：檢查環境變數
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '已設定' : '未設定');
+
+// 檢查環境變數是否存在
+if (!process.env.GEMINI_API_KEY) {
+  console.error('錯誤：未找到 GEMINI_API_KEY 環境變數');
+  console.error('請設定環境變數：export GEMINI_API_KEY="你的API金鑰"');
+  process.exit(1);
+}
+
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 const bars = [
   {
@@ -101,26 +110,20 @@ const BarList = bars.map(bar =>
   `- ${bar.name}（地址：${bar.address}，經緯度：${bar.latitude}, ${bar.longitude}）`
 ).join('\n');
 
-async function JoinBot() {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `以下是台北的 15 間酒吧資料：\n${BarList}\n\n請根據這些資訊推薦幾家適合年輕人去的酒吧，並簡單說明原因。`,
-          }
-        ],
-      },
-    ],
-    config: {
-      systemInstruction: "你是一個專業的台北酒吧嚮導，擅長根據地點與使用者喜好的酒吧風格推薦合適的酒吧。"
-    },
-  });
+async function main() {
+  try {
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `以下是台北的 15 間酒吧資料：\n${BarList}\n\n請根據這些資訊推薦幾家適合年輕人去的酒吧，並簡單說明原因。`,
+    });
 
-  console.log(response.text);
+    console.log(response.text);
+  } catch (error) {
+    console.error('發生錯誤:', error);
+  }
 }
 
-await JoinBot();
-
+// 使用 IIFE (Immediately Invoked Function Expression) 來處理頂層 await
+(async () => {
+  await main();
+})();
