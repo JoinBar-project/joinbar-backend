@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { usersTable } = require('../models/schema');
+const { usersTable, userTags } = require('../models/schema');
 const { eq } = require('drizzle-orm');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -18,7 +18,7 @@ if (!JWT_SECRET || !REFRESH_SECRET) {
 }
 
 const signup = async (req, res) => {
-  const { username, nickname, email, password, birthday } = req.body;
+  const { username, nickname, email, password, birthday, preferences } = req.body;
 
   try {
     const userResult = await db
@@ -37,9 +37,8 @@ const signup = async (req, res) => {
     const now = new Date();
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小時後過期
 
-    const [newUser] = await db
-      .insert(usersTable)
-      .values({
+    const result = await db.transaction(async (tx) => {
+      const [newUser] = await tx.insert(usersTable).values({
         username,
         nickname,
         email,
@@ -57,16 +56,36 @@ const signup = async (req, res) => {
         role: usersTable.role
       });
 
+      if (preferences) {
+        const VALID_TAG_KEYS = ['sport', 'music', 'student', 'bistro', 'drink', 'joy', 'romantic', 'oldschool', 'highlevel', 'easy'];
+        const validTags = {};
+
+        for (const key of VALID_TAG_KEYS) {
+          validTags[key] = !!preferences[key];
+        }
+
+        await tx.insert(userTags).values({
+          user_id: newUser.id,
+          ...validTags,
+        });
+
+        console.log(`用戶 ${newUser.id} 的偏好資料已創建:`, validTags);
+      }
+
+      return newUser;
+    });
+
     const emailResult = await sendVerificationEmail(email, verificationToken, username);
 
     if (!emailResult.success) {
       console.error('寄送驗證信失敗，但用戶已建立');
     }
 
-    return res.status(201).json({
+    return res.status(201).json({ 
       message: '註冊成功！請檢查您的信箱並點擊驗證連結來啟用帳號',
-      user: newUser,
-      emailSent: emailResult.success
+      user: result,
+      emailSent: emailResult.success,
+      hasPreferences: !!preferences
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
