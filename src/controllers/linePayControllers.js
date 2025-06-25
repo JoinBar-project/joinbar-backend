@@ -4,15 +4,12 @@ const { eq, and, inArray } = require('drizzle-orm');
 const LinePayProvider = require('../utils/linePayProvider');
 const dayjs = require('dayjs');
 
-// 模組依賴 - 避免重複 require
 const { subPlans } = require('../utils/subPlans');
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 
-// 單例 FlakeId 生成器
 const flakeIdGenerator = new FlakeId({ id: 1 });
 
-// 通用錯誤處理
 const handleError = (err, res) => {
   console.error('LINE Pay 錯誤:', {
     message: err.message,
@@ -50,16 +47,14 @@ const handleError = (err, res) => {
   return res.status(500).json(errorResponse);
 };
 
-// 輔助函數：驗證訂單金額
 const validateOrderAmount = (orderItems, storedAmount) => {
   const calculatedAmount = orderItems.reduce((sum, item) => {
     return sum + (parseFloat(item.price) * parseInt(item.quantity));
   }, 0);
   
-  return Math.abs(calculatedAmount - parseFloat(storedAmount)) <= 0.01;
+  return Math.abs(calculatedAmount - parseFloat(storedAmount)) <= 1;
 };
 
-// 輔助函數：處理活動參與記錄
 const processEventParticipation = async (tx, orderItemsList, userId) => {
   const eventItems = orderItemsList.filter(item => item.eventId && item.itemType === 1);
   if (eventItems.length === 0) return;
@@ -75,7 +70,6 @@ const processEventParticipation = async (tx, orderItemsList, userId) => {
   console.log(`✅ 已建立 ${participationData.length} 個活動參與記錄`);
 };
 
-// 輔助函數：處理訂閱服務
 const processSubscriptions = async (tx, orderItemsList, userId) => {
   const subscriptionItems = orderItemsList.filter(item => item.itemType === 2 && item.subscriptionType);
   if (subscriptionItems.length === 0) return;
@@ -99,7 +93,6 @@ const processSubscriptions = async (tx, orderItemsList, userId) => {
     const startAt = now;
     const endAt = dayjs(now).add(plan.duration, 'day').toDate();
 
-    // 創建訂閱記錄
     await tx.insert(subTable).values({
       id: subId,
       userId: userId,
@@ -112,7 +105,6 @@ const processSubscriptions = async (tx, orderItemsList, userId) => {
       modifyAt: now,
     });
 
-    // 更新訂單項目，關聯訂閱 ID
     if (item.id) {
       await tx.update(orderItems)
         .set({ subscriptionId: subId })
@@ -133,13 +125,11 @@ const processSubscriptions = async (tx, orderItemsList, userId) => {
   console.log(`✅ 共處理 ${subscriptionItems.length} 個訂閱項目`);
 };
 
-// 創建 LINE Pay 付款
 const createLinePayment = async (req, res) => {
   try {
     const { orderId } = req.body;
     const userId = req.user.id;
     
-    // 輸入驗證
     if (!orderId) {
       return res.status(400).json({
         error: '缺少訂單 ID',
@@ -165,7 +155,6 @@ const createLinePayment = async (req, res) => {
       });
     }
 
-    // 檢查現有付款交易
     if (order.paymentId && order.paymentMethod === 'linepay') {
       try {
         const statusCheck = await LinePayProvider.checkPaymentStatus(order.paymentId);
@@ -183,11 +172,9 @@ const createLinePayment = async (req, res) => {
         }
       } catch (error) {
         console.warn('⚠️ 檢查現有付款狀態失敗:', error.message);
-        // 繼續執行，創建新的付款交易
       }
     }
 
-    // 查詢訂單項目
     const orderItemsList = await db
       .select()
       .from(orderItems)
@@ -200,7 +187,6 @@ const createLinePayment = async (req, res) => {
       });
     }
 
-    // 驗證訂單金額
     if (!validateOrderAmount(orderItemsList, order.totalAmount)) {
       console.error('❌ 訂單金額不匹配:', {
         orderId,
@@ -243,7 +229,6 @@ const createLinePayment = async (req, res) => {
         price: Number(item.price)           
       }));
     } else {
-      // 理論上不應該發生，但加上防護
       return res.status(400).json({
         error: '訂單商品類型異常',
         code: 'INVALID_ITEM_TYPE'
@@ -288,7 +273,6 @@ const createLinePayment = async (req, res) => {
       });
     }
 
-    // 更新訂單付款資訊
     await db.update(orders).set({
       paymentMethod: 'linepay',
       paymentId: paymentResult.transactionId,
@@ -318,7 +302,6 @@ const createLinePayment = async (req, res) => {
   }
 };
 
-// 確認 LINE Pay 付款
 const confirmLinePayment = async (req, res) => {
   try {
     const { transactionId, orderId } = req.query;
@@ -326,13 +309,11 @@ const confirmLinePayment = async (req, res) => {
 
     console.log('🔄 LINE Pay 確認回調:', { transactionId, orderId });
 
-    // 參數驗證
     if (!transactionId || !orderId) {
       console.error('❌ 缺少必要參數:', { transactionId, orderId });
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('缺少付款參數')}`);
     }
 
-    // 查詢訂單
     const [order] = await db
       .select()
       .from(orders)
@@ -343,18 +324,30 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('找不到訂單')}`);
     }
 
-    // 一次性查詢訂單項目
     const orderItemsList = await db
-      .select()
+      .select({
+        id: orderItems.id,
+        orderId: orderItems.orderId,
+        itemType: orderItems.itemType,
+        eventId: orderItems.eventId,
+        subscriptionId: orderItems.subscriptionId,
+        subscriptionType: orderItems.subscriptionType,
+        price: orderItems.price,
+        quantity: orderItems.quantity,
+        subtotal: orderItems.subtotal
+      })
       .from(orderItems)
       .where(eq(orderItems.orderId, orderId));
+
+    console.log('🔍 訂單項目詳細資料:', JSON.stringify(orderItemsList, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value, 2
+    ));
 
     if (!orderItemsList.length) {
       console.error('❌ 訂單項目不存在:', orderId);
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('訂單項目不存在')}`);
     }
 
-    // 驗證訂單金額
     if (!validateOrderAmount(orderItemsList, order.totalAmount)) {
       console.error('❌ 訂單金額不匹配:', {
         orderId,
@@ -364,30 +357,59 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('訂單金額異常')}`);
     }
 
-    // 判斷商品類型
-    const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
-
-    // 生成成功頁面 URL
     const getSuccessUrl = () => {
       const baseParams = `orderId=${orderId}&orderNumber=${order.orderNumber}&transactionId=${transactionId}`;
-      return isAllSubscription 
-        ? `${frontendUrl}/subscription-success?${baseParams}`
-        : `${frontendUrl}/order-success/${order.orderNumber}?${baseParams}`;
+      
+      if (!orderItemsList || orderItemsList.length === 0) {
+        console.error('❌ orderItemsList 為空或未定義');
+        return `${frontendUrl}/payment/error?message=${encodeURIComponent('訂單項目不存在')}`;
+      }
+      
+      const hasSubscription = orderItemsList.some(item => {
+        console.log('🔍 檢查訂閱項目:', { id: item.id, itemType: item.itemType, subscriptionType: item.subscriptionType });
+        return item.itemType === 2;
+      });
+      
+      const hasEvent = orderItemsList.some(item => {
+        console.log('🔍 檢查活動項目:', { id: item.id, itemType: item.itemType, eventId: item.eventId });
+        return item.itemType === 1;
+      });
+      
+      console.log('🎯 跳轉決策分析:', {
+        totalItems: orderItemsList.length,
+        hasSubscription,
+        hasEvent,
+        itemsBreakdown: orderItemsList.map(item => ({
+          id: item.id,
+          itemType: item.itemType,
+          isSubscription: item.itemType === 2,
+          isEvent: item.itemType === 1,
+          subscriptionType: item.subscriptionType,
+          eventId: item.eventId
+        }))
+      });
+      
+      if (hasSubscription && !hasEvent) {
+        const subscriptionUrl = `${frontendUrl}/payment-result?${baseParams}`;
+        console.log('✅ 決定跳轉到訂閱成功頁:', subscriptionUrl);
+        return subscriptionUrl;
+      } else {
+        const eventUrl = `${frontendUrl}/order-success/${order.orderNumber}?${baseParams}`;
+        console.log('✅ 決定跳轉到活動成功頁:', eventUrl);
+        return eventUrl;
+      }
     };
 
-    // 處理已確認的訂單
     if (order.status === 'confirmed') {
       console.log('✅ 訂單已確認，直接跳轉:', orderId);
       return res.redirect(getSuccessUrl());
     }
 
-    // 檢查訂單狀態
     if (order.status !== 'pending') {
       console.log('⚠️ 訂單狀態異常:', { orderId, status: order.status });
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('訂單狀態異常')}`);
     }
 
-    // LINE Pay 付款確認
     console.log('🔄 開始 LINE Pay 付款確認...', { transactionId, amount: order.totalAmount });
     const confirmResult = await LinePayProvider.confirmPayment(
       transactionId,
@@ -406,32 +428,23 @@ const confirmLinePayment = async (req, res) => {
 
     console.log('✅ LINE Pay 確認成功，開始更新資料庫...', { orderId, transactionId });
 
-    // 資料庫事務處理
     await db.transaction(async (tx) => {
-      // 更新訂單狀態
       await tx.update(orders).set({
         status: 'confirmed',
         paidAt: dayjs().tz('Asia/Taipei').toDate(),
-        transactionId: transactionId, // 使用 URL 參數中的 transactionId，不是 confirmResult.transactionId
+        transactionId: transactionId,
         updatedAt: dayjs().tz('Asia/Taipei').toDate()
       }).where(eq(orders.id, orderId));
 
       console.log('✅ 訂單狀態已更新為已確認，交易 ID:', transactionId);
 
-      // 處理活動參與記錄
       await processEventParticipation(tx, orderItemsList, order.userId);
 
-      // 處理訂閱服務
       await processSubscriptions(tx, orderItemsList, order.userId);
     });
 
-    console.log('✅ LINE Pay 付款確認完成，準備跳轉成功頁面', {
-      orderId,
-      orderNumber: order.orderNumber,
-      isSubscription: isAllSubscription
-    });
+    console.log('✅ LINE Pay 付款確認完成，準備跳轉成功頁面');
 
-    // 跳轉到對應的成功頁面
     res.redirect(getSuccessUrl());
 
   } catch (error) {
@@ -447,7 +460,6 @@ const confirmLinePayment = async (req, res) => {
   }
 };
 
-// 檢查 LINE Pay 付款狀態
 const checkLinePaymentStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -500,11 +512,9 @@ const checkLinePaymentStatus = async (req, res) => {
               currency: statusResult.currency
             };
 
-            // 如果 LINE Pay 顯示已付款但本地狀態仍是 pending，需要同步
             if (statusResult.isPaid && order.status === 'pending') {
               console.log('🔄 同步付款狀態:', orderId);
               
-              // 查詢訂單項目
               const orderItemsList = await db
                 .select()
                 .from(orderItems)
@@ -517,10 +527,8 @@ const checkLinePaymentStatus = async (req, res) => {
                   updatedAt: dayjs().tz('Asia/Taipei').toDate()
                 }).where(eq(orders.id, orderId));
 
-                // 處理活動參與記錄
                 await processEventParticipation(tx, orderItemsList, order.userId);
 
-                // 處理訂閱服務
                 await processSubscriptions(tx, orderItemsList, order.userId);
               });
 
