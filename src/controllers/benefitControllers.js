@@ -176,7 +176,6 @@ const updateBenefit = async (req, res) => {
       .set({
         status: 2,
         barId: bar.id,
-        selectedBarName: bar.name,
         redeemAt: now,
         modifyAt: now,
       })
