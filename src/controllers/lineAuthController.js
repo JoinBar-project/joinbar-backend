@@ -1,8 +1,8 @@
 const dotenv = require('dotenv');
 const axios = require('axios');
 const db = require('../config/db');
-const { usersTable } = require('../models/schema');
-const { eq, or } = require('drizzle-orm');
+const { usersTable, userTags } = require('../models/schema');
+const { eq } = require('drizzle-orm');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
@@ -301,6 +301,21 @@ const lineCallback = async (req, res) => {
       expiresIn: "7d" 
     });
 
+    // 檢查用戶是否已有偏好設定
+    let hasPreferences = false;
+    try {
+      const existingPreferences = await db
+        .select()
+        .from(userTags)
+        .where(eq(userTags.user_id, userResult.id))
+        .limit(1);
+      
+      hasPreferences = existingPreferences.length > 0;
+    } catch (err) {
+      console.error('檢查用戶偏好設定時發生錯誤:', err);
+      hasPreferences = false;
+    }
+
 		// 7. 重導向到前端並帶上 tokens 使用 HTTP-only cookies 設定 access token cookie
     res.cookie('access_token', accessToken, {
       httpOnly: true, // 防止 JavaScript 存取
@@ -325,7 +340,9 @@ const lineCallback = async (req, res) => {
       username: userResult.username,
       email: userResult.email,
       role: userResult.role,
-      lineDisplayName: userResult.lineDisplayName
+      lineDisplayName: userResult.lineDisplayName,
+      providerType: 'line',
+      hasPreferences: hasPreferences
     }), {
       httpOnly: false, // 允許前端讀取用戶資料
       secure: process.env.NODE_ENV === 'production',
@@ -334,7 +351,7 @@ const lineCallback = async (req, res) => {
       path: '/'
     });
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/login?success=true`);
+    res.redirect(`${frontendUrl}/login?success=true&source=line`);
 	} catch(err) {
 		return handleError(err, 'LINE 登入處理過程發生錯誤，請重新登入', res);
 	}

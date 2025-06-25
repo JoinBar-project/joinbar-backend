@@ -15,6 +15,11 @@ const {
   unique,
 } = require("drizzle-orm/pg-core");
 
+const ITEM_TYPES = {
+  EVENT: 1,
+  SUBSCRIPTION: 2,
+};
+
 const usersTable = pgTable("users", {
   id: serial().primaryKey(),
   username: varchar({ length: 100 }).notNull(),

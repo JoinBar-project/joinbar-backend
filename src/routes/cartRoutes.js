@@ -7,11 +7,12 @@ const {
   clearCart
 } = require('../controllers/cartControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
+const formatApiResponse = require('../middlewares/formatApiResponse');
 
 router.use(authenticateToken);
-router.get('/', getUserCart);
-router.post('/add', addToCart);
-router.delete('/remove/:eventId', removeFromCart);
-router.delete('/clear', clearCart);
+router.get('/', formatApiResponse, getUserCart);  
+router.post('/add', formatApiResponse, addToCart); 
+router.delete('/remove/:eventId', formatApiResponse, removeFromCart);  
+router.delete('/clear', formatApiResponse, clearCart); 
 
 module.exports = router;
