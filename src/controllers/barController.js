@@ -1,14 +1,29 @@
 // src/controllers/barController.js
-const { getBarsFromGoogleMaps, getPlaceDetailsFromGoogleApi } = require("../services/googleMaps");
-const { db } = require("../drizzle/db");
-const { barsTable, userBarCollectionTable } = require("../schema");
+const {
+  getBarsFromGoogleMaps,
+  getPlaceDetailsFromGoogleApi,
+} = require("../services/googleMaps");
+const db = require("../config/db");
+const { barsTable, userBarCollectionTable } = require("../models/schema");
 const { eq, and, inArray, sql } = require("drizzle-orm");
 
 // 移除 formatPriceRange 輔助函數，因為不再處理價格相關顯示
 
 // MODIFIED: syncBarFromGoogle - 不再處理 priceLevel
 async function syncBarFromGoogle(barData) {
-  const { place_id, name, address, latitude, longitude, imageUrl, rating, reviews, phone, website, openingHoursText, tags } = barData; // 移除 priceLevel
+  const {
+    place_id,
+    name,
+    address,
+    latitude,
+    longitude,
+    imageUrl,
+    rating,
+    reviews,
+    website,
+    openingHoursText,
+    tags,
+  } = barData;
 
   if (!place_id) {
     console.error("Missing place_id for bar synchronization.");
@@ -55,8 +70,6 @@ async function syncBarFromGoogle(barData) {
           imageUrl,
           rating,
           reviews,
-          // 移除 priceLevel
-          phone,
           website,
           openingHoursText,
           tags,
@@ -80,15 +93,19 @@ const getBars = async (req, res) => {
 
     const googleDetailedBars = await getBarsFromGoogleMaps(query, location);
 
-    const syncPromises = googleDetailedBars.map(bar => syncBarFromGoogle(bar));
+    const syncPromises = googleDetailedBars.map((bar) =>
+      syncBarFromGoogle(bar)
+    );
     const syncResults = await Promise.allSettled(syncPromises);
 
     const syncedBarIds = syncResults
-      .filter(result => result.status === 'fulfilled' && result.value)
-      .map(result => result.value.id);
+      .filter((result) => result.status === "fulfilled" && result.value)
+      .map((result) => result.value.id);
 
     if (syncedBarIds.length === 0) {
-      return res.status(404).json({ message: "沒有酒吧數據可供顯示或同步失敗。" });
+      return res
+        .status(404)
+        .json({ message: "沒有酒吧數據可供顯示或同步失敗。" });
     }
 
     const finalBars = await db
@@ -102,12 +119,9 @@ const getBars = async (req, res) => {
         imageUrl: barsTable.imageUrl,
         rating: barsTable.rating,
         reviews: barsTable.reviews,
-        // 移除 priceLevel 選擇
-        phone: barsTable.phone,
         website: barsTable.website,
         openingHoursText: barsTable.openingHoursText,
         tags: barsTable.tags,
-        // 移除 priceRange 轉換
       })
       .from(barsTable)
       .where(inArray(barsTable.id, syncedBarIds))
@@ -128,21 +142,38 @@ const getBars = async (req, res) => {
 
 // MODIFIED: createBar - 不再處理 priceLevel
 const createBar = async (req, res) => {
-  const { googlePlaceId, name, address, latitude, longitude, imageUrl, rating, reviews, phone, website, openingHoursText, tags } = req.body; // 移除 priceLevel
+  const {
+    googlePlaceId,
+    name,
+    address,
+    latitude,
+    longitude,
+    imageUrl,
+    rating,
+    reviews,
+    website,
+    openingHoursText,
+    tags,
+  } = req.body;
 
   if (!name || !address || !googlePlaceId) {
-    return res.status(400).json({ message: "酒吧名稱、地址和 Google Place ID 為必填項目" });
+    return res
+      .status(400)
+      .json({ message: "酒吧名稱、地址和 Google Place ID 為必填項目" });
   }
 
   try {
     const existingBar = await db
-        .select()
-        .from(barsTable)
-        .where(eq(barsTable.googlePlaceId, googlePlaceId))
-        .limit(1);
+      .select()
+      .from(barsTable)
+      .where(eq(barsTable.googlePlaceId, googlePlaceId))
+      .limit(1);
 
     if (existingBar.length > 0) {
-        return res.status(409).json({ message: "該 Google Place ID 的酒吧已存在", bar: existingBar[0] });
+      return res.status(409).json({
+        message: "該 Google Place ID 的酒吧已存在",
+        bar: existingBar[0],
+      });
     }
 
     const [newBar] = await db
@@ -156,8 +187,6 @@ const createBar = async (req, res) => {
         imageUrl,
         rating,
         reviews,
-        // 移除 priceLevel
-        phone,
         website,
         openingHoursText,
         tags,

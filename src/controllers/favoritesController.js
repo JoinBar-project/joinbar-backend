@@ -1,6 +1,6 @@
 // src/controllers/favoritesController.js
-const { db } = require("../drizzle/db");
-const { userBarCollectionTable, barsTable } = require("../schema");
+const db = require("../config/db");
+const { userBarCollectionTable, barsTable } = require("../models/schema");
 const { eq, and } = require("drizzle-orm");
 const { syncBarFromGoogle } = require("./barController");
 const { getPlaceDetailsFromGoogleApi } = require("../services/googleMaps");
@@ -34,20 +34,24 @@ const getFavorites = async (req, res) => {
     const detailPromises = favorites.map(async (fav) => {
       if (fav.googlePlaceId) {
         try {
-          const googleData = await getPlaceDetailsFromGoogleApi(fav.googlePlaceId);
+          const googleData = await getPlaceDetailsFromGoogleApi(
+            fav.googlePlaceId
+          );
           return {
             ...fav,
             // 合併 Google API 的即時資料
             imageUrl: googleData?.imageUrl,
             rating: googleData?.rating,
             reviews: googleData?.reviews,
-            phone: googleData?.phone,
             website: googleData?.website,
             openingHoursText: googleData?.openingHoursText,
             tags: googleData?.tags || [],
           };
         } catch (error) {
-          console.error(`Failed to fetch details for ${fav.googlePlaceId}:`, error);
+          console.error(
+            `Failed to fetch details for ${fav.googlePlaceId}:`,
+            error
+          );
           return fav; // 如果 API 失敗，返回基本資料
         }
       }
@@ -59,7 +63,9 @@ const getFavorites = async (req, res) => {
     res.status(200).json({ favorites: favoritesWithDetails });
   } catch (error) {
     console.error("Error fetching favorites:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -90,7 +96,7 @@ const addFavorite = async (req, res) => {
           latitude: barData.latitude,
           longitude: barData.longitude,
         };
-        
+
         const syncedBar = await syncBarFromGoogle(syncData);
         if (syncedBar) {
           finalBarId = syncedBar.id;
@@ -110,17 +116,19 @@ const addFavorite = async (req, res) => {
     const existingFavorite = await db
       .select()
       .from(userBarCollectionTable)
-      .where(and(
-        eq(userBarCollectionTable.userId, userId),
-        eq(userBarCollectionTable.barId, finalBarId)
-      ))
+      .where(
+        and(
+          eq(userBarCollectionTable.userId, userId),
+          eq(userBarCollectionTable.barId, finalBarId)
+        )
+      )
       .limit(1);
 
     if (existingFavorite.length > 0) {
-      return res.status(200).json({ 
-        message: "該酒吧已被收藏", 
+      return res.status(200).json({
+        message: "該酒吧已被收藏",
         favorite: existingFavorite[0],
-        alreadyFavorited: true 
+        alreadyFavorited: true,
       });
     }
 
@@ -134,13 +142,15 @@ const addFavorite = async (req, res) => {
       })
       .returning();
 
-    res.status(201).json({ 
-      message: "收藏成功", 
-      favorite: newFavorite 
+    res.status(201).json({
+      message: "收藏成功",
+      favorite: newFavorite,
     });
   } catch (error) {
     console.error("Error adding favorite:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -156,10 +166,12 @@ const removeFavorite = async (req, res) => {
   try {
     const deletedFavorites = await db
       .delete(userBarCollectionTable)
-      .where(and(
-        eq(userBarCollectionTable.userId, userId),
-        eq(userBarCollectionTable.barId, parseInt(barId))
-      ))
+      .where(
+        and(
+          eq(userBarCollectionTable.userId, userId),
+          eq(userBarCollectionTable.barId, parseInt(barId))
+        )
+      )
       .returning();
 
     if (deletedFavorites.length === 0) {
@@ -169,7 +181,9 @@ const removeFavorite = async (req, res) => {
     res.status(200).json({ message: "收藏已移除" });
   } catch (error) {
     console.error("Error removing favorite:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
