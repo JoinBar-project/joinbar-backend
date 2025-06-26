@@ -11,7 +11,7 @@ class GeminiBarRecommender {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
-  async recommendBars() {
+  async recommendBars(userInput = '') {
     const bars = [
       { name: 'Draft Land', address: '台北市大安區忠孝東路四段248巷2號', latitude: 25.041927, longitude: 121.550537 },
       { name: 'Bar Mood Taipei', address: '台北市大安區敦化南路一段160巷53號', latitude: 25.041085, longitude: 121.550352 },
@@ -34,7 +34,7 @@ class GeminiBarRecommender {
       `- ${bar.name}（地址：${bar.address}，經緯度：${bar.latitude}, ${bar.longitude}）`
     ).join('\n');
 
-    const prompt = `以下是台北的 15 間酒吧資料：\n${barList}\n\n請根據這些資訊推薦幾家適合年輕人去的酒吧，並簡單說明原因。`;
+    const prompt = `以下是台北的 15 間酒吧資料：\n${barList}\n\n請根據這些資訊，並依照使用者的需求，推薦幾家酒吧給使用者，並簡單說明原因。`;
 
     try {
       const result = await this.model.generateContent({
@@ -52,7 +52,7 @@ class GeminiBarRecommender {
         }
       });
 
-      // 改這段：正確抓出 Gemini 的文字回應
+      // 正確抓出 Gemini 的文字回應
   const text = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!text) {
@@ -68,15 +68,14 @@ class GeminiBarRecommender {
   }
 }
 
-
-if (require.main === module) {
-  const recommender = new GeminiBarRecommender();
-  recommender.recommendBars()
-    .then(result => {
-      console.log('推薦結果：\n', result);
-    })
-    .catch(err => {
-      console.error('發生錯誤：', err.message);
-    });
-}
+// if (require.main === module) {
+//   const recommender = new GeminiBarRecommender();
+//   recommender.recommendBars()
+//     .then(result => {
+//       console.log('推薦結果：\n', result);
+//     })
+//     .catch(err => {
+//       console.error('發生錯誤：', err.message);
+//     });
+// }
 module.exports = GeminiBarRecommender;
