@@ -11,7 +11,7 @@ class GeminiBarRecommender {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
-  async recommendBars(userInput = '') {
+  async recommendBars(userInput) {
     const bars = [
       { name: 'Draft Land', address: '台北市大安區忠孝東路四段248巷2號', latitude: 25.041927, longitude: 121.550537 },
       { name: 'Bar Mood Taipei', address: '台北市大安區敦化南路一段160巷53號', latitude: 25.041085, longitude: 121.550352 },
@@ -34,7 +34,20 @@ class GeminiBarRecommender {
       `- ${bar.name}（地址：${bar.address}，經緯度：${bar.latitude}, ${bar.longitude}）`
     ).join('\n');
 
-    const prompt = `以下是台北的 15 間酒吧資料：\n${barList}\n\n請根據這些資訊，並依照使用者的需求，推薦幾家酒吧給使用者，並簡單說明原因。`;
+    const prompt = `你是一位專業的台北酒吧推薦專家。
+
+以下是台北15間精選酒吧的詳細資料：${barList}
+
+使用者需求：${userInput}
+
+請根據使用者的需求，從上述酒吧中推薦2-3間最適合的酒吧，並說明推薦理由。
+
+回覆格式請包含：
+1. 推薦的酒吧名稱和地址
+2. 推薦理由
+3. 非常簡短的特色介紹
+
+請用輕鬆、開朗的語氣回覆，讓使用者感受到個人化的推薦服務。`;
 
     try {
       const result = await this.model.generateContent({
@@ -47,7 +60,13 @@ class GeminiBarRecommender {
         systemInstruction: {
           role: 'system',
           parts: [{
-            text: '你是一個專業的酒吧嚮導，擅長根據地點與使用者喜歡的酒吧風格推薦合適的酒吧。'
+            text: `你是一個專業的酒吧嚮導，名為「JoinBot 酒吧小幫手」。
+            你的任務：
+            - 根據使用者的需求，從提供的15間酒吧中推薦最適合的2-3間
+            - 提供詳細的推薦理由
+            - 語氣要親切、專業，像是一位熟悉台北夜生活的在地朋友
+            - 如果使用者需求不明確，可以適度詢問偏好來提供更好的推薦
+            - 回覆要簡潔有用，避免過於冗長`
           }]
         }
       });
@@ -68,14 +87,4 @@ class GeminiBarRecommender {
   }
 }
 
-// if (require.main === module) {
-//   const recommender = new GeminiBarRecommender();
-//   recommender.recommendBars()
-//     .then(result => {
-//       console.log('推薦結果：\n', result);
-//     })
-//     .catch(err => {
-//       console.error('發生錯誤：', err.message);
-//     });
-// }
 module.exports = GeminiBarRecommender;

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const GeminiBarRecommender = require('../services/BarRecommendationAI');
-const recommender = new GeminiBarRecommender();
 
 // 聊天 API 使用者輸入
 router.post('/recommendAI', async (req, res) => {
@@ -10,6 +9,8 @@ router.post('/recommendAI', async (req, res) => {
   if (!message || message.trim() === '') {
     return res.status(400).json({ success: false, message: '缺少輸入內容' })
   }
+
+  const recommender = new GeminiBarRecommender();
 
   try {
     const result = await recommender.recommendBars(message)
