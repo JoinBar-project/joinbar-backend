@@ -11,6 +11,7 @@ router.post("/bars", /* authMiddleware, */ barController.createBar);
 
 router.get("/favorites", favoritesController.getFavorites);
 router.post("/favorites", favoritesController.addFavorite);
+router.put("/favorites/:collectionId", favoritesController.updateFavorite);
 router.delete("/favorites/:barId", favoritesController.removeFavorite);
 
 module.exports = router;

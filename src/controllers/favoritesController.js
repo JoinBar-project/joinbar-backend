@@ -1,6 +1,10 @@
 // src/controllers/favoritesController.js
 const db = require("../config/db");
-const { userBarCollectionTable, barsTable } = require("../models/schema");
+const {
+  userBarCollectionTable,
+  barsTable,
+  userBarFoldersTable,
+} = require("../models/schema"); // 確保引入 userBarFoldersTable
 const { eq, and } = require("drizzle-orm");
 const { syncBarFromGoogle } = require("./barController");
 const { getPlaceDetailsFromGoogleApi } = require("../services/googleMaps");
@@ -71,7 +75,7 @@ const getFavorites = async (req, res) => {
 
 // 新增收藏
 const addFavorite = async (req, res) => {
-  const { barId, googlePlaceId, barData } = req.body;
+  const { barId, googlePlaceId, barData, folderId } = req.body; // 從 req.body 解構 folderId
   const userId = req.body.userId || ANONYMOUS_USER_ID;
 
   try {
@@ -138,6 +142,7 @@ const addFavorite = async (req, res) => {
       .values({
         userId,
         barId: finalBarId,
+        folderId: folderId || null, // 確保 folderId 要麼來自請求，要麼是 null
         createdAt: new Date(),
       })
       .returning();
@@ -187,4 +192,84 @@ const removeFavorite = async (req, res) => {
   }
 };
 
-module.exports = { getFavorites, addFavorite, removeFavorite };
+// 新增 updateFavorite 函數
+const updateFavorite = async (req, res) => {
+  const { collectionId } = req.params; // 從路由參數獲取收藏 ID
+  const userId = req.body.userId || ANONYMOUS_USER_ID; // 或從身份驗證獲取
+  const { folderId } = req.body; // 獲取要更新的欄位，例如 folderId
+
+  if (!collectionId) {
+    return res.status(400).json({ message: "收藏 ID 為必填項目" });
+  }
+
+  try {
+    // 檢查收藏是否存在且屬於該用戶
+    const existingFavorite = await db
+      .select()
+      .from(userBarCollectionTable)
+      .where(
+        and(
+          eq(userBarCollectionTable.id, parseInt(collectionId)), // 確保 ID 是整數
+          eq(userBarCollectionTable.userId, userId)
+        )
+      )
+      .limit(1);
+
+    if (existingFavorite.length === 0) {
+      return res.status(404).json({ message: "未找到該收藏或您無權修改" });
+    }
+
+    // 構建更新對象
+    const updateData = {};
+    if (folderId !== undefined) {
+      // 只有當 folderId 被明確提供時才更新
+      // 檢查提供的 folderId 是否存在於 userBarFoldersTable 中
+      if (folderId !== null) {
+        // 如果 folderId 不為 null，則驗證其存在性
+        const existingFolder = await db
+          .select()
+          .from(userBarFoldersTable)
+          .where(
+            and(
+              eq(userBarFoldersTable.id, folderId),
+              eq(userBarFoldersTable.userId, userId) // 確保是該用戶的資料夾
+            )
+          )
+          .limit(1);
+
+        if (existingFolder.length === 0) {
+          return res
+            .status(400)
+            .json({ message: "提供的資料夾 ID 不存在或不屬於該用戶" });
+        }
+      }
+      updateData.folderId = folderId;
+    }
+    // 如果還有其他可更新的欄位，也可以在這裡添加
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "沒有提供要更新的內容" });
+    }
+
+    // 執行更新
+    const [updatedFavorite] = await db
+      .update(userBarCollectionTable)
+      .set({
+        ...updateData,
+        updatedAt: new Date(), // 更新更新時間
+      })
+      .where(eq(userBarCollectionTable.id, parseInt(collectionId)))
+      .returning();
+
+    res
+      .status(200)
+      .json({ message: "收藏更新成功", favorite: updatedFavorite });
+  } catch (error) {
+    console.error("Error updating favorite:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+module.exports = { getFavorites, addFavorite, removeFavorite, updateFavorite };

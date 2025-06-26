@@ -120,11 +120,10 @@ const userEventCollectionTable = pgTable(
       () => events.id,
       { onDelete: "cascade" }
     ),
-    folderId: integer("folder_id")
-      .references(() => userEventFoldersTable.id, {
-        onDelete: "cascade",
-      })
-      .nullable(),
+    // 修正這裡：使用正確的 nullable 語法
+    folderId: integer("folder_id").references(() => userEventFoldersTable.id, {
+      onDelete: "cascade",
+    }),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
