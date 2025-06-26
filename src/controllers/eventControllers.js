@@ -2,7 +2,7 @@ const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
 const { events, eventTags, tags } = require('../models/schema');
-const { eq } = require('drizzle-orm');
+const { eq, and } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
 
@@ -22,6 +22,14 @@ const createEvent = async (req, res) => {
     return res.status(400).json({ message: '開始或結束時間格式錯誤' });
   }
 
+  if (parsedStart.isAfter(parsedEnd)) {
+  return res.status(400).json({ message: '開始時間不可晚於結束時間' });
+}
+
+  if (parsedStart.isBefore(dayjs().tz(tz))) {
+    return res.status(400).json({ message: '開始時間不可早於現在時間' });
+  }
+
   if (!cleanBody.name || !cleanBody.barName || !cleanBody.location || !cleanBody.startAt || !cleanBody.endAt) {
     return res.status(400).json({ message: 'name、barName、location、startAt、endAt 為必填欄位' });
   }
@@ -36,10 +44,12 @@ const createEvent = async (req, res) => {
   }
 
   if (typeof cleanBody.tags === 'string') {
-    cleanBody.tags = [cleanBody.tags];
-  }
-  if (!Array.isArray(cleanBody.tags)) {
-    cleanBody.tags = [];
+    try {
+      cleanBody.tags = JSON.parse(cleanBody.tags);
+    } catch (e) {
+      console.warn('tags JSON.parse 失敗:', cleanBody.tags);
+      cleanBody.tags = [];
+    }
   }
 
   let imageUrl = '';
@@ -117,6 +127,7 @@ const getEvent = async (req, res) => {
 
 const updateEvent = async (req, res) => {
   const eventId = req.params.id;
+
   try {
     const [event] = await db.select().from(events).where(eq(events.id, eventId));
     if (!event) return res.status(404).json({ message: '找不到活動' });
@@ -128,11 +139,26 @@ const updateEvent = async (req, res) => {
     const imageFile = req.file;
     let imageUrl = event.imageUrl;
 
-    //  檢查圖片欄位有上傳，避免被 multer 擋掉產生 undefined
+    // 檢查圖片欄位格式
     if (req.body.image && !imageFile) {
       return res.status(400).json({
         message: '圖片格式錯誤，請上傳 jpeg/png/webp/jfif',
       });
+    }
+
+    const parsedStart = req.body.startAt ? dayjs(req.body.startAt) : dayjs(event.startAt);
+    const parsedEnd = req.body.endAt ? dayjs(req.body.endAt) : dayjs(event.endAt);
+
+    if (!parsedStart.isValid() || !parsedEnd.isValid()) {
+      return res.status(400).json({ message: '開始或結束時間格式錯誤' });
+    }
+
+    if (parsedStart.isAfter(parsedEnd)) {
+      return res.status(400).json({ message: '開始時間不可晚於結束時間' });
+    }
+
+    if (parsedStart.isBefore(dayjs().tz(tz))) {
+      return res.status(400).json({ message: '開始時間不可早於現在時間' });
     }
 
     if (imageFile) {
@@ -167,26 +193,32 @@ const updateEvent = async (req, res) => {
     .set(updatedData)
     .where(eq(events.id, eventId));
 
-    //活動標籤全刪再新增
-    if (req.body.tags && req.body.tags.length > 0) {
-      
-      await db
-      .delete(eventTags)
-      .where(eq(eventTags.eventId, eventId));
-      
-      const tagsList = req.body.tags.map(tagId => ({
+    let parsedTags = [];
+
+    if (typeof req.body.tags === 'string') {
+      try {
+        parsedTags = JSON.parse(req.body.tags);
+      } catch (err) {
+        console.warn('無法解析 tags 字串:', req.body.tags);
+        parsedTags = [req.body.tags];
+      }
+    } else if (Array.isArray(req.body.tags)) {
+      parsedTags = req.body.tags;
+    }
+
+    if (parsedTags.length > 0) {
+      await db.delete(eventTags).where(eq(eventTags.eventId, eventId));
+
+      const tagsList = parsedTags.map(tagId => ({
         eventId,
-        tagId
+        tagId: Number(tagId),
       }));
 
       await db.insert(eventTags).values(tagsList);
     }
 
     const updatedTags = await db
-      .select({
-        id: tags.id,
-        name: tags.name
-      })
+      .select({ id: tags.id, name: tags.name })
       .from(eventTags)
       .innerJoin(tags, eq(eventTags.tagId, tags.id))
       .where(eq(eventTags.eventId, eventId));

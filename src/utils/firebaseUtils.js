@@ -13,8 +13,8 @@ function getPublicImageUrl(filePath) {
  * @returns {string} imageUrl
  */
 
-async function uploadImage(fileBuffer, mimeType, filename) {
-  const filePath = `events/${Date.now()}-${filename}`;
+async function uploadImage(fileBuffer, mimeType, filename, folder='events') {
+  const filePath = `${folder}/${Date.now()}-${filename}`;
   const blob = bucket.file(filePath);
   const blobStream = blob.createWriteStream({
     metadata: { contentType: mimeType },

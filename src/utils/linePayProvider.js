@@ -204,40 +204,6 @@ const checkPaymentStatus = async (transactionId) => {
  };
 };
 
-const refundPayment = async (transactionId, amount, currency = 'TWD') => {
- console.log('💰 LINE Pay 退款:', {
-   transactionId,
-   amount,
-   currency
- });
-
- const result = await makeRequest('POST', `/v3/payments/${transactionId}/refund`, {
-   refundAmount: amount
- });
- 
- if (result.success) {
-   return {
-     success: true,
-     refundTransactionId: result.info.refundTransactionId,
-     refundAmount: amount
-   };
- }
- 
- return {
-   success: false,
-   message: result.message || '退款失敗',
-   code: result.code
- };
-};
-
-const voidAuthorization = async (transactionId) => {
- console.log('🚫 LINE Pay 取消授權:', transactionId);
-
- const result = await makeRequest('POST', `/v3/payments/authorizations/${transactionId}/void`, {});
- 
- return result.success;
-};
-
 const validateSandboxConnection = () => {
  try {
    console.log('🔧 驗證 LINE Pay 沙盒設定...');
@@ -267,8 +233,6 @@ module.exports = {
  createPayment,
  confirmPayment,
  checkPaymentStatus,
- refundPayment,
- voidAuthorization,
  validateSandboxConnection,
  generateSignature,
  createHeaders,

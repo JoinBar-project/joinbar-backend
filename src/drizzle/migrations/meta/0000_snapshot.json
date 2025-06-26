@@ -1,5 +1,5 @@
 {
-  "id": "cb6609d9-cee2-4814-862a-0e71da60f8f4",
+  "id": "197d7e97-6755-4d4b-b2c5-ae0116f27579",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -140,14 +140,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
@@ -220,7 +220,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
@@ -1056,47 +1056,29 @@
           "primaryKey": false,
           "notNull": true
         },
+        "item_type": {
+          "name": "item_type",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
         "event_id": {
           "name": "event_id",
           "type": "bigint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "event_name": {
-          "name": "event_name",
-          "type": "varchar(255)",
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "bar_name": {
-          "name": "bar_name",
-          "type": "varchar(100)",
+        "subscription_type": {
+          "name": "subscription_type",
+          "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
-        },
-        "location": {
-          "name": "location",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event_start_date": {
-          "name": "event_start_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event_end_date": {
-          "name": "event_end_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "host_user_id": {
-          "name": "host_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "price": {
           "name": "price",
@@ -1138,6 +1120,19 @@
           "tableTo": "events",
           "columnsFrom": [
             "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "order_items_subscription_id_subs_id_fk": {
+          "name": "order_items_subscription_id_subs_id_fk",
+          "tableFrom": "order_items",
+          "tableTo": "subs",
+          "columnsFrom": [
+            "subscription_id"
           ],
           "columnsTo": [
             "id"

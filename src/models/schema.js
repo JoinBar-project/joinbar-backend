@@ -1,5 +1,10 @@
 const { pgTable, varchar, bigint, timestamp, integer, index, smallint, serial, primaryKey, date, boolean, text, numeric, unique } = require('drizzle-orm/pg-core');
 
+const ITEM_TYPES = {
+  EVENT: 1,
+  SUBSCRIPTION: 2
+};
+
 const usersTable = pgTable("users", {
   id: serial().primaryKey(),
   username: varchar({ length: 100 }).notNull(),
@@ -27,8 +32,8 @@ const usersTable = pgTable("users", {
   avatarUrl: varchar("avatar_url", { length: 255 }),
   avatarKey: varchar("avatar_key", { length: 255 }),
   avatarLastUpdated: timestamp("avatar_last_updated").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at",{ withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at",{ withTimezone: true }).defaultNow(),
   status: smallint("status").default(1).notNull(), // 1: 正常 2: 刪除帳號
 });
 
@@ -38,7 +43,7 @@ const userNotificationTable = pgTable("user_notification", {
   notificationType: varchar("notification_type", { length: 20 }).notNull(), // 通知類型: 新的活動參加者 / 新的留言
   content: text("content").notNull(),
   isRead: boolean("is_read").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at",{ withTimezone: true }).defaultNow(),
 });
 
 const barsTable = pgTable("bars", {
@@ -185,16 +190,13 @@ const orders = pgTable('orders', {
 const orderItems = pgTable('order_items', {
   id: bigint('id', { mode: 'string' }).primaryKey(),
   orderId: bigint('order_id', { mode: 'string' }).references(() => orders.id, { onDelete: 'cascade' }).notNull(),
-  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }).notNull(),
-  eventName: varchar('event_name', { length: 255 }).notNull(),
-  barName: varchar('bar_name', { length: 100 }).notNull(),
-  location: varchar('location', { length: 255 }).notNull(),
-  eventStartDate: timestamp('event_start_date', { withTimezone: true }).notNull(),
-  eventEndDate: timestamp('event_end_date', { withTimezone: true }).notNull(),
-  hostUserId: integer('host_user_id').notNull(),
+  itemType: smallint('item_type').notNull(), 
+  eventId: bigint('event_id', { mode: 'string' }).references(() => events.id, { onDelete: 'restrict' }),
+  subscriptionId: bigint('subscription_id', { mode: 'string' }).references(() => subTable.id, { onDelete: 'restrict' }),
+  subscriptionType: varchar('subscription_type', { length: 50 }), 
   price: integer('price').notNull(),
   quantity: integer('quantity').notNull(),
-  subtotal: integer('subtotal').notNull() 
+  subtotal: integer('subtotal').notNull(),
 });
 
 const messages = pgTable('messages', {
@@ -250,5 +252,5 @@ const benefitRedeemsTable = pgTable('benefitRedeems',{
   subIdx: index('idx_sub').on(table.subId),
 })); 
 
-module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable };
+module.exports = { usersTable, userNotificationTable, barsTable, userBarFoldersTable, userBarCollectionTable, userEventCollectionTable, userEventParticipationTable, userEventFoldersTable, events, tags, eventTags, orders, orderItems, messages, barTags, userTags, subTable, benefitRedeemsTable, userCartTable, ITEM_TYPES };
 

@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, getUserById, patchUserById, getDeletedUsers } = require('../controllers/usersControllers');
+const { getAllUsers, getUserById, patchUserById, getDeletedUsers, updateUserAvatar, deleteUserAvatar } = require('../controllers/usersControllers');
 const authenticateToken = require('../middlewares/authenticateToken');
 const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
+const upload = require('../middlewares/imageUpload');
+const withTaiwanTime = require('../middlewares/withTaiwanTime');
 
 /**
  * @swagger
@@ -12,7 +14,7 @@ const validateUpdateUserData = require('../middlewares/validateUpdateUserData');
  */
 
 // 所有路由都需驗證 Token
-router.use(authenticateToken);
+router.use(authenticateToken, withTaiwanTime);
 
 /**
  * @swagger
@@ -225,5 +227,8 @@ router.get('/:id', getUserById);
  *         description: 伺服器錯誤
  */
 router.patch('/:id', validateUpdateUserData, patchUserById);
+
+router.patch('/:id/avatar', upload.single('userAvatar'), updateUserAvatar);
+router.delete('/:id/avatar', deleteUserAvatar);
 
 module.exports = router;
