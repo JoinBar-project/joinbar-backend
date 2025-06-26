@@ -1,22 +1,20 @@
-// src/controllers/favoritesController.js
-const db = require("../config/db");
+const db = require('../config/db');
 const {
   userBarCollectionTable,
   barsTable,
   userBarFoldersTable,
-} = require("../models/schema"); // 確保引入 userBarFoldersTable
-const { eq, and } = require("drizzle-orm");
-const { syncBarFromGoogle } = require("./barController");
-const { getPlaceDetailsFromGoogleApi } = require("../services/googleMaps");
+} = require('../models/schema');
+const { eq, and } = require('drizzle-orm');
+const { syncBarFromGoogle } = require('./barController');
+const { getPlaceDetailsFromGoogleApi } = require('../services/googleMaps');
 
 const ANONYMOUS_USER_ID = 1;
 
-// 獲取收藏列表（結合資料庫和 Google API 資料）
+// 獲取收藏列表
 const getFavorites = async (req, res) => {
   const userId = req.query.userId || ANONYMOUS_USER_ID;
 
   try {
-    // 從資料庫獲取收藏的基本資訊
     const favorites = await db
       .select({
         id: userBarCollectionTable.id,
@@ -43,7 +41,6 @@ const getFavorites = async (req, res) => {
           );
           return {
             ...fav,
-            // 合併 Google API 的即時資料
             imageUrl: googleData?.imageUrl,
             rating: googleData?.rating,
             reviews: googleData?.reviews,
@@ -56,7 +53,7 @@ const getFavorites = async (req, res) => {
             `Failed to fetch details for ${fav.googlePlaceId}:`,
             error
           );
-          return fav; // 如果 API 失敗，返回基本資料
+          return fav;
         }
       }
       return fav;
@@ -66,23 +63,31 @@ const getFavorites = async (req, res) => {
 
     res.status(200).json({ favorites: favoritesWithDetails });
   } catch (error) {
-    console.error("Error fetching favorites:", error);
+    console.error('Error fetching favorites:', error);
     res
       .status(500)
-      .json({ message: "Internal server error", error: error.message });
+      .json({ message: 'Internal server error', error: error.message });
   }
 };
 
-// 新增收藏
-const addFavorite = async (req, res) => {
-  const { barId, googlePlaceId, barData, folderId } = req.body; // 從 req.body 解構 folderId
+// 收藏處理
+const toggleFavorite = async (req, res) => {
+  const { barId } = req.params;
+  const { isFavorite, googlePlaceId, barData, folderId } = req.body;
   const userId = req.body.userId || ANONYMOUS_USER_ID;
 
-  try {
-    let finalBarId = barId;
+  if (typeof isFavorite !== 'boolean') {
+    return res.status(400).json({ message: 'isFavorite 必須是布林值' });
+  }
 
-    // 如果只有 googlePlaceId，需要先同步到資料庫
-    if (!barId && googlePlaceId) {
+  try {
+    let finalBarId = parseInt(barId);
+    d;
+    if (isNaN(finalBarId) || barId === 'google') {
+      if (!googlePlaceId) {
+        return res.status(400).json({ message: '需要提供 googlePlaceId' });
+      }
+
       const existingBar = await db
         .select()
         .from(barsTable)
@@ -91,32 +96,38 @@ const addFavorite = async (req, res) => {
 
       if (existingBar.length > 0) {
         finalBarId = existingBar[0].id;
-      } else if (barData) {
-        // 準備同步資料（只包含 schema 中有的欄位）
+      } else if (isFavorite && barData) {
         const syncData = {
           place_id: googlePlaceId,
           name: barData.name,
           address: barData.address,
           latitude: barData.latitude,
           longitude: barData.longitude,
+          imageUrl: barData.imageUrl,
+          rating: barData.rating,
+          reviews: barData.reviews,
+          website: barData.website,
+          openingHoursText: barData.openingHoursText,
+          tags: barData.tags,
         };
 
         const syncedBar = await syncBarFromGoogle(syncData);
         if (syncedBar) {
           finalBarId = syncedBar.id;
         } else {
-          return res.status(500).json({ message: "無法同步酒吧資料" });
+          return res.status(500).json({ message: '無法同步酒吧資料' });
         }
+      } else if (isFavorite) {
+        return res.status(400).json({ message: '缺少酒吧資料' });
       } else {
-        return res.status(400).json({ message: "缺少酒吧資料" });
+        return res.status(200).json({
+          message: '該酒吧未被收藏',
+          isFavorite: false,
+        });
       }
     }
 
-    if (!finalBarId) {
-      return res.status(400).json({ message: "無法確定酒吧 ID" });
-    }
-
-    // 檢查是否已經收藏
+    // 檢查收藏狀態
     const existingFavorite = await db
       .select()
       .from(userBarCollectionTable)
@@ -128,111 +139,62 @@ const addFavorite = async (req, res) => {
       )
       .limit(1);
 
-    if (existingFavorite.length > 0) {
-      return res.status(200).json({
-        message: "該酒吧已被收藏",
-        favorite: existingFavorite[0],
-        alreadyFavorited: true,
-      });
-    }
+    if (isFavorite) {
+      // 新增收藏
+      if (existingFavorite.length > 0) {
+        if (
+          folderId !== undefined &&
+          folderId !== existingFavorite[0].folderId
+        ) {
+          if (folderId !== null) {
+            const existingFolder = await db
+              .select()
+              .from(userBarFoldersTable)
+              .where(
+                and(
+                  eq(userBarFoldersTable.id, folderId),
+                  eq(userBarFoldersTable.userId, userId)
+                )
+              )
+              .limit(1);
 
-    // 新增收藏
-    const [newFavorite] = await db
-      .insert(userBarCollectionTable)
-      .values({
-        userId,
-        barId: finalBarId,
-        folderId: folderId || null, // 確保 folderId 要麼來自請求，要麼是 null
-        createdAt: new Date(),
-      })
-      .returning();
+            if (existingFolder.length === 0) {
+              return res
+                .status(400)
+                .json({ message: '提供的資料夾 ID 不存在或不屬於該用戶' });
+            }
+          }
 
-    res.status(201).json({
-      message: "收藏成功",
-      favorite: newFavorite,
-    });
-  } catch (error) {
-    console.error("Error adding favorite:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
-  }
-};
+          const [updatedFavorite] = await db
+            .update(userBarCollectionTable)
+            .set({
+              folderId: folderId,
+            })
+            .where(eq(userBarCollectionTable.id, existingFavorite[0].id))
+            .returning();
 
-// 移除收藏
-const removeFavorite = async (req, res) => {
-  const { barId } = req.params;
-  const userId = req.query.userId || ANONYMOUS_USER_ID;
+          return res.status(200).json({
+            message: '收藏資料夾已更新',
+            favorite: updatedFavorite,
+            isFavorite: true,
+          });
+        }
 
-  if (!barId) {
-    return res.status(400).json({ message: "Bar ID 為必填項目" });
-  }
+        return res.status(200).json({
+          message: '該酒吧已被收藏',
+          favorite: existingFavorite[0],
+          isFavorite: true,
+        });
+      }
 
-  try {
-    const deletedFavorites = await db
-      .delete(userBarCollectionTable)
-      .where(
-        and(
-          eq(userBarCollectionTable.userId, userId),
-          eq(userBarCollectionTable.barId, parseInt(barId))
-        )
-      )
-      .returning();
-
-    if (deletedFavorites.length === 0) {
-      return res.status(404).json({ message: "未找到該收藏" });
-    }
-
-    res.status(200).json({ message: "收藏已移除" });
-  } catch (error) {
-    console.error("Error removing favorite:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
-  }
-};
-
-// 新增 updateFavorite 函數
-const updateFavorite = async (req, res) => {
-  const { collectionId } = req.params; // 從路由參數獲取收藏 ID
-  const userId = req.body.userId || ANONYMOUS_USER_ID; // 或從身份驗證獲取
-  const { folderId } = req.body; // 獲取要更新的欄位，例如 folderId
-
-  if (!collectionId) {
-    return res.status(400).json({ message: "收藏 ID 為必填項目" });
-  }
-
-  try {
-    // 檢查收藏是否存在且屬於該用戶
-    const existingFavorite = await db
-      .select()
-      .from(userBarCollectionTable)
-      .where(
-        and(
-          eq(userBarCollectionTable.id, parseInt(collectionId)), // 確保 ID 是整數
-          eq(userBarCollectionTable.userId, userId)
-        )
-      )
-      .limit(1);
-
-    if (existingFavorite.length === 0) {
-      return res.status(404).json({ message: "未找到該收藏或您無權修改" });
-    }
-
-    // 構建更新對象
-    const updateData = {};
-    if (folderId !== undefined) {
-      // 只有當 folderId 被明確提供時才更新
-      // 檢查提供的 folderId 是否存在於 userBarFoldersTable 中
-      if (folderId !== null) {
-        // 如果 folderId 不為 null，則驗證其存在性
+      if (folderId !== null && folderId !== undefined) {
         const existingFolder = await db
           .select()
           .from(userBarFoldersTable)
           .where(
             and(
               eq(userBarFoldersTable.id, folderId),
-              eq(userBarFoldersTable.userId, userId) // 確保是該用戶的資料夾
+              eq(userBarFoldersTable.userId, userId)
             )
           )
           .limit(1);
@@ -240,36 +202,107 @@ const updateFavorite = async (req, res) => {
         if (existingFolder.length === 0) {
           return res
             .status(400)
-            .json({ message: "提供的資料夾 ID 不存在或不屬於該用戶" });
+            .json({ message: '提供的資料夾 ID 不存在或不屬於該用戶' });
         }
       }
-      updateData.folderId = folderId;
+
+      // 新增收藏
+      const [newFavorite] = await db
+        .insert(userBarCollectionTable)
+        .values({
+          userId,
+          barId: finalBarId,
+          folderId: folderId || null,
+          createdAt: new Date(),
+        })
+        .returning();
+
+      res.status(201).json({
+        message: '收藏成功',
+        favorite: newFavorite,
+        isFavorite: true,
+      });
+    } else {
+      // 移除收藏
+      if (existingFavorite.length === 0) {
+        return res.status(200).json({
+          message: '該酒吧未被收藏',
+          isFavorite: false,
+        });
+      }
+
+      await db
+        .delete(userBarCollectionTable)
+        .where(
+          and(
+            eq(userBarCollectionTable.userId, userId),
+            eq(userBarCollectionTable.barId, finalBarId)
+          )
+        );
+
+      res.status(200).json({
+        message: '收藏已移除',
+        isFavorite: false,
+      });
     }
-    // 如果還有其他可更新的欄位，也可以在這裡添加
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ message: "沒有提供要更新的內容" });
-    }
-
-    // 執行更新
-    const [updatedFavorite] = await db
-      .update(userBarCollectionTable)
-      .set({
-        ...updateData,
-        updatedAt: new Date(), // 更新更新時間
-      })
-      .where(eq(userBarCollectionTable.id, parseInt(collectionId)))
-      .returning();
-
-    res
-      .status(200)
-      .json({ message: "收藏更新成功", favorite: updatedFavorite });
   } catch (error) {
-    console.error("Error updating favorite:", error);
+    console.error('Error toggling favorite:', error);
     res
       .status(500)
-      .json({ message: "Internal server error", error: error.message });
+      .json({ message: 'Internal server error', error: error.message });
   }
 };
 
-module.exports = { getFavorites, addFavorite, removeFavorite, updateFavorite };
+const checkFavoriteStatus = async (req, res) => {
+  const { barId } = req.params;
+  const userId = req.query.userId || ANONYMOUS_USER_ID;
+
+  try {
+    let finalBarId = parseInt(barId);
+
+    if (isNaN(finalBarId) && req.query.googlePlaceId) {
+      const existingBar = await db
+        .select()
+        .from(barsTable)
+        .where(eq(barsTable.googlePlaceId, req.query.googlePlaceId))
+        .limit(1);
+
+      if (existingBar.length === 0) {
+        return res.status(200).json({ isFavorite: false });
+      }
+
+      finalBarId = existingBar[0].id;
+    }
+
+    if (isNaN(finalBarId)) {
+      return res.status(400).json({ message: '無效的酒吧 ID' });
+    }
+
+    const existingFavorite = await db
+      .select()
+      .from(userBarCollectionTable)
+      .where(
+        and(
+          eq(userBarCollectionTable.userId, userId),
+          eq(userBarCollectionTable.barId, finalBarId)
+        )
+      )
+      .limit(1);
+
+    res.status(200).json({
+      isFavorite: existingFavorite.length > 0,
+      favorite: existingFavorite[0] || null,
+    });
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    res
+      .status(500)
+      .json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+module.exports = {
+  getFavorites,
+  toggleFavorite,
+  checkFavoriteStatus,
+};

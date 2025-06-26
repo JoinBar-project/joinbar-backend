@@ -2,10 +2,10 @@
 const {
   getBarsFromGoogleMaps,
   getPlaceDetailsFromGoogleApi,
-} = require("../services/googleMaps");
-const db = require("../config/db");
-const { barsTable, userBarCollectionTable } = require("../models/schema");
-const { eq, and, inArray, sql } = require("drizzle-orm");
+} = require('../services/googleMaps');
+const db = require('../config/db');
+const { barsTable, userBarCollectionTable } = require('../models/schema');
+const { eq, and, inArray, sql } = require('drizzle-orm');
 
 // 移除 formatPriceRange 輔助函數，因為不再處理價格相關顯示
 
@@ -26,7 +26,7 @@ async function syncBarFromGoogle(barData) {
   } = barData;
 
   if (!place_id) {
-    console.error("Missing place_id for bar synchronization.");
+    console.error('Missing place_id for bar synchronization.');
     return null;
   }
 
@@ -80,7 +80,7 @@ async function syncBarFromGoogle(barData) {
     }
     return resultBar;
   } catch (err) {
-    console.error("Error syncing bar from Google to DB:", err);
+    console.error('Error syncing bar from Google to DB:', err);
     throw err;
   }
 }
@@ -89,7 +89,7 @@ async function syncBarFromGoogle(barData) {
 const getBars = async (req, res) => {
   try {
     const location = { lat: 24.986064, lng: 121.536762 };
-    const query = req.query.query || "酒吧";
+    const query = req.query.query || '酒吧';
 
     const googleDetailedBars = await getBarsFromGoogleMaps(query, location);
 
@@ -99,13 +99,13 @@ const getBars = async (req, res) => {
     const syncResults = await Promise.allSettled(syncPromises);
 
     const syncedBarIds = syncResults
-      .filter((result) => result.status === "fulfilled" && result.value)
+      .filter((result) => result.status === 'fulfilled' && result.value)
       .map((result) => result.value.id);
 
     if (syncedBarIds.length === 0) {
       return res
         .status(404)
-        .json({ message: "沒有酒吧數據可供顯示或同步失敗。" });
+        .json({ message: '沒有酒吧數據可供顯示或同步失敗。' });
     }
 
     const finalBars = await db
@@ -128,15 +128,15 @@ const getBars = async (req, res) => {
       .orderBy(barsTable.name);
 
     if (finalBars.length === 0) {
-      return res.status(404).json({ message: "目前沒有可用的酒吧資訊" });
+      return res.status(404).json({ message: '目前沒有可用的酒吧資訊' });
     }
 
     res.json({ bars: finalBars });
   } catch (error) {
-    console.error("Error in getBars controller:", error);
+    console.error('Error in getBars controller:', error);
     res
       .status(500)
-      .json({ message: "Internal server error", error: error.message });
+      .json({ message: 'Internal server error', error: error.message });
   }
 };
 
@@ -159,7 +159,7 @@ const createBar = async (req, res) => {
   if (!name || !address || !googlePlaceId) {
     return res
       .status(400)
-      .json({ message: "酒吧名稱、地址和 Google Place ID 為必填項目" });
+      .json({ message: '酒吧名稱、地址和 Google Place ID 為必填項目' });
   }
 
   try {
@@ -171,7 +171,7 @@ const createBar = async (req, res) => {
 
     if (existingBar.length > 0) {
       return res.status(409).json({
-        message: "該 Google Place ID 的酒吧已存在",
+        message: '該 Google Place ID 的酒吧已存在',
         bar: existingBar[0],
       });
     }
@@ -195,12 +195,12 @@ const createBar = async (req, res) => {
       })
       .returning();
 
-    res.status(201).json({ message: "酒吧新增成功", bar: newBar });
+    res.status(201).json({ message: '酒吧新增成功', bar: newBar });
   } catch (error) {
-    console.error("Error creating bar:", error);
+    console.error('Error creating bar:', error);
     res
       .status(500)
-      .json({ message: "Internal server error", error: error.message });
+      .json({ message: 'Internal server error', error: error.message });
   }
 };
 
