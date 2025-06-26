@@ -1,7 +1,7 @@
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
-const { events, eventTags, tags } = require('../models/schema');
+const { events, eventTags, tags, usersTable } = require('../models/schema');
 const { eq, and } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
@@ -103,8 +103,28 @@ const getEvent = async (req, res) => {
   const eventId = req.params.id;
   try {
     const [event] = await db
-      .select()
+      .select(
+        {
+          id: events.id,
+          name: events.name,
+          barName: events.barName,
+          location: events.location,
+          startAt: events.startAt,
+          endAt: events.endAt,
+          maxPeople: events.maxPeople,
+          imageUrl: events.imageUrl,
+          price: events.price,
+          status: events.status,
+          hostUser: {
+            id: usersTable.id,
+            username: usersTable.username,
+            nickname: usersTable.nickname,
+            avatarUrl: usersTable.avatarUrl,
+          }
+        }
+      )
       .from(events)
+      .leftJoin(usersTable, eq(events.hostUser, usersTable.id))
       .where(and(eq(events.id, eventId), eq(events.status, 1)));
     if (!event) return res.status(404).json({ message: '找不到活動' });
 
