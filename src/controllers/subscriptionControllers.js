@@ -130,4 +130,29 @@ const getPlan = async (req, res) => {
     return res.status(500).json({ error: '系統錯誤，請稍後再試' });
   }
 };
-module.exports = { createSubscription, getAllPlans, getPlan };
+
+const getUserSubscriptionHistory = async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId) {
+    return res.status(400).json({ error: '缺少 userId' });
+  }
+
+  try {
+    const subs = await db
+      .select({
+        subType: subTable.subType,
+        status: subTable.status,
+        startAt: subTable.startAt,
+        endAt: subTable.endAt,
+      })
+      .from(subTable)
+      .where(eq(subTable.userId, Number(userId)));
+
+    return res.status(200).json({ subscriptions: subs });
+  } catch (err) {
+    console.error('查詢訂閱歷史失敗:', err);
+    return res.status(500).json({ error: '系統錯誤' });
+  }
+};
+module.exports = { createSubscription, getAllPlans, getPlan, getUserSubscriptionHistory };
