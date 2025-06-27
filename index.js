@@ -44,6 +44,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/cart', cartRoutes);
 app.use('/api/bars', barRoutes);
 
+app.use(cors({
+  origin: 'https://brilliant-mandazi-feae7b.netlify.app',
+  credentials: true,
+}));
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
