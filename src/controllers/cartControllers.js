@@ -1,62 +1,75 @@
 const db = require('../config/db');
 const { userCartTable, events } = require('../models/schema');
-const { eq, and } = require('drizzle-orm');
+const { eq, and, inArray } = require('drizzle-orm');
 const dayjs = require('dayjs');
 
 const getUserCart = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    const cartItems = await db
-      .select({
-        cartId: userCartTable.id,
-        cartQuantity: userCartTable.quantity,
-        addedAt: userCartTable.addedAt,
-        
-        eventId: events.id,
-        eventName: events.name,
-        eventPrice: events.price,
-        eventImageUrl: events.imageUrl,
-        barName: events.barName,
-        eventStartDate: events.startDate,
-        eventEndDate: events.endDate,
-        eventStatus: events.status,
-      })
+    console.log('🔍 查詢購物車，用戶ID:', userId);
+    
+    const cartRows = await db
+      .select()
       .from(userCartTable)
-      .innerJoin(events, eq(userCartTable.eventId, events.id))
-      .where(eq(userCartTable.userId, userId))
-      .orderBy(userCartTable.addedAt);
+      .where(eq(userCartTable.userId, userId));
     
-    const validItems = cartItems.filter(item => {
-      const isActive = item.eventStatus === 1;
-      const notExpired = !item.eventEndDate || dayjs(item.eventEndDate).isAfter(dayjs());
-      return isActive && notExpired;
-    });
+    console.log('🔍 購物車原始數據:', cartRows);
     
-    const formattedItems = validItems.map(item => ({
-      id: item.cartId,
-      eventId: item.eventId,
-      name: item.eventName,
-      price: item.eventPrice,
-      imageUrl: item.eventImageUrl,
-      barName: item.barName,
-      startDate: item.eventStartDate,
-      endDate: item.eventEndDate,
-      quantity: item.cartQuantity,
-      addedAt: item.addedAt
-    }));
+    if (cartRows.length === 0) {
+      return res.json({
+        success: true,
+        items: [],
+        summary: { totalItems: 0, totalAmount: 0 }
+      });
+    }
+    
+    const eventIds = cartRows.map(row => row.eventId);
+    const eventRows = await db
+      .select()
+      .from(events)
+      .where(inArray(events.id, eventIds));
+    
+    console.log('🔍 活動數據:', eventRows);
+    
+    const cartItems = cartRows.map(cartItem => {
+      const event = eventRows.find(e => String(e.id) === String(cartItem.eventId));
+      
+      if (!event) {
+        console.warn('⚠️ 找不到活動:', cartItem.eventId);
+        return null;
+      }
+      
+      return {
+        cartId: cartItem.id,
+        quantity: cartItem.quantity,
+        addedAt: cartItem.addedAt,
+        
+        id: String(event.id),
+        eventId: String(event.id),
+        name: event.name,
+        price: event.price,
+        imageUrl: event.imageUrl,
+        barName: event.barName,
+        startDate: event.startAt,
+        endDate: event.endAt,
+        status: event.status
+      };
+    }).filter(Boolean);
+    
+    console.log('🔍 組合後的購物車:', cartItems);
     
     res.json({
       success: true,
-      items: formattedItems,
+      items: cartItems,
       summary: {
-        totalItems: formattedItems.length,
-        totalAmount: formattedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        totalItems: cartItems.length,
+        totalAmount: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       }
     });
     
   } catch (error) {
-    console.error('獲取購物車失敗:', error);
+    console.error('❌ 獲取購物車失敗:', error);
     res.status(500).json({ error: '獲取購物車失敗' });
   }
 };
@@ -116,9 +129,12 @@ const removeFromCart = async (req, res) => {
     const userId = req.user.id;
     const { eventId } = req.params;
     
-    const result = await db
+    await db
       .delete(userCartTable)
-      .where(and(eq(userCartTable.userId, userId), eq(userCartTable.eventId, eventId)));
+      .where(and(
+        eq(userCartTable.userId, userId), 
+        eq(userCartTable.eventId, eventId)
+      ));
     
     res.json({
       success: true,

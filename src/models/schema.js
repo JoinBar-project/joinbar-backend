@@ -67,12 +67,10 @@ const barsTable = pgTable('bars', {
   id: serial().primaryKey(),
   name: varchar({ length: 100 }).notNull(),
   address: varchar({ length: 255 }),
-  phone: varchar({ length: 20 }),
-  description: text(),
-  tags: varchar({ length: 20 }),
-  rating: numeric('rating', { precision: 2, scale: 1 }), // 計算至小數點後一位
-  openHours: varchar('open_hours', { length: 50 }),
-  createdAt: timestamp('created_at').defaultNow(),
+  latitude: numeric('latitude', { precision: 10, scale: 7 }),
+  longitude: numeric('longitude', { precision: 10, scale: 7 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
 const userBarFoldersTable = pgTable(
@@ -83,7 +81,7 @@ const userBarFoldersTable = pgTable(
       onDelete: 'cascade',
     }),
     folderName: varchar('folder_name', { length: 50 }),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => ({
     userBarFolderUnique: unique().on(table.userId, table.folderName),
@@ -103,7 +101,7 @@ const userBarCollectionTable = pgTable(
     folderId: integer('folder_id').references(() => userBarFoldersTable.id, {
       onDelete: 'cascade',
     }),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => ({
     userBarUnique: unique().on(table.userId, table.barId),

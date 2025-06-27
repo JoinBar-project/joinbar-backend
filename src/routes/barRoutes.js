@@ -1,9 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const barController = require("../controllers/barController");
+const barController = require('../controllers/barController');
+const withTaiwanTime = require('../middlewares/withTaiwanTime');
+router.use(withTaiwanTime);
 
-// 獲取酒吧列表的路由
-router.get("/bars", /* authMiddleware, */ barController.getBars);
-router.post("/bars", /* authMiddleware, */ barController.createBar);
+router.get('/bars', barController.getBars);
+router.post('/bars', barController.createBar);
 
 module.exports = router;
