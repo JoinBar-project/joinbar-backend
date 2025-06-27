@@ -14,6 +14,8 @@ const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
 const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
 const GeminiRoutes = require('./src/routes/GeminiRoutes');
+const barRoutes = require('./src/routes/barRoutes');
+
 
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
@@ -43,6 +45,8 @@ app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/cart', cartRoutes);
 app.use('/api/barAi', GeminiRoutes);
+app.use('/api/bars', barRoutes);
+
 
 app.get('/health', (req, res) => {
   res.json({
@@ -68,7 +72,9 @@ app.use((err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ message: '圖片大小超過限制（1MB）' });
     }
-    return res.status(400).json({ message: '圖片上傳錯誤', error: err.message });
+    return res
+      .status(400)
+      .json({ message: '圖片上傳錯誤', error: err.message });
   }
 
   if (err.message === '不支援的圖片格式') {
@@ -78,16 +84,19 @@ app.use((err, req, res, next) => {
   console.error('伺服器錯誤:', err);
   res.status(500).json({
     error: '伺服器內部錯誤',
-    message: process.env.NODE_ENV === 'development' ? err.message : '請稍後再試',
+    message:
+      process.env.NODE_ENV === 'development' ? err.message : '請稍後再試',
   });
 });
 
-app.listen(3000, () => {
-  console.log('🚀 伺服器已啟動 http://localhost:3000');
-  console.log('📊 Health check: http://localhost:3000/health');
-  console.log('🔐 LINE Auth URL: http://localhost:3000/api/auth/line/url');
-  console.log('💳 LINE Pay API: http://localhost:3000/api/linepay');
-  console.log('🏗️ LINE Pay 模式: 沙盒環境 (安全測試)');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 伺服器已啟動於 http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 LINE Auth URL: http://localhost:${PORT}/api/auth/line/url`);
+  console.log(`💳 LINE Pay API: http://localhost:${PORT}/api/linepay`);
+  console.log(`🏗️ LINE Pay 模式: 沙盒環境 (安全測試)`);
 
   if (!process.env.LINEPAY_CHANNEL_ID || !process.env.LINEPAY_CHANNEL_SECRET) {
     console.warn('⚠️  LINE Pay 環境變數未設定，請參考 .env.example');

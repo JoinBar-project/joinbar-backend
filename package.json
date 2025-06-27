@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js",
+    "start:zeabur": "node index.js",
+    "start": "cross-env NODE_ENV=development PORT=3000 nodemon index.js",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "seed": "node src/seeds/seed.js",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.8.0",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.1",
     "drizzle-seed": "^0.3.1",
     "nodemon": "^3.1.10"
