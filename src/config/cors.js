@@ -6,7 +6,8 @@ const corsOptions = {
 			'http://localhost:3000',  // Vue 開發服務器或前端
       'http://localhost:5173',  // Vite 開發服務器
       'http://127.0.0.1:3000',  // 本地 IP
-      'http://127.0.0.1:5173'  // 本地 Vite IP
+      'http://127.0.0.1:5173',  // 本地 Vite IP
+      'https://joinbar.netlify.app'
 		];
 
   // 檢查來源是否被允許
