@@ -44,7 +44,6 @@ public/uploads/
 *.db
 private/
 secrets/
-firebaseKey.json
 
 # For `forker` 生成的暫存資料
 tmp/
