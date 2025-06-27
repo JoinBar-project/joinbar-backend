@@ -13,7 +13,7 @@ const barTagsRoutes = require('./src/routes/barTagsRoutes');
 const lineAuthRoutes = require('./src/routes/lineAuthRoutes');
 const accountDeletionRoutes = require('./src/routes/accountDeletionRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
-
+const barRoutes = require('./src/routes/barRoutes');
 
 const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
@@ -42,6 +42,7 @@ app.use('/api/benefit', benefitRoutes);
 app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/cart', cartRoutes);
+app.use('/api/bars', barRoutes);
 
 app.get('/health', (req, res) => {
   res.json({
@@ -67,7 +68,9 @@ app.use((err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ message: '圖片大小超過限制（1MB）' });
     }
-    return res.status(400).json({ message: '圖片上傳錯誤', error: err.message });
+    return res
+      .status(400)
+      .json({ message: '圖片上傳錯誤', error: err.message });
   }
 
   if (err.message === '不支援的圖片格式') {
@@ -77,7 +80,8 @@ app.use((err, req, res, next) => {
   console.error('伺服器錯誤:', err);
   res.status(500).json({
     error: '伺服器內部錯誤',
-    message: process.env.NODE_ENV === 'development' ? err.message : '請稍後再試',
+    message:
+      process.env.NODE_ENV === 'development' ? err.message : '請稍後再試',
   });
 });
 
