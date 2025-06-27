@@ -81,12 +81,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('🚀 伺服器已啟動 http://localhost:3000');
-  console.log('📊 Health check: http://localhost:3000/health');
-  console.log('🔐 LINE Auth URL: http://localhost:3000/api/auth/line/url');
-  console.log('💳 LINE Pay API: http://localhost:3000/api/linepay');
-  console.log('🏗️ LINE Pay 模式: 沙盒環境 (安全測試)');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 伺服器已啟動於 http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 LINE Auth URL: http://localhost:${PORT}/api/auth/line/url`);
+  console.log(`💳 LINE Pay API: http://localhost:${PORT}/api/linepay`);
+  console.log(`🏗️ LINE Pay 模式: 沙盒環境 (安全測試)`);
 
   if (!process.env.LINEPAY_CHANNEL_ID || !process.env.LINEPAY_CHANNEL_SECRET) {
     console.warn('⚠️  LINE Pay 環境變數未設定，請參考 .env.example');
