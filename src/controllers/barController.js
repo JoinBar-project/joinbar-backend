@@ -69,6 +69,8 @@ const getBars = async (req, res) => {
         address: barsTable.address,
         latitude: barsTable.latitude,
         longitude: barsTable.longitude,
+        createdAt: barsTable.createdAt,
+        updatedAt: barsTable.updatedAt,
       })
       .from(barsTable)
       .orderBy(barsTable.name);
@@ -108,6 +110,9 @@ const createBar = async (req, res) => {
         updatedAt: now,
       })
       .returning();
+
+      console.log('原始時間:', newBar.createdAt);
+      console.log('格式化後:', dayjs(newBar.createdAt).tz(tz).format('YYYY-MM-DD HH:mm:ss'));
 
     res.status(201).json({ message: '酒吧新增成功', bar: newBar });
   } catch (error) {
