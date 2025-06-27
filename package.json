@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/JoinBar-project/joinbar-backend#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "biguint-format": "^1.0.2",
