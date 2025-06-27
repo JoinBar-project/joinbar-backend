@@ -1,11 +1,11 @@
 const { getBarsFromGoogleMaps } = require('../services/googleMaps');
-const { db } = require('../drizzle/db');
-const { barsTable } = require('../schema');
+const db = require('../config/db');
+const { barsTable } = require('../models/schema');
 const { eq, and } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 
 async function syncBarFromGoogle(barData) {
-  const { name, address, latitude, longitude } = barData;
+  const { name, address, latitude, longitude, placeId } = barData;
   try {
     const existingBar = await db
       .select()
@@ -25,15 +25,18 @@ async function syncBarFromGoogle(barData) {
         .where(eq(barsTable.id, existingBar[0].id))
         .returning();
     } else {
+      const now = dayjs().tz(tz).toDate();
+      
       [resultBar] = await db
         .insert(barsTable)
         .values({
+          googlePlaceId: placeId || `google_${Date.now()}`,
           name,
           address,
           latitude,
           longitude,
-          createdAt: dayjs().tz(tz).toDate(),
-          updatedAt: dayjs().tz(tz).toDate(),
+          createdAt: now,
+          updatedAt: now,
         })
         .returning();
     }
@@ -49,9 +52,15 @@ const getBars = async (req, res) => {
     const location = { lat: 24.986064, lng: 121.536762 };
     const query = '酒吧';
 
-    const googleBars = await getBarsFromGoogleMaps(query, location);
-
-    await Promise.allSettled(googleBars.map((bar) => syncBarFromGoogle(bar)));
+    // 先嘗試從 Google Maps 獲取資料，但如果失敗不影響整體流程
+    let googleBars = [];
+    try {
+      googleBars = await getBarsFromGoogleMaps(query, location);
+      await Promise.allSettled(googleBars.map((bar) => syncBarFromGoogle(bar)));
+    } catch (googleError) {
+      console.error('Google Maps API error:', googleError);
+      // 繼續執行，不中斷流程
+    }
 
     const finalBars = await db
       .select({
@@ -78,7 +87,7 @@ const getBars = async (req, res) => {
 };
 
 const createBar = async (req, res) => {
-  const { name, address, latitude, longitude } = req.body;
+  const { name, address, latitude, longitude, googlePlaceId } = req.body;
 
   if (!name || !address) {
     return res.status(400).json({ message: '酒吧名稱和地址為必填項目' });
@@ -86,14 +95,15 @@ const createBar = async (req, res) => {
 
   try {
     const now = dayjs().tz(tz).toDate();
-
+    
     const [newBar] = await db
       .insert(barsTable)
       .values({
+        googlePlaceId: googlePlaceId || `manual_${Date.now()}`,
         name,
         address,
-        latitude,
-        longitude,
+        latitude: latitude ? String(latitude) : null,
+        longitude: longitude ? String(longitude) : null,
         createdAt: now,
         updatedAt: now,
       })

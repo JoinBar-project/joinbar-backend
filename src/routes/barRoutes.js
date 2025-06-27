@@ -4,7 +4,7 @@ const barController = require('../controllers/barController');
 const withTaiwanTime = require('../middlewares/withTaiwanTime');
 router.use(withTaiwanTime);
 
-router.get('/bars', barController.getBars);
-router.post('/bars', barController.createBar);
+router.get('/getbars', barController.getBars);
+router.post('/createbars', barController.createBar);
 
 module.exports = router;
