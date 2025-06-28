@@ -62,9 +62,6 @@ class GeminiBarRecommender {
       }
     });
 
-    
-
-
       // 正確抓出 Gemini 的文字回應
   const text = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
 
