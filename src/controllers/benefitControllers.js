@@ -1,13 +1,7 @@
 const { benefitRedeemsTable, barsTable } = require('../models/schema');
-// const { subTable } = require('../models/schema');
-// const { subPlans } = require('../utils/subPlans');
 const { eq, and, gt, lt } = require('drizzle-orm');
-// const FlakeId = require('flake-idgen');
-// const intformat = require('biguint-format');
 const db = require('../config/db');
 const { dayjs, tz } = require('../utils/dateFormatter');
-
-// const flake = new FlakeId({ id: 1 });
 
 
 const getBenefitList = async (req, res) => {
