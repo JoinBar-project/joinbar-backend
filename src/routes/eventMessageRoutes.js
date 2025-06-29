@@ -1,22 +1,13 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
-const {
-  getMessagesByEventId,
-  postMessageToEvent,
-  updateMessage,
-  deleteMessage
-} = require('../controllers/eventMessageController');
+const { getMessagesByEventId, postMessageToEvent } = require('../controllers/eventMessageController');
 
 const authenticateToken = require('../middlewares/authenticateToken');
-const isMessageOwner = require('../middlewares/isMessageOwner');
+const formatApiResponse = require('../middlewares/formatApiResponse');
 
-router.get('/', getMessagesByEventId);
+router.get('/', formatApiResponse, getMessagesByEventId);
 
-router.post('/', authenticateToken, postMessageToEvent);
-
-router.put('/:messageId', authenticateToken, isMessageOwner, updateMessage);
-
-router.delete('/:messageId', authenticateToken, isMessageOwner, deleteMessage);
+router.post('/', authenticateToken, formatApiResponse, postMessageToEvent);
 
 module.exports = router;
