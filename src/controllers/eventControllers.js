@@ -1,8 +1,8 @@
 const FlakeId = require('flake-idgen');
 const intformat = require('biguint-format');
 const db = require('../config/db');
-const { events, eventTags, tags } = require('../models/schema');
-const { eq, and } = require('drizzle-orm');
+const { events, eventTags, tags, usersTable, userEventParticipationTable } = require('../models/schema');
+const { eq, and, count } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 const { uploadImage, deleteImageByUrl } = require('../utils/firebaseUtils');
 
@@ -103,8 +103,28 @@ const getEvent = async (req, res) => {
   const eventId = req.params.id;
   try {
     const [event] = await db
-      .select()
+      .select(
+        {
+          id: events.id,
+          name: events.name,
+          barName: events.barName,
+          location: events.location,
+          startAt: events.startAt,
+          endAt: events.endAt,
+          maxPeople: events.maxPeople,
+          imageUrl: events.imageUrl,
+          price: events.price,
+          status: events.status,
+          hostUser: {
+            id: usersTable.id,
+            username: usersTable.username,
+            nickname: usersTable.nickname,
+            avatarUrl: usersTable.avatarUrl,
+          }
+        }
+      )
       .from(events)
+      .leftJoin(usersTable, eq(events.hostUser, usersTable.id))
       .where(and(eq(events.id, eventId), eq(events.status, 1)));
     if (!event) return res.status(404).json({ message: '找不到活動' });
 
@@ -112,13 +132,24 @@ const getEvent = async (req, res) => {
       event.status = 3;
     }
 
+    const [participantCount] = await db
+      .select({ count: count() })
+      .from(userEventParticipationTable)
+      .where(eq(userEventParticipationTable.eventId, eventId));
+
     const getEventTags = await db
       .select({ id: tags.id, name: tags.name })
       .from(eventTags)
       .innerJoin(tags, eq(eventTags.tagId, tags.id))
       .where(eq(eventTags.eventId, eventId));
 
-    res.status(200).json({ event, tags: getEventTags });
+    res.status(200).json({ 
+      event: {
+        ...event,
+        currentParticipants: participantCount.count
+      }, 
+      tags: getEventTags 
+    });
   } catch (err) {
     console.error('getEvent 錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
@@ -139,7 +170,6 @@ const updateEvent = async (req, res) => {
     const imageFile = req.file;
     let imageUrl = event.imageUrl;
 
-    // 檢查圖片欄位格式
     if (req.body.image && !imageFile) {
       return res.status(400).json({
         message: '圖片格式錯誤，請上傳 jpeg/png/webp/jfif',
@@ -163,7 +193,7 @@ const updateEvent = async (req, res) => {
 
     if (imageFile) {
       try {
-        await deleteImageByUrl(imageUrl); // 先刪原圖
+        await deleteImageByUrl(imageUrl); 
         imageUrl = await uploadImage(
           imageFile.buffer,
           imageFile.mimetype,
