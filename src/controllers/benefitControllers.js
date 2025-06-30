@@ -1,85 +1,8 @@
 const { benefitRedeemsTable, barsTable } = require('../models/schema');
-const { subTable } = require('../models/schema');
-const { subPlans } = require('../utils/subPlans');
 const { eq, and, gt, lt } = require('drizzle-orm');
-const FlakeId = require('flake-idgen');
-const intformat = require('biguint-format');
 const db = require('../config/db');
 const { dayjs, tz } = require('../utils/dateFormatter');
 
-const flake = new FlakeId({ id: 1 });
-
-const createBenefit = async (req, res) => {
-  const userId = req.user?.id;
-  const subId = req.body?.subId;
-
-  if (!userId) {
-    return res.status(401).json({ error: '未授權，請先登入' });
-  }
-
-  try {
-    const [sub] = await db
-      .select()
-      .from(subTable)
-      .where(and(eq(subTable.userId, userId), eq(subTable.id, subId)))
-      .limit(1);
-
-    if (!sub) {
-      return res.status(404).json({ error: '查無訂閱' });
-    }
-
-    const benefit = await db
-      .select()
-      .from(benefitRedeemsTable)
-      .where(eq(benefitRedeemsTable.subId, sub.id));
-
-    if (benefit.length > 0) {
-      return res.status(400).json({ error: '此訂閱已經領取過優惠券' });
-    }
-
-    const plan = subPlans[sub.subType];
-    if (!plan) {
-      return res.status(404).json({ error: '此訂閱方案無效或不存在' });
-    }
-
-    const now = dayjs().tz(tz);
-    const startAt = now.toDate();
-    const endAt = now.add(plan.duration, 'day').toDate();
-
-    // 建立優惠券
-    const valuesToInsert = [];
-
-    for (const benefit of plan.benefits) {
-      for (let i = 0; i < benefit.counts; i++) {
-        const id = intformat(flake.next(), 'dec');
-        valuesToInsert.push({
-          id,
-          userId,
-          subId: sub.id,
-          benefit: benefit.benefit,
-          redeemAt: null,
-          startAt,
-          endAt,
-          status: 1,
-          createAt: now.toDate(),
-          modifyAt: now.toDate(),
-        });
-      }
-    }
-
-    if (valuesToInsert.length > 0) {
-      createdCoupons = await db
-        .insert(benefitRedeemsTable)
-        .values(valuesToInsert);
-    }
-
-    res.status(201).json({
-      message: '優惠券建立成功',
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
 const getBenefitList = async (req, res) => {
   const userId = req.user?.id;
@@ -191,4 +114,4 @@ const updateBenefit = async (req, res) => {
   }
 };
 
-module.exports = { createBenefit, getBenefitList, updateBenefit };
+module.exports = { getBenefitList, updateBenefit };

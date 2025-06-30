@@ -2,6 +2,8 @@ const db = require('../config/db');
 const { orders, orderItems, userEventParticipationTable, subTable } = require('../models/schema');
 const { eq, and, inArray } = require('drizzle-orm');
 const LinePayProvider = require('../utils/linePayProvider');
+const { createBenefit } = require('../services/benefitCreate');
+
 const dayjs = require('dayjs');
 
 const { subPlans } = require('../utils/subPlans');
@@ -357,7 +359,7 @@ const confirmLinePayment = async (req, res) => {
       return res.redirect(`${frontendUrl}/payment/error?message=${encodeURIComponent('訂單金額異常')}`);
     }
 
-    const getSuccessUrl = () => {
+    const getSuccessUrl = userId => {
       const baseParams = `orderId=${orderId}&orderNumber=${order.orderNumber}&transactionId=${transactionId}`;
       
       if (!orderItemsList || orderItemsList.length === 0) {
@@ -391,6 +393,7 @@ const confirmLinePayment = async (req, res) => {
       
       if (hasSubscription && !hasEvent) {
         const subscriptionUrl = `${frontendUrl}/payment-result?${baseParams}`;
+        createBenefit(userId, req.query.orderId)
         console.log('✅ 決定跳轉到訂閱成功頁:', subscriptionUrl);
         return subscriptionUrl;
       } else {
@@ -402,7 +405,7 @@ const confirmLinePayment = async (req, res) => {
 
     if (order.status === 'confirmed') {
       console.log('✅ 訂單已確認，直接跳轉:', orderId);
-      return res.redirect(getSuccessUrl());
+      return res.redirect(getSuccessUrl(order.userId));
     }
 
     if (order.status !== 'pending') {
@@ -445,7 +448,7 @@ const confirmLinePayment = async (req, res) => {
 
     console.log('✅ LINE Pay 付款確認完成，準備跳轉成功頁面');
 
-    res.redirect(getSuccessUrl());
+    res.redirect(getSuccessUrl(order.userId));
 
   } catch (error) {
     console.error('❌ LINE Pay 確認處理失敗:', {
