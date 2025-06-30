@@ -10,11 +10,22 @@
 
 ---
 ### 組員分工
-```
 
+地圖關鍵字搜尋、即時地點建議
+即時篩選更新、多重篩選設定
+動態酒吧資訊、酒吧詳情頁面
+串接酒吧資料庫與收藏頁面 API
 
-```
-=======
+| 組員     | GitHub                                                 | 功能：會員 | 功能：地圖  | 功能：活動  | 功能：金流  |
+|----------|-------------------------------------------------------|------------|------------|------------|------------|
+| 卓訢妤   | [2xin15](https://github.com/2xin15)                    |            | - 酒吧偏好與標籤資料庫建置 <br> - 酒吧標籤後端 API 設計及 CRUD <br> - 導入 Gemini AI 實現智慧酒吧推薦系統 |            |            |
+| 鄭婉君   | [Bella-Cheng](https://github.com/Bella-Cheng)          |            |            | - 後端環境建構 <br> - 活動資料庫建置 <br> -活動後端 API 設計及 CRUD <br> -訂閱串接金流 <br> - 訂閱後端 API 設計及 CRUD           |            |
+| 紀雅馨   | [rakku2code](https://github.com/rakku2code)            |            |            |            |            |
+| 陳紫婷   | [jasminecchen](https://github.com/jasminecchen)        | - 會員資料表建置 <br> - 註冊登入及會員資料後端 API <br>- 會員個人資料及頭像串接  |            |             |            |
+| 戎彬     | [Benjung1215](https://github.com/Benjung1215)          |            |            |            | - 訂單前後端 API 串接 <br> -Line Pay 串接 <br> -購物車後端 API 設計 |
+| 蔡昌成   | [kirito489](https://github.com/kirito489)              |- 註冊登入前端邏輯串接 Pinia store 設計 <br>- 驗證信功能實作與重發冷卻機制 <br> - 第三方登入後端api設計 |            |            |            |
+| 竇孝武   | [TouHsiaoWu](https://github.com/TouHsiaoWu)            |            | 串接酒吧資料庫與收藏頁面 API |            |            |
+
 # JoinBar
 這裡是 JoinBar 後端倉庫
 
@@ -61,5 +72,3 @@ npm run fake
 ```
 npm run start
 ```
-
->>>>>>> 0153106ca6d095a29dd0322d5eb97af9244f328e
