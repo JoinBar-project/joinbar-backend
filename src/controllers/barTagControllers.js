@@ -1,7 +1,7 @@
 const db = require('../config/db');
 // tags, barTags：從 schema 匯入的兩張資料表。barTags 是多對多關聯表（bar 和 tag 的對應關係）
-const { userTags, barTags ,barsTable } = require('../models/schema');
-const { eq, and ,inArray} = require('drizzle-orm');
+const { userTags, barTags, barsTable } = require('../models/schema');
+const { eq, and, inArray } = require('drizzle-orm');
 
 // 新增標籤到個人推薦
 const setUserPreferences = async (req, res) => {
@@ -9,7 +9,18 @@ const setUserPreferences = async (req, res) => {
   const inputTags = req.body;
 
   // 驗證輸入欄位，只取固定 10 個標籤
-  const VALID_TAG_KEYS = ['sport', 'music', 'student', 'bistro', 'drink', 'joy', 'romantic', 'oldschool', 'highlevel', 'easy'];
+  const VALID_TAG_KEYS = [
+    'sport',
+    'music',
+    'student',
+    'bistro',
+    'drink',
+    'joy',
+    'romantic',
+    'oldschool',
+    'highlevel',
+    'easy',
+  ];
   const validTags = {};
   for (const key of VALID_TAG_KEYS) {
     validTags[key] = !!inputTags[key]; // 強制轉 boolean
@@ -17,34 +28,38 @@ const setUserPreferences = async (req, res) => {
 
   try {
     // 檢查是否已有標籤資料
-    const existing = await db.select().from(userTags).where(eq(userTags.user_id, userId)).limit(1);
+    const existing = await db
+      .select()
+      .from(userTags)
+      .where(eq(userTags.user_id, userId))
+      .limit(1);
 
     if (existing.length > 0) {
-      await db.update(userTags)
+      await db
+        .update(userTags)
         .set(validTags)
         .where(eq(userTags.user_id, userId));
-      
-      return res.status(200).json({ 
+
+      return res.status(200).json({
         message: '更新酒吧偏好成功',
-        action: 'updated'
+        action: 'updated',
       });
     } else {
       // 新增一筆
-    await db.insert(userTags).values({
-      user_id: userId,
-      ...validTags,
-    });
+      await db.insert(userTags).values({
+        user_id: userId,
+        ...validTags,
+      });
 
-      return res.status(201).json({ 
+      return res.status(201).json({
         message: '新增酒吧偏好成功',
-        action: 'created'
+        action: 'created',
       });
     }
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
-
 
 // 取得使用者偏好
 const getBarTagsFromUser = async (req, res) => {
@@ -71,14 +86,26 @@ const updateTagsFromUser = async (req, res) => {
   const userId = Number(req.params.id);
   const inputTags = req.body;
 
-  const VALID_TAG_KEYS = ['sport', 'music', 'student', 'bistro', 'drink', 'joy', 'romantic', 'oldschool', 'highlevel', 'easy'];
+  const VALID_TAG_KEYS = [
+    'sport',
+    'music',
+    'student',
+    'bistro',
+    'drink',
+    'joy',
+    'romantic',
+    'oldschool',
+    'highlevel',
+    'easy',
+  ];
   const validTags = {};
   for (const key of VALID_TAG_KEYS) {
     validTags[key] = !!inputTags[key];
   }
 
   try {
-    const updated = await db.update(userTags)
+    const updated = await db
+      .update(userTags)
       .set(validTags)
       .where(eq(userTags.user_id, userId));
 
@@ -141,4 +168,4 @@ const updateTagsFromUser = async (req, res) => {
 //   }
 // };
 
-module.exports = { setUserPreferences, getBarTagsFromUser, updateTagsFromUser};
+module.exports = { setUserPreferences, getBarTagsFromUser, updateTagsFromUser };

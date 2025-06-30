@@ -21,8 +21,8 @@ const cors = require('cors');
 const { corsOptions } = require('./src/config/cors');
 const cookieParser = require('cookie-parser');
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./src/config/swagger');
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./src/config/swagger");
 
 dotenv.config();
 
@@ -45,23 +45,23 @@ app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/cart', cartRoutes);
 app.use('/api/barAi', GeminiRoutes);
-app.use('/api/bars', barRoutes);
+app.use('/api', barRoutes);
 
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
-    status: 'OK',
+    status: "OK",
     timestamp: new Date().toISOString(),
     services: {
-      database: 'connected',
-      linepay: 'sandbox-mode',
+      database: "connected",
+      linepay: "sandbox-mode",
     },
   });
 });
 
 app.use((req, res) => {
   res.status(404).json({
-    error: '找不到該路由',
+    error: "找不到該路由",
     message: `路徑 ${req.originalUrl} 不存在`,
   });
 });
@@ -69,19 +69,19 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     // 處理 Multer 的錯誤
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: '圖片大小超過限制（1MB）' });
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ message: "圖片大小超過限制（1MB）" });
     }
     return res
       .status(400)
       .json({ message: '圖片上傳錯誤', error: err.message });
   }
 
-  if (err.message === '不支援的圖片格式') {
-    return res.status(400).json({ message: '只支援 jpg/png/webp 圖片格式' });
+  if (err.message === "不支援的圖片格式") {
+    return res.status(400).json({ message: "只支援 jpg/png/webp 圖片格式" });
   }
 
-  console.error('伺服器錯誤:', err);
+  console.error("伺服器錯誤:", err);
   res.status(500).json({
     error: '伺服器內部錯誤',
     message:
@@ -99,8 +99,8 @@ app.listen(PORT, () => {
   console.log(`🏗️ LINE Pay 模式: 沙盒環境 (安全測試)`);
 
   if (!process.env.LINEPAY_CHANNEL_ID || !process.env.LINEPAY_CHANNEL_SECRET) {
-    console.warn('⚠️  LINE Pay 環境變數未設定，請參考 .env.example');
+    console.warn("⚠️  LINE Pay 環境變數未設定，請參考 .env.example");
   } else {
-    console.log('✅ LINE Pay 沙盒設定已載入');
+    console.log("✅ LINE Pay 沙盒設定已載入");
   }
 });

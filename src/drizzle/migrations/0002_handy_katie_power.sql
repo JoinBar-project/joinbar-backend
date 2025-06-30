@@ -1,0 +1,1 @@
+ALTER TABLE "bars" ADD COLUMN "google_place_id" varchar(255);

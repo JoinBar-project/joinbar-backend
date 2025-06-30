@@ -38,14 +38,14 @@ CREATE TABLE "user_notification" (
 --> statement-breakpoint
 CREATE TABLE "bars" (
 	"id" serial PRIMARY KEY NOT NULL,
+	"google_place_id" varchar(255) NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"address" varchar(255),
-	"phone" varchar(20),
-	"description" text,
-	"tags" varchar(20),
-	"rating" numeric(2, 1),
-	"open_hours" varchar(50),
-	"created_at" timestamp DEFAULT now()
+	"latitude" numeric(10, 7),
+	"longitude" numeric(10, 7),
+	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now(),
+	CONSTRAINT "bars_google_place_id_unique" UNIQUE("google_place_id")
 );
 --> statement-breakpoint
 CREATE TABLE "user_bar_folders" (
@@ -140,10 +140,13 @@ CREATE TABLE "orders" (
 CREATE TABLE "order_items" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"order_id" bigint NOT NULL,
-	"item_type" smallint NOT NULL,
-	"event_id" bigint,
-	"subscription_id" bigint,
-	"subscription_type" varchar(50),
+	"event_id" bigint NOT NULL,
+	"event_name" varchar(255) NOT NULL,
+	"bar_name" varchar(100) NOT NULL,
+	"location" varchar(255) NOT NULL,
+	"event_start_date" timestamp with time zone NOT NULL,
+	"event_end_date" timestamp with time zone NOT NULL,
+	"host_user_id" integer NOT NULL,
 	"price" integer NOT NULL,
 	"quantity" integer NOT NULL,
 	"subtotal" integer NOT NULL
@@ -237,7 +240,6 @@ ALTER TABLE "event_tags" ADD CONSTRAINT "event_tags_tag_id_tags_id_fk" FOREIGN K
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_subscription_id_subs_id_fk" FOREIGN KEY ("subscription_id") REFERENCES "public"."subs"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bar_tags" ADD CONSTRAINT "bar_tags_bar_id_bars_id_fk" FOREIGN KEY ("bar_id") REFERENCES "public"."bars"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

@@ -30,11 +30,11 @@ const usersTable = pgTable('users', {
   birthday: date(),
 
   // LINE 登入相關欄位
-  lineUserId: varchar('line_user_id', { length: 255 }).unique(),
-  lineDisplayName: varchar('line_display_name', { length: 255 }),
-  linePictureUrl: text('line_picture_url'),
-  lineStatusMessage: text('line_status_message'),
-  isLineUser: boolean('is_line_user').default(false),
+  lineUserId: varchar("line_user_id", { length: 255 }).unique(),
+  lineDisplayName: varchar("line_display_name", { length: 255 }),
+  linePictureUrl: text("line_picture_url"),
+  lineStatusMessage: text("line_status_message"),
+  isLineUser: boolean("is_line_user").default(false),
 
   // email 驗證相關欄位
   isVerifiedEmail: boolean('is_verified_email').default(false),
@@ -65,6 +65,7 @@ const userNotificationTable = pgTable('user_notification', {
 
 const barsTable = pgTable('bars', {
   id: serial().primaryKey(),
+  googlePlaceId: varchar('google_place_id', { length: 255 }),
   name: varchar({ length: 100 }).notNull(),
   address: varchar({ length: 255 }),
   latitude: numeric('latitude', { precision: 10, scale: 7 }),
@@ -187,9 +188,9 @@ const events = pgTable(
   })
 );
 
-const tags = pgTable('tags', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 50 }),
+const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }),
 });
 
 const eventTags = pgTable(
