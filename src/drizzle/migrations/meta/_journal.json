@@ -15,6 +15,13 @@
       "when": 1750994961949,
       "tag": "0001_tense_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1751206685411,
+      "tag": "0002_handy_katie_power",
+      "breakpoints": true
     }
   ]
 }

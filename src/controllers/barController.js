@@ -5,12 +5,17 @@ const { eq, and } = require('drizzle-orm');
 const { dayjs, tz } = require('../utils/dateFormatter');
 
 async function syncBarFromGoogle(barData) {
-  const { name, address, latitude, longitude, placeId } = barData;
+  const { name, address, latitude, longitude, placeId, place_id, googlePlaceId } = barData;
+  const realPlaceId = placeId || place_id || googlePlaceId;
+  if (!realPlaceId || !realPlaceId.startsWith('ChIJ')) {
+    // placeId 不合法，直接 return null
+    return null;
+  }
   try {
     const existingBar = await db
       .select()
       .from(barsTable)
-      .where(eq(barsTable.googlePlaceId, place_id))
+      .where(eq(barsTable.googlePlaceId, realPlaceId))
       .limit(1);
 
     let resultBar;
@@ -32,7 +37,7 @@ async function syncBarFromGoogle(barData) {
       [resultBar] = await db
         .insert(barsTable)
         .values({
-          googlePlaceId: placeId || `google_${Date.now()}`,
+          googlePlaceId: realPlaceId || `google_${Date.now()}`,
           name,
           address,
           latitude,
@@ -131,4 +136,5 @@ const createBar = async (req, res) => {
 module.exports = {
   getBars,
   createBar,
+  syncBarFromGoogle,
 };

@@ -45,7 +45,7 @@ app.use('/api/barTags', barTagsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/cart', cartRoutes);
 app.use('/api/barAi', GeminiRoutes);
-app.use('/api/bars', barRoutes);
+app.use('/api', barRoutes);
 
 
 app.get("/health", (req, res) => {

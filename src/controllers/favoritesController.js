@@ -72,9 +72,10 @@ const getFavorites = async (req, res) => {
 
 // 收藏處理
 const toggleFavorite = async (req, res) => {
+  console.log('toggleFavorite req.params:', req.params, 'req.body:', req.body);
   const { barId } = req.params;
   const { isFavorite, googlePlaceId, barData, folderId } = req.body;
-  const userId = req.body.userId || ANONYMOUS_USER_ID;
+  const userId = Number(req.body.userId) || ANONYMOUS_USER_ID;
 
   if (typeof isFavorite !== 'boolean') {
     return res.status(400).json({ message: 'isFavorite 必須是布林值' });
@@ -82,7 +83,7 @@ const toggleFavorite = async (req, res) => {
 
   try {
     let finalBarId = parseInt(barId);
-    d;
+
     if (isNaN(finalBarId) || barId === 'google') {
       if (!googlePlaceId) {
         return res.status(400).json({ message: '需要提供 googlePlaceId' });
@@ -97,6 +98,10 @@ const toggleFavorite = async (req, res) => {
       if (existingBar.length > 0) {
         finalBarId = existingBar[0].id;
       } else if (isFavorite && barData) {
+        // 檢查 barData 欄位
+        if (!barData.name || !barData.address || !barData.latitude || !barData.longitude) {
+          return res.status(400).json({ message: '缺少 barData 必要欄位' });
+        }
         const syncData = {
           place_id: googlePlaceId,
           name: barData.name,
@@ -115,6 +120,7 @@ const toggleFavorite = async (req, res) => {
         if (syncedBar) {
           finalBarId = syncedBar.id;
         } else {
+          console.error('syncBarFromGoogle failed:', syncData);
           return res.status(500).json({ message: '無法同步酒吧資料' });
         }
       } else if (isFavorite) {
@@ -246,7 +252,7 @@ const toggleFavorite = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error toggling favorite:', error);
+    console.error('Error toggling favorite:', error.stack || error);
     res
       .status(500)
       .json({ message: 'Internal server error', error: error.message });
