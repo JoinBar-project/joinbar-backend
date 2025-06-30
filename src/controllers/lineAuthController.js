@@ -285,7 +285,7 @@ const lineCallback = async (req, res) => {
       email: userResult.email,
       type: 'access'
     }, JWT_SECRET, { 
-      expiresIn: "15m" 
+      expiresIn: "1d" 
     });
 
     const refreshToken = jwt.sign({
@@ -315,7 +315,7 @@ const lineCallback = async (req, res) => {
       httpOnly: true, // 防止 JavaScript 存取
       secure: process.env.NODE_ENV === 'production', // HTTPS 環境才設定 secure
       sameSite: 'lax', // CSRF 保護
-      maxAge: 15 * 60 * 1000, // 15 分鐘
+      maxAge:  24 * 60 * 60 * 1000, // 先改為 1 天
       path: '/' // 整個網站都可以使用
     });
 

@@ -42,14 +42,14 @@ const handleRefreshToken = (req, res, next) => {
         role: user.role || 'user',
         type: 'access'
       }, SECRET_KEY, { 
-        expiresIn: "15m" 
+        expiresIn: "1d" 
       });
 
       res.cookie('access_token', newAccessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 15 * 60 * 1000,
+        maxAge:  24 * 60 * 60 * 1000,
         path: '/'
       });
       console.log('Access Token 已自動刷新');
