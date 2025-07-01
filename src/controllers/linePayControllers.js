@@ -202,8 +202,7 @@ const createLinePayment = async (req, res) => {
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, ''); 
-
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     const isAllEvent = orderItemsList.every(item => item.itemType === 1);
