@@ -91,36 +91,16 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, () => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const serverUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
-  
-  console.log(`🚀 伺服器已啟動於 ${serverUrl}`);
-  console.log(`🌍 環境: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📊 Health check: ${serverUrl}/health`);
-  console.log(`🔄 Ready check: ${serverUrl}/ready`);
-  console.log(`🔐 LINE Auth URL: ${serverUrl}/api/auth/line/url`);
-  console.log(`💳 LINE Pay API: ${serverUrl}/api/linepay`);
-  console.log(`🏗️ LINE Pay 模式: ${isProduction ? '生產環境' : '沙盒環境'}`);
+app.listen(PORT, () => {
+  console.log(`🚀 伺服器已啟動於 http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 LINE Auth URL: http://localhost:${PORT}/api/auth/line/url`);
+  console.log(`💳 LINE Pay API: http://localhost:${PORT}/api/linepay`);
+  console.log(`🏗️ LINE Pay 模式: 沙盒環境 (安全測試)`);
 
-  const requiredEnvVars = [
-    'LINEPAY_CHANNEL_ID',
-    'LINEPAY_CHANNEL_SECRET',
-    'FRONTEND_URL'
-  ];
-  
-  const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
-  if (missingEnvVars.length > 0) {
-    console.warn("⚠️  缺少必要的環境變數:", missingEnvVars.join(', '));
-    console.warn("⚠️  請在 Zeabur 控制台設置這些環境變數");
+  if (!process.env.LINEPAY_CHANNEL_ID || !process.env.LINEPAY_CHANNEL_SECRET) {
+    console.warn("⚠️  LINE Pay 環境變數未設定，請參考 .env.example");
   } else {
-    console.log("✅ 所有必要的環境變數已設置");
-  }
-  
-  if (isProduction) {
-    console.log("🔒 生產環境已啟動");
-  } else {
-    console.log("🛠️ 開發環境已啟動");
+    console.log("✅ LINE Pay 沙盒設定已載入");
   }
 });
