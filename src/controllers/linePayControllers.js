@@ -207,7 +207,7 @@ const createLinePayment = async (req, res) => {
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     const isAllEvent = orderItemsList.every(item => item.itemType === 1);
     
-    let returnUrl = `${backendUrl}api/linepay/confirm?orderId=${order.id}`;
+    let returnUrl = `${backendUrl}/api/linepay/confirm?orderId=${order.id}`;
     const cancelUrl = `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`;
     
     let description, packageName, products;
