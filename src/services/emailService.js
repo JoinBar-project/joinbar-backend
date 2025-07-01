@@ -2,6 +2,13 @@ const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const getFrontendUrl = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:5173';
+  }
+  return process.env.FRONTEND_URL;
+};
+
 // 建立郵件傳送器
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -27,7 +34,8 @@ const testEmailConnection = async () => {
 
 // 寄送驗證信
 const sendVerificationEmail = async (email, verificationToken, username) => {
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  const frontendUrl = getFrontendUrl();
+  const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
   const mailOptions = {
     from: process.env.EMAIL_FROM,
