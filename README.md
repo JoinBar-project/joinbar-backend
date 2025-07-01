@@ -1,14 +1,5 @@
 # joinbar-backend 後端介紹
----
-### 使用套件
 
-- flake-idgen
-- drizzle-orm
-- drizzle-seed
-- forker
-- pg
-
----
 ### 組員分工
 
 | 組員     | GitHub                                                 | 實現功能|
@@ -19,51 +10,68 @@
 | 陳紫婷   | [jasminecchen](https://github.com/jasminecchen)        | 1. 會員資料表建置 <br> 2. 註冊登入及會員資料後端 API <br> 3. 會員個人資料及頭像串接  |
 | 戎彬     | [Benjung1215](https://github.com/Benjung1215)          | 1. 訂單前後端 API 串接 <br> 2. Line Pay 串接 <br> 3. 購物車後端 API 設計 |
 | 蔡昌成   | [kirito489](https://github.com/kirito489)              | 1. 註冊登入前端邏輯串接 Pinia store 設計 <br> 2. 驗證信功能實作與重發冷卻機制 <br> 3. 第三方登入後端api設計 |
-| 竇孝武   | [TouHsiaoWu](https://github.com/TouHsiaoWu)            | 1. 串接酒吧資料庫與收藏頁面 API |
+| 竇孝武   | [DouFreddy](https://github.com/DouFreddy)            | 1. 串接酒吧資料庫與收藏頁面 API |
 
-# JoinBar
-這裡是 JoinBar 後端倉庫
-
-### 後端使用套件
+### 後端使用的工具 / 套件
 - PostgreSQL：資料庫
 - bcrypt：密碼加密
 - jsonwebtoken：JWT 身份驗證
 - flake-idgen：生成唯一識別碼
 - zod：資料驗證與型別檢查
-- forker：假資料產生工具（使用 forker generate）
+- faker：假資料產生工具
+- google/generative-ai：Gemini AI 串接
+- firebase storage：圖片雲端儲存
+- nodemailer：寄送註冊驗證信
+- swagger：API 文件說明
 
 ---
 
 ### 安裝與執行
-執行前請確認有安裝 Node.js
 
-1. 將專案 clone 下來 與 安裝
+執行前請確認已安裝 Node.js
+
+1. 專案下載及安裝
 ```
 git clone https://github.com/JoinBar-project/joinbar-backend.git
-cd 專案資料夾
+cd joinbar-backend
 npm install
 npm run dev
 ```
 
 2. 設定環境變數
-請在根目錄建立 `.env` 檔案，填入資料庫連線資訊與密鑰
+在專案根目錄下建立 `.env` 檔案，並依照 `.env.template` 範例填入變數，例如：
 ```
-DATABASE_URL=postgres://user:password@localhost:5432/your-db
-JWT_SECRET=your-secret
+# 資料庫連線字串（PostgreSQL）
+DATABASE_URL=postgres://user:password@localhost:5432/your-database
 ```
 
-2. 生成資料表 schema 並遷移
+3. 生成資料表 schema 並進行遷移
 ```
 npm run generate
 npm run migrate
 ```
 
-3. 生成假資料（可選）
+4. 生成假資料（可選）
+產生 1 位管理者及 10 位會員：
 ```
-npm run fake
+npm run seed
+```
+在 `tags Table` 中，新增以下 6 筆活動特色標籤：
+```sql
+INSERT INTO public.tags (id, name) VALUES
+  (1, '免費活動'),
+  (2, '限時報名'),
+  (3, '單身限定'),
+  (4, '週末來喝'),
+  (5, '主題之夜'),
+  (6, '現場LIVE');
+```
+建立活動資料
+```
+npm run seed-events (產生活動)
 ```
 
-4. 啟動專案
+5. 啟動專案
 ```
 npm run start
 ```
