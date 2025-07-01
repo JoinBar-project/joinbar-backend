@@ -202,12 +202,13 @@ const createLinePayment = async (req, res) => {
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, ''); 
+
     
     const isAllSubscription = orderItemsList.every(item => item.itemType === 2);
     const isAllEvent = orderItemsList.every(item => item.itemType === 1);
     
-    let returnUrl = `${backendUrl}/api/linepay/confirm?orderId=${order.id}`;
+    let returnUrl = `${backendUrl}api/linepay/confirm?orderId=${order.id}`;
     const cancelUrl = `${frontendUrl}/payment/cancel?orderId=${String(order.id)}`;
     
     let description, packageName, products;

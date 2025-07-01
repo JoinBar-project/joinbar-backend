@@ -3,12 +3,15 @@ const crypto = require('crypto');
 const dayjs = require('dayjs');
 
 const LINEPAY_CONFIG = {
- apiUrl: 'https://sandbox-api-pay.line.me',
+ apiUrl: process.env.NODE_ENV === 'production' 
+   ? 'https://api-pay.line.me' 
+   : 'https://sandbox-api-pay.line.me', 
  channelId: process.env.LINEPAY_CHANNEL_ID,
  channelSecret: process.env.LINEPAY_CHANNEL_SECRET,
  timeout: 30000,
- isSandbox: true
+ isSandbox: process.env.NODE_ENV !== 'production'
 };
+
 
 if (!LINEPAY_CONFIG.channelId || !LINEPAY_CONFIG.channelSecret) {
  console.error('❌ LINE Pay 環境變數未設定');
