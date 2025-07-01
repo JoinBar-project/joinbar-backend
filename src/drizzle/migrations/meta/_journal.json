@@ -22,6 +22,13 @@
       "when": 1751206685411,
       "tag": "0002_handy_katie_power",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1751338407800,
+      "tag": "0003_nebulous_black_crow",
+      "breakpoints": true
     }
   ]
 }
