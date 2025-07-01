@@ -293,10 +293,24 @@ const softDeleteEvent = async (req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
+    const hostUserId = req.query.hostUser;
+    
+    if (hostUserId && isNaN(Number(hostUserId))) {
+      return res.status(400).json({message: '請提供有效的 hostUserId'});
+    }
+    
+    const conditions = [eq(events.status, 1)];
+
+    if (hostUserId) {
+      conditions.push(eq(events.hostUser, Number(hostUserId)));
+    }
+
     const rows = await db
       .select({ eventId: events.id, eventData: events, tagId: eventTags.tagId })
       .from(events)
-      .where(eq(events.status, 1))
+      .where(and(...conditions)) // 動態生成條件，相當於：
+      // 如果有 hostUserId -> SELECT ...FROM events WHERE status = 1 AND host_user = hostUserId;
+      // 如果沒有 hostUserId -> SELECT ...FROM events WHERE status = 1;
       .leftJoin(eventTags, eq(events.id, eventTags.eventId));
 
     const eventMap = new Map();

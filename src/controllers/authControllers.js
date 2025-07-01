@@ -137,6 +137,7 @@ const login = async (req, res) => {
     const refreshToken = jwt.sign(
       {
         id: userResult.id,
+        role: userResult.role,
         type: 'refresh',
       },
       REFRESH_SECRET,
@@ -314,6 +315,7 @@ const refreshToken = async (req, res) => {
       {
         id: decodedToken.id,
         username: decodedToken.username,
+        role: decodedToken.role,
         type: 'access',
       },
       JWT_SECRET,
