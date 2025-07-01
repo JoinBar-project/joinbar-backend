@@ -24,13 +24,14 @@ function formatToTaiwanTime(data) {
         typeof value === 'string' && dayjs(value).isValid() && value.includes('T');
 
       if (isDateObject || isISODateString) {
-        result[key] = dayjs.utc(value).tz(tz).format('YYYY-MM-DD HH:mm:ss');
+        result[key] = dayjs(value).tz(tz).format('YYYY-MM-DD HH:mm:ss');
       } else if (typeof value === 'object') {
         result[key] = formatToTaiwanTime(value);
       } else {
         result[key] = value;
       }
     }
+    
     return result;
   }
 
