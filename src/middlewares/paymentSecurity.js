@@ -238,11 +238,12 @@ const checkBasicSecurity = (req, res, next) => {
    return next();
  }
  
- const clientIP = req.ip || req.connection.remoteAddress;
+ const clientIP = req.headers['x-forwarded-for'] || 
+                  req.headers['x-real-ip'] || 
+                  req.ip || 
+                  req.connection.remoteAddress;
  
- if (clientIP && clientIP.includes('127.0.0.1') && process.env.NODE_ENV === 'production') {
-   console.warn('⚠️ 可疑的本地 IP 在生產環境:', clientIP);
- }
+ console.log('📍 客戶端 IP:', clientIP);
  
  next();
 };
