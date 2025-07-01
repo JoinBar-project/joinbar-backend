@@ -13,7 +13,7 @@ const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const flake = new FlakeId({ id: 2 });
+const flake = new FlakeId({ id: 1 });
 
 const ITEM_TYPES = {
   EVENT: 1,
