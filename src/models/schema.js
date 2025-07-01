@@ -169,8 +169,8 @@ const events = pgTable(
   {
     id: bigint('id', { mode: 'string' }).primaryKey(),
     name: varchar('name', { length: 50 }).notNull(),
-    barName: varchar('bar_name', { length: 100 }).notNull(),
-    location: varchar('location', { length: 100 }).notNull(),
+    barName: varchar('bar_name', { length: 300 }).notNull(),
+    location: varchar('location', { length: 300 }).notNull(),
     startAt: timestamp('start_at', { withTimezone: true }).notNull(),
     endAt: timestamp('end_at', { withTimezone: true }).notNull(),
     maxPeople: integer('max_people'),
