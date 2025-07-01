@@ -93,6 +93,7 @@ const createEvent = async (req, res) => {
       event: createdEvent,
       imagePreview: imageUrl
     });
+    console.log('🎯 建立活動後的 ID:', createdEvent.id);
   } catch (err) {
     console.error('建立活動錯誤:', err);
     return res.status(500).json({ message: '伺服器錯誤' });
