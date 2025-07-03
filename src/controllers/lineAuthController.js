@@ -341,7 +341,7 @@ const lineCallback = async (req, res) => {
     }), {
       httpOnly: false, // 允許前端讀取用戶資料
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
       path: '/'
     });
