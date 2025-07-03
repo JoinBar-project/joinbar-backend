@@ -69,7 +69,7 @@ npm run start
 | 組員     | GitHub                                                 | 實現功能|
 |----------|-------------------------------------------------------|------------|
 | 卓訢妤   | [2xin15](https://github.com/2xin15)                    | 1. 酒吧偏好與標籤資料庫建置 <br> 2. 酒吧標籤後端 API 設計及 CRUD <br> 3. 導入 Gemini AI 實現智慧酒吧推薦系統|
-| 鄭婉君   | [Bella-Cheng](https://github.com/Bella-Cheng)          | 1. 後端環境建構 <br> 2. 活動資料庫建置 <br> 3. 活動後端 API 設計及 CRUD <br> 4. 訂閱串接金流 <br> 5. 訂閱後端 API 設計及 CRUD |
+| 鄭婉君   | [Bella-Cheng](https://github.com/Bella-Cheng)          | 1. 後端環境建構 <br> 2. 活動資料庫建置 <br> 3. 活動後端 API 設計及 CRUD <br> 4. 訂閱、優惠券串接金流 <br> 5. 訂閱、優惠券後端 API 設計及 CRUD |
 | 紀雅馨   | [rakku2code](https://github.com/rakku2code)            | 1. 取得所有活動的 API <br> 2. 上傳及更換活動圖片功能 |
 | 陳紫婷   | [jasminecchen](https://github.com/jasminecchen)        | 1. 會員資料表建置 <br> 2. 註冊登入及會員資料後端 API <br> 3. 會員個人資料及頭像串接  |
 | 戎彬     | [Benjung1215](https://github.com/Benjung1215)          | 1. 訂單前後端 API 串接 <br> 2. Line Pay 串接 <br> 3. 購物車後端 API 設計 |
