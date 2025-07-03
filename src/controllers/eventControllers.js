@@ -23,8 +23,8 @@ const createEvent = async (req, res) => {
   }
 
   if (parsedStart.isAfter(parsedEnd)) {
-    return res.status(400).json({ message: '開始時間不可晚於結束時間' });
-  }
+  return res.status(400).json({ message: '開始時間不可晚於結束時間' });
+}
 
   if (parsedStart.isBefore(dayjs().tz(tz))) {
     return res.status(400).json({ message: '開始時間不可早於現在時間' });
@@ -67,14 +67,14 @@ const createEvent = async (req, res) => {
     name: cleanBody.name,
     barName: cleanBody.barName,
     location: cleanBody.location,
-    startAt: parsedStart.toDate(),
-    endAt: parsedEnd.toDate(),
+    startAt: parsedStart.tz(tz).toDate(),
+    endAt: parsedEnd.tz(tz).toDate(),
     maxPeople: cleanBody.maxPeople,
     imageUrl,
     price: cleanBody.price,
     hostUser: req.user.id,
-    createAt: dayjs().toDate(),
-    modifyAt: dayjs().toDate(),
+    createAt: dayjs().tz(tz).toDate(),
+    modifyAt: dayjs().tz(tz).toDate(),
   };
 
   try {
@@ -104,32 +104,32 @@ const getEvent = async (req, res) => {
   const eventId = req.params.id;
   try {
     const [event] = await db
-      .select({
-        id: events.id,
-        name: events.name,
-        barName: events.barName,
-        location: events.location,
-        startAt: events.startAt,
-        endAt: events.endAt,
-        maxPeople: events.maxPeople,
-        imageUrl: events.imageUrl,
-        price: events.price,
-        status: events.status,
-        hostUser: {
-          id: usersTable.id,
-          username: usersTable.username,
-          nickname: usersTable.nickname,
-          avatarUrl: usersTable.avatarUrl,
+      .select(
+        {
+          id: events.id,
+          name: events.name,
+          barName: events.barName,
+          location: events.location,
+          startAt: events.startAt,
+          endAt: events.endAt,
+          maxPeople: events.maxPeople,
+          imageUrl: events.imageUrl,
+          price: events.price,
+          status: events.status,
+          hostUser: {
+            id: usersTable.id,
+            username: usersTable.username,
+            nickname: usersTable.nickname,
+            avatarUrl: usersTable.avatarUrl,
+          }
         }
-      })
+      )
       .from(events)
       .leftJoin(usersTable, eq(events.hostUser, usersTable.id))
       .where(and(eq(events.id, eventId), eq(events.status, 1)));
-
     if (!event) return res.status(404).json({ message: '找不到活動' });
 
-    // 🔧 正確使用 UTC 比對活動是否已結束
-    if (event.status === 1 && event.endAt < dayjs().toDate()) {
+    if (event.status === 1 && event.endAt < dayjs().tz(tz).toDate()) {
       event.status = 3;
     }
 
@@ -144,12 +144,12 @@ const getEvent = async (req, res) => {
       .innerJoin(tags, eq(eventTags.tagId, tags.id))
       .where(eq(eventTags.eventId, eventId));
 
-    res.status(200).json({
+    res.status(200).json({ 
       event: {
         ...event,
         currentParticipants: participantCount.count
-      },
-      tags: getEventTags
+      }, 
+      tags: getEventTags 
     });
   } catch (err) {
     console.error('getEvent 錯誤:', err);
@@ -194,7 +194,7 @@ const updateEvent = async (req, res) => {
 
     if (imageFile) {
       try {
-        await deleteImageByUrl(imageUrl);
+        await deleteImageByUrl(imageUrl); 
         imageUrl = await uploadImage(
           imageFile.buffer,
           imageFile.mimetype,
@@ -210,19 +210,19 @@ const updateEvent = async (req, res) => {
       ...(req.body.name && { name: req.body.name }),
       ...(req.body.barName && { barName: req.body.barName }),
       ...(req.body.location && { location: req.body.location }),
-      ...(req.body.startAt && { startAt: dayjs(req.body.startAt).toDate() }),
-      ...(req.body.endAt && { endAt: dayjs(req.body.endAt).toDate() }),
+      ...(req.body.startAt && { startAt: dayjs(req.body.startAt).tz(tz).toDate() }),
+      ...(req.body.endAt && { endAt: dayjs(req.body.endAt).tz(tz).toDate() }),
       ...(req.body.maxPeople && { maxPeople: req.body.maxPeople }),
       ...(req.body.price && { price: req.body.price }),
       imageUrl,
       hostUser: req.user.id,
-      modifyAt: dayjs().toDate(),
+      modifyAt: dayjs().tz(tz).toDate(),
     };
 
     await db
-      .update(events)
-      .set(updatedData)
-      .where(eq(events.id, eventId));
+    .update(events)
+    .set(updatedData)
+    .where(eq(events.id, eventId));
 
     let parsedTags = [];
 
@@ -281,7 +281,7 @@ const softDeleteEvent = async (req, res) => {
     }
 
     await db.update(events)
-      .set({ status: 2, modifyAt: dayjs().toDate() })
+      .set({ status: 2, modifyAt: dayjs().tz(tz).toDate() })
       .where(eq(events.id, eventId));
 
     return res.status(200).json({ message: '活動已刪除' });
@@ -333,10 +333,4 @@ const getAllEvents = async (req, res) => {
   }
 };
 
-module.exports = {
-  createEvent,
-  getEvent,
-  updateEvent,
-  softDeleteEvent,
-  getAllEvents
-};
+module.exports = { createEvent, getEvent, updateEvent, softDeleteEvent, getAllEvents };
