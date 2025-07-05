@@ -342,7 +342,7 @@ const lineCallback = async (req, res) => {
       domain: process.env.NODE_ENV === 'production' ? 'joinbar.netlify.app' : '',
       httpOnly: false, // 允許前端讀取用戶資料
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
       path: '/'
     });
