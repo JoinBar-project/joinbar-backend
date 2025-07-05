@@ -327,7 +327,7 @@ const lineCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天 
       path: '/'
     });
-
+    console.log('現在NODE環境: ', process.env.NODE_ENV)
     // 用戶資料用 cookie 傳遞
     res.cookie('user_info', JSON.stringify({
       id: userResult.id,
@@ -346,7 +346,7 @@ const lineCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
       path: '/'
     });
-    console.log('後端寫入cookie: ', process.env.NODE_ENV === 'production' ? '.netlify.app' : '')
+    console.log('後端寫入cookie: ', process.env.NODE_ENV === 'production' ? 'joinbar.netlify.app' : '')
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/login?success=true&source=line`);
 	} catch(err) {
