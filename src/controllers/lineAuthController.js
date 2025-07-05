@@ -339,13 +339,14 @@ const lineCallback = async (req, res) => {
       avatarUrl: userResult.avatarUrl || lineProfile.pictureUrl || null,
       hasPreferences: hasPreferences
     }), {
-      domain: process.env.NODE_ENV === 'production' ? 'netlify.app' : '',
+      domain: process.env.NODE_ENV === 'production' ? '.netlify.app' : '',
       httpOnly: false, // 允許前端讀取用戶資料
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 天
       path: '/'
     });
+    console.log('後端寫入cookie: ', process.env.NODE_ENV === 'production' ? '.netlify.app' : '')
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/login?success=true&source=line`);
 	} catch(err) {
