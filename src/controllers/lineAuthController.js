@@ -339,6 +339,7 @@ const lineCallback = async (req, res) => {
       avatarUrl: userResult.avatarUrl || lineProfile.pictureUrl || null,
       hasPreferences: hasPreferences
     }), {
+      domain: process.env.NODE_ENV === 'production' ? 'netlify.app' : '',
       httpOnly: false, // 允許前端讀取用戶資料
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
