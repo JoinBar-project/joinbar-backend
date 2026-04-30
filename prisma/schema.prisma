@@ -1,0 +1,600 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────
+
+enum UserRoleEnum {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum ProviderTypeEnum {
+  EMAIL
+  LINE
+  GOOGLE
+
+  @@map("provider_type")
+}
+
+enum OrderStatusEnum {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+
+  @@map("order_status")
+}
+
+enum OrderItemTypeEnum {
+  EVENT
+  SUBSCRIPTION
+
+  @@map("order_item_type")
+}
+
+enum SubscriptionStatusEnum {
+  ACTIVE   // 已訂閱
+  CANCELED // 取消
+  EXPIRED  // 到期
+
+  @@map("subscription_status")
+}
+
+enum BenefitRedemptionStatusEnum {
+  PENDING // 尚未生成優惠券
+  UNUSED  // 未使用
+  USED    // 已使用
+
+  @@map("benefit_redemption_status")
+}
+
+enum NotificationTypeEnum {
+  NEW_PARTICIPANT // 新的活動參加者
+  NEW_MESSAGE     // 新的留言
+
+  @@map("notification_type")
+}
+
+// ─── 使用者 ───────────────────────────────────────
+
+// ORM Record — 只存在於 adapter/out/persistence 層，與 Domain User 完全分離
+model UserRecord {
+  id       String       @id @default(uuid())
+  username String       @db.VarChar(100)
+  nickname String?      @db.VarChar(100)
+  email    String?      @unique @db.VarChar(255)
+  role     UserRoleEnum @default(USER)
+  birthday DateTime?    @db.Date
+
+  // 頭像
+  avatarUrl         String?  @map("avatar_url") @db.Text
+  avatarKey         String?  @map("avatar_key") @db.VarChar(500)
+  avatarLastUpdated DateTime @default(now()) @map("avatar_last_updated") @db.Timestamptz
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  authProviders       UserAuthProvider[]
+  passwordResetTokens PasswordResetTokenRecord[]
+  notifications       Notification[]
+  fcmTokens           FcmToken[]
+  barFolders          BarFolder[]
+  barFavorites        BarFavorite[]
+  eventFolders        EventFolder[]
+  eventFavorites      EventFavorite[]
+  eventParticipations EventParticipation[]
+  hostedEvents        EventRecord[]
+  orders              Order[]
+  messages            Message[]
+  cartItems           CartItem[]
+  subscriptions       Subscription[]
+  benefitRedemptions  BenefitRedemption[]
+  userTag             UserTag?
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// 使用者登入方式（一對多，支援多種 provider）
+model UserAuthProvider {
+  id       String           @id @default(uuid())
+  userId   String           @map("user_id")
+  user     UserRecord       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider ProviderTypeEnum
+
+  // 共用欄位
+  providerId  String? @map("provider_id") @db.VarChar(255)
+  email       String? @db.VarChar(255)
+  displayName String? @map("display_name") @db.VarChar(255)
+  pictureUrl  String? @map("picture_url") @db.Text
+
+  // email provider 專屬
+  password            String?   @db.VarChar(255)
+  isVerified          Boolean   @default(false) @map("is_verified")
+  verifyToken         String?   @map("verify_token") @db.VarChar(255)
+  verifyExpires       DateTime? @map("verify_expires") @db.Timestamptz
+  lastVerifyEmailSent DateTime? @map("last_verify_email_sent") @db.Timestamptz
+
+  // LINE 專屬
+  lineStatusMessage String? @map("line_status_message")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([userId, provider])
+  @@unique([provider, providerId])
+  @@index([provider, email])
+  @@map("user_auth_providers")
+}
+
+// 使用者 FCM token（多裝置支援）
+model FcmToken {
+  id        String     @id @default(uuid())
+  userId    String     @map("user_id")
+  user      UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String     @unique @db.VarChar(255)
+  platform  String?    @db.VarChar(20)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("fcm_tokens")
+}
+
+// 使用者通知
+model Notification {
+  id               String               @id @default(uuid())
+  userId           String               @map("user_id")
+  user             UserRecord           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationType NotificationTypeEnum @map("notification_type")
+  content          String               @db.Text
+  sourceEventId    String?              @map("source_event_id")
+  sourceEvent      EventRecord?         @relation("NotificationEvent", fields: [sourceEventId], references: [id], onDelete: SetNull)
+  sourceMessageId  String?              @map("source_message_id")
+  sourceMessage    Message?             @relation("NotificationMessage", fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  isRead           Boolean              @default(false) @map("is_read")
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+// ─── 酒吧 ───────────────────────────────────────
+
+model Bar {
+  id            String    @id @default(uuid())
+  googlePlaceId String?   @map("google_place_id") @db.VarChar(255)
+  name          String    @db.VarChar(100)
+  address       String?   @db.VarChar(255)
+  phone         String?   @db.VarChar(20)
+  website       String?   @db.VarChar(255)
+  imageUrl      String?   @map("image_url") @db.Text
+  latitude      Decimal?  @db.Decimal(10, 7)
+  longitude     Decimal?  @db.Decimal(10, 7)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
+
+  barTag             BarTag?
+  favorites          BarFavorite[]
+  benefitRedemptions BenefitRedemption[]
+  events             EventRecord[]
+
+  @@index([deletedAt])
+  @@map("bars")
+}
+
+// 酒吧標籤（boolean 欄位對應使用者偏好篩選）
+model BarTag {
+  barId     String  @id @map("bar_id")
+  bar       Bar     @relation(fields: [barId], references: [id], onDelete: Cascade)
+  sport     Boolean
+  music     Boolean
+  student   Boolean
+  bistro    Boolean
+  drink     Boolean
+  joy       Boolean
+  romantic  Boolean
+  oldschool Boolean
+  highlevel Boolean
+  easy      Boolean
+
+  @@map("bar_tags")
+}
+
+// 使用者酒吧收藏資料夾
+model BarFolder {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  user       UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderName String?    @map("folder_name") @db.VarChar(50)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz
+
+  favorites BarFavorite[]
+
+  @@unique([userId, folderName])
+  @@map("bar_folders")
+}
+
+// 使用者酒吧收藏
+model BarFavorite {
+  id        String     @id @default(uuid())
+  userId    String     @map("user_id")
+  user      UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barId     String     @map("bar_id")
+  bar       Bar        @relation(fields: [barId], references: [id], onDelete: Cascade)
+  folderId  String?    @map("folder_id")
+  folder    BarFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([userId, barId])
+  @@index([userId])
+  @@map("bar_favorites")
+}
+
+// ─── 活動 ───────────────────────────────────────
+
+// ORM Record — 只存在於 adapter/out/persistence 層，與 Domain Event 完全分離
+model EventRecord {
+  id          String     @id @default(uuid())
+  name        String     @db.VarChar(100)
+  description String?    @db.Text
+  barId       String?    @map("bar_id")
+  bar         Bar?       @relation(fields: [barId], references: [id], onDelete: SetNull)
+  barName     String     @map("bar_name") @db.VarChar(300)
+  location    String     @db.VarChar(300)
+  startAt     DateTime   @map("start_at") @db.Timestamptz
+  endAt       DateTime   @map("end_at") @db.Timestamptz
+  maxPeople   Int?       @map("max_people")
+  imageUrl    String?    @map("image_url") @db.Text
+  price       Int?
+  hostUser    String     @map("host_user")
+  host        UserRecord @relation(fields: [hostUser], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime?  @map("deleted_at") @db.Timestamptz
+
+  tags          EventTag[]
+  favorites     EventFavorite[]
+  participants  EventParticipation[]
+  messages      Message[]
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  notifications Notification[] @relation("NotificationEvent")
+
+  @@index([hostUser])
+  @@index([deletedAt, startAt])
+  @@map("events")
+}
+
+// 標籤
+model Tag {
+  id   String @id @default(uuid())
+  name String @db.VarChar(50)
+
+  events EventTag[]
+
+  @@map("tags")
+}
+
+// 活動標籤（多對多）
+model EventTag {
+  eventId String      @map("event_id")
+  event   EventRecord @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tagId   String      @map("tag_id")
+  tag     Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, tagId])
+  @@map("event_tags")
+}
+
+// 使用者偏好標籤（與 BarTag 使用相同維度，方便 Gemini AI 配對推薦）
+model UserTag {
+  userId    String     @id @map("user_id")
+  user      UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sport     Boolean
+  music     Boolean
+  student   Boolean
+  bistro    Boolean
+  drink     Boolean
+  joy       Boolean
+  romantic  Boolean
+  oldschool Boolean
+  highlevel Boolean
+  easy      Boolean
+
+  @@map("user_tags")
+}
+
+// 使用者活動收藏資料夾
+model EventFolder {
+  id         String     @id @default(uuid())
+  userId     String     @map("user_id")
+  user       UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderName String?    @map("folder_name") @db.VarChar(50)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz
+
+  favorites EventFavorite[]
+
+  @@unique([userId, folderName])
+  @@map("event_folders")
+}
+
+// 使用者活動收藏
+model EventFavorite {
+  id        String       @id @default(uuid())
+  userId    String       @map("user_id")
+  user      UserRecord   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String       @map("event_id")
+  event     EventRecord  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  folderId  String?      @map("folder_id")
+  folder    EventFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@map("event_favorites")
+}
+
+// 活動參加記錄
+model EventParticipation {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  user      UserRecord  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String      @map("event_id")
+  event     EventRecord @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime    @default(now()) @map("joined_at") @db.Timestamptz
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@map("event_participations")
+}
+
+// 活動留言板
+model Message {
+  id        String      @id @default(uuid())
+  content   String      @db.Text
+  userId    String      @map("user_id")
+  user      UserRecord  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String      @map("event_id")
+  event     EventRecord @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt DateTime?   @map("deleted_at") @db.Timestamptz
+
+  notifications Notification[] @relation("NotificationMessage")
+
+  @@index([eventId, createdAt(sort: Desc)])
+  @@map("messages")
+}
+
+// ─── 訂單 ───────────────────────────────────────
+
+model Order {
+  id                 String          @id @default(uuid())
+  orderNumber        String          @unique @map("order_number") @db.VarChar(255)
+  userId             String?         @map("user_id")
+  user               UserRecord?     @relation(fields: [userId], references: [id])
+  totalAmount        Int             @map("total_amount")
+  status             OrderStatusEnum @default(PENDING)
+  paymentMethod      String?         @map("payment_method") @db.VarChar(20)
+  paymentId          String?         @map("payment_id") @db.VarChar(255)
+  transactionId      String?         @map("transaction_id") @db.VarChar(255)
+  paidAt             DateTime?       @map("paid_at") @db.Timestamptz
+  cancelledAt        DateTime?       @map("cancelled_at") @db.Timestamptz
+  cancellationReason String?         @map("cancellation_reason") @db.VarChar(255)
+  refundId           String?         @map("refund_id") @db.VarChar(255)
+  refundedAt         DateTime?       @map("refunded_at") @db.Timestamptz
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  items OrderItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("orders")
+}
+
+// 訂單項目
+model OrderItem {
+  id                 String            @id @default(uuid())
+  orderId            String            @map("order_id")
+  order              Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemType           OrderItemTypeEnum @map("item_type")
+  eventId            String?           @map("event_id")
+  event              EventRecord?      @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  subscriptionId     String?           @map("subscription_id")
+  subscription       Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  subscriptionPlanId String?           @map("subscription_plan_id")
+  subscriptionPlan   SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id], onDelete: Restrict)
+  price              Int
+  quantity           Int
+  subtotal           Int
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// 購物車項目
+model CartItem {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  user      UserRecord  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String      @map("event_id")
+  event     EventRecord @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  quantity  Int         @default(1)
+  addedAt   DateTime    @default(now()) @map("added_at") @db.Timestamptz
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@map("cart_items")
+}
+
+// ─── 訂閱 ───────────────────────────────────────
+
+// 訂閱方案主檔
+model SubscriptionPlan {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(100)
+  subType      String   @unique @map("sub_type") @db.VarChar(50)
+  price        Int
+  durationDays Int      @map("duration_days")
+  description  String?  @db.Text
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  subscriptions Subscription[]
+  orderItems    OrderItem[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id        String                 @id @default(uuid())
+  userId    String                 @map("user_id")
+  user      UserRecord             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String?                @map("plan_id")
+  plan      SubscriptionPlan?      @relation(fields: [planId], references: [id], onDelete: SetNull)
+  subType   String                 @map("sub_type") @db.VarChar(100)
+  price     Int?
+  startAt   DateTime               @map("start_at") @db.Timestamptz
+  endAt     DateTime               @map("end_at") @db.Timestamptz
+  status    SubscriptionStatusEnum @default(ACTIVE)
+  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime               @updatedAt @map("updated_at") @db.Timestamptz
+
+  orderItems         OrderItem[]
+  benefitRedemptions BenefitRedemption[]
+
+  @@index([userId, status])
+  @@map("subscriptions")
+}
+
+// 優惠兌換券
+// redeemAt 為 null 表示尚未核銷
+model BenefitRedemption {
+  id        String                      @id @default(uuid())
+  userId    String                      @map("user_id")
+  user      UserRecord                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subId     String                      @map("sub_id")
+  sub       Subscription                @relation(fields: [subId], references: [id], onDelete: Cascade)
+  barId     String?                     @map("bar_id")
+  bar       Bar?                        @relation(fields: [barId], references: [id], onDelete: SetNull)
+  benefit   String                      @db.VarChar(255)
+  startAt   DateTime                    @map("start_at") @db.Timestamptz
+  endAt     DateTime                    @map("end_at") @db.Timestamptz
+  redeemAt  DateTime?                   @map("redeem_at") @db.Timestamptz
+  status    BenefitRedemptionStatusEnum @default(PENDING)
+  createdAt DateTime                    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId, status])
+  @@index([subId])
+  @@map("benefit_redemptions")
+}
+
+// ─── 系統 ───────────────────────────────────────
+
+enum AuthLogActionEnum {
+  LOGIN_SUCCESS
+  LOGIN_FAILURE
+  LOGOUT
+  PASSWORD_RESET
+
+  @@map("auth_log_action")
+}
+
+// 系統操作紀錄（API request/response）
+model SystemLogRecord {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  action       String
+  ipAddress    String?  @map("ip_address")
+  method       String?
+  url          String?
+  request      String?  @db.Text
+  response     String?  @db.Text
+  statusCode   Int?     @map("status_code")
+  execTime     Float?   @map("exec_time")
+  requestTime  DateTime @map("request_time") @db.Timestamptz
+  responseTime DateTime @map("response_time") @db.Timestamptz
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("system_logs")
+}
+
+// 認證操作紀錄
+model AuthLogRecord {
+  id        String            @id @default(uuid())
+  userId    String?           @map("user_id")
+  email     String            @db.VarChar(100)
+  action    AuthLogActionEnum
+  ipAddress String?           @map("ip_address")
+  userAgent String?           @map("user_agent")
+  detail    String?
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("auth_logs")
+}
+
+// IP 白名單
+model IpWhitelistRecord {
+  id          String   @id @default(uuid())
+  ipAddress   String   @unique @map("ip_address")
+  description String?
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("ip_whitelist")
+}
+
+// IP 黑名單
+model IpBlacklistRecord {
+  id          String   @id @default(uuid())
+  ipAddress   String   @unique @map("ip_address")
+  reason      String?
+  isAutoBlock Boolean  @default(false) @map("is_auto_block")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("ip_blacklist")
+}
+
+// 密碼重設 token
+model PasswordResetTokenRecord {
+  id        String     @id @default(uuid())
+  userId    String     @map("user_id")
+  user      UserRecord @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String     @unique
+  expiresAt DateTime   @map("expires_at") @db.Timestamptz
+  usedAt    DateTime?  @map("used_at") @db.Timestamptz
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// seed 執行記錄，防止重複執行
+model SeedHistoryRecord {
+  id         Int      @id @default(autoincrement())
+  seedName   String   @unique @map("seed_name") @db.VarChar(255)
+  executedAt DateTime @default(now()) @map("executed_at") @db.Timestamptz
+
+  @@index([seedName])
+  @@map("seed_history")
+}
