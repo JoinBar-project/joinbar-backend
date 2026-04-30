@@ -28,7 +28,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         return new Error('Redis 連線失敗');
       }
       const delay = Math.min(retries * 1000, 10000);
-      this.logger.warn(`Redis 重新連線中 (第 ${retries + 1} 次，延遲 ${delay}ms)`);
+      this.logger.warn(
+        `Redis 重新連線中 (第 ${retries + 1} 次，延遲 ${delay}ms)`,
+      );
       return delay;
     };
 

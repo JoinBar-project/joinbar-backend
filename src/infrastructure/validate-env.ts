@@ -161,22 +161,14 @@ const envSchema = z.object({
     .min(0)
     .max(3)
     .default(1),
-  APPLICATION_PASSWORD_CHANGE_PERIOD: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .default(6),
+  APPLICATION_PASSWORD_CHANGE_PERIOD: z.coerce.number().int().min(0).default(6),
   APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET: z
     .string()
     .default('false')
     .transform((v) => v === 'true'),
 
   // ─── 帳號鎖定 ───
-  APPLICATION_ACCOUNT_LOCK_THRESHOLD: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .default(5),
+  APPLICATION_ACCOUNT_LOCK_THRESHOLD: z.coerce.number().int().min(1).default(5),
   APPLICATION_IP_BLOCK_THRESHOLD: z.coerce.number().int().min(1).default(10),
 
   // ─── Google reCAPTCHA ───
@@ -189,11 +181,7 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
 
   // ─── 閒置自動登出（分鐘）───
-  APPLICATION_SESSION_IDLE_TIMEOUT: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .default(120),
+  APPLICATION_SESSION_IDLE_TIMEOUT: z.coerce.number().int().min(1).default(120),
 
   // ─── 密碼重設 ───
   APP_PASSWORD_RESET_TOKEN_EXPIRES_IN: z.coerce
@@ -274,9 +262,7 @@ export const getEnv = (): Env => {
       _env.REFRESH_SECRET.includes('change-in-production') ||
       _env.REFRESH_SECRET.length < 32
     ) {
-      productionErrors.push(
-        'REFRESH_SECRET: 生產環境必填且至少 32 字元',
-      );
+      productionErrors.push('REFRESH_SECRET: 生產環境必填且至少 32 字元');
     }
     if (
       _env.COOKIE_SECRET.includes('change-in-production') ||

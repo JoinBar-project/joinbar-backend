@@ -5,7 +5,10 @@ import { SEND_NOTIFICATION_PORT } from '../application/port/out/shared/SendNotif
 @Module({
   providers: [
     FirebaseNotificationAdapter,
-    { provide: SEND_NOTIFICATION_PORT, useExisting: FirebaseNotificationAdapter },
+    {
+      provide: SEND_NOTIFICATION_PORT,
+      useExisting: FirebaseNotificationAdapter,
+    },
   ],
   exports: [SEND_NOTIFICATION_PORT],
 })

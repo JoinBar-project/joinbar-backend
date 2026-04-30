@@ -26,7 +26,8 @@ const log = pino({
 
 // Prisma v7 PrismaClientOptions 不再接受 datasourceUrl；需在建構前設定 DATABASE_URL
 if (!process.env.DATABASE_URL) {
-  const { DB_USERNAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE } = process.env;
+  const { DB_USERNAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE } =
+    process.env;
   process.env.DATABASE_URL = `postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}`;
 }
 

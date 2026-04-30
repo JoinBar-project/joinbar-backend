@@ -37,7 +37,10 @@ export class PrismaAccountLockAdapter implements AccountLockPort {
     await this.redis.del(buildFailedLoginKey(this.redis.keyPrefix, email));
 
     await this.prisma.userRecord
-      .updateMany({ where: { email }, data: { failedLoginCount: 0, lockedAt: null } })
+      .updateMany({
+        where: { email },
+        data: { failedLoginCount: 0, lockedAt: null },
+      })
       .catch(() => {});
   }
 

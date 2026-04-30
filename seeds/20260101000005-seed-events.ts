@@ -58,7 +58,9 @@ export default async function seed(prisma: PrismaClient): Promise<void> {
 
   // 取得管理員帳號作為官方活動 host
   const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@test.com';
-  const adminUser = await prisma.userRecord.findUnique({ where: { email: adminEmail } });
+  const adminUser = await prisma.userRecord.findUnique({
+    where: { email: adminEmail },
+  });
   if (!adminUser) {
     log.warn('找不到管理員帳號，請先執行 seed-admin。跳過活動 seed。');
     return;
@@ -102,13 +104,17 @@ export default async function seed(prisma: PrismaClient): Promise<void> {
   }
 
   // 建立 20 個活動（10 官方＋10 一般）
-  const officialNames = faker.helpers.shuffle(EVENT_NAMES_OFFICIAL).slice(0, 10);
+  const officialNames = faker.helpers
+    .shuffle(EVENT_NAMES_OFFICIAL)
+    .slice(0, 10);
   const casualNames = faker.helpers.shuffle(EVENT_NAMES_CASUAL).slice(0, 10);
 
   let count = 0;
   for (let i = 0; i < 20; i++) {
     const isOfficial = i < 10;
-    const hostUser = isOfficial ? adminUser : faker.helpers.arrayElement(testUsers);
+    const hostUser = isOfficial
+      ? adminUser
+      : faker.helpers.arrayElement(testUsers);
     const bar = faker.helpers.arrayElement(bars);
     const startAt = faker.date.soon({ days: 30 });
     const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // +2h
@@ -130,9 +136,15 @@ export default async function seed(prisma: PrismaClient): Promise<void> {
 
     // 隨機指派 1-2 個標籤
     if (tags.length > 0) {
-      const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 2 });
+      const selectedTags = faker.helpers.arrayElements(tags, {
+        min: 1,
+        max: 2,
+      });
       await prisma.eventTag.createMany({
-        data: selectedTags.map((t: { id: string }) => ({ eventId: event.id, tagId: t.id })),
+        data: selectedTags.map((t: { id: string }) => ({
+          eventId: event.id,
+          tagId: t.id,
+        })),
         skipDuplicates: true,
       });
     }

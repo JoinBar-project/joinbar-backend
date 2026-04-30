@@ -29,7 +29,11 @@ export class PrismaIpListRepository implements IpListPort {
     return record !== null;
   }
 
-  async addToWhitelist(ip: string, description?: string, createdBy?: string): Promise<void> {
+  async addToWhitelist(
+    ip: string,
+    description?: string,
+    createdBy?: string,
+  ): Promise<void> {
     await this.prisma.ipWhitelistRecord.upsert({
       where: { ipAddress: ip },
       update: { description, createdBy },
@@ -38,7 +42,12 @@ export class PrismaIpListRepository implements IpListPort {
     this.logger.log(`IP ${ip} 已加入白名單`);
   }
 
-  async addToBlacklist(ip: string, reason?: string, isAutoBlock = false, createdBy?: string): Promise<void> {
+  async addToBlacklist(
+    ip: string,
+    reason?: string,
+    isAutoBlock = false,
+    createdBy?: string,
+  ): Promise<void> {
     await this.prisma.ipBlacklistRecord.upsert({
       where: { ipAddress: ip },
       update: { reason, isAutoBlock, createdBy },
@@ -48,18 +57,26 @@ export class PrismaIpListRepository implements IpListPort {
   }
 
   async removeFromWhitelist(ip: string): Promise<void> {
-    await this.prisma.ipWhitelistRecord.delete({ where: { ipAddress: ip } }).catch(() => {});
+    await this.prisma.ipWhitelistRecord
+      .delete({ where: { ipAddress: ip } })
+      .catch(() => {});
   }
 
   async removeFromBlacklist(ip: string): Promise<void> {
-    await this.prisma.ipBlacklistRecord.delete({ where: { ipAddress: ip } }).catch(() => {});
+    await this.prisma.ipBlacklistRecord
+      .delete({ where: { ipAddress: ip } })
+      .catch(() => {});
   }
 
   async listWhitelist(): Promise<IpListItem[]> {
-    return this.prisma.ipWhitelistRecord.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.prisma.ipWhitelistRecord.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async listBlacklist(): Promise<IpBlacklistItem[]> {
-    return this.prisma.ipBlacklistRecord.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.prisma.ipBlacklistRecord.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

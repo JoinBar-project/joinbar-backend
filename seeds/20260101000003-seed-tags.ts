@@ -10,7 +10,18 @@ const log = pino({
 });
 
 // 與 BarTag / UserTag 的 boolean 欄位對應，方便 Gemini AI 配對推薦
-const TAGS = ['運動', '音樂', '學生', '小酒館', '飲酒', '歡樂', '浪漫', '老派', '高檔', '輕鬆'];
+const TAGS = [
+  '運動',
+  '音樂',
+  '學生',
+  '小酒館',
+  '飲酒',
+  '歡樂',
+  '浪漫',
+  '老派',
+  '高檔',
+  '輕鬆',
+];
 
 export default async function seed(prisma: PrismaClient): Promise<void> {
   log.info('插入活動標籤...');

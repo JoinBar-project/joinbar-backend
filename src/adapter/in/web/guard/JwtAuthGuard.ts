@@ -84,7 +84,9 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
     }
 
     if (!this.userContextCache.isAvailable) {
-      this.logger.warn('[JwtAuthGuard] Redis 不可用，UserContext 快取降級，每次請求直接查詢 DB');
+      this.logger.warn(
+        '[JwtAuthGuard] Redis 不可用，UserContext 快取降級，每次請求直接查詢 DB',
+      );
     }
 
     const data = await this.loadUserContext.loadUserContext(payload.sub);

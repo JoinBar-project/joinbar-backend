@@ -15,7 +15,10 @@ export class RedisIpBlockAdapter implements IpBlockPort {
 
   async recordFailedIpAttempt(ip: string): Promise<number> {
     if (!this.redis.isAvailable) return 0;
-    return this.redis.increment(buildFailedIpKey(this.redis.keyPrefix, ip), this.COUNTER_TTL);
+    return this.redis.increment(
+      buildFailedIpKey(this.redis.keyPrefix, ip),
+      this.COUNTER_TTL,
+    );
   }
 
   async resetIpAttempts(ip: string): Promise<void> {

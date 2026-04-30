@@ -19,11 +19,20 @@ import { IP_BLOCK_PORT } from '../application/port/out/security/IpBlockPort';
     RedisService,
     RedisTokenBlacklistAdapter,
     { provide: TOKEN_BLACKLIST_PORT, useExisting: RedisTokenBlacklistAdapter },
-    { provide: CLEAR_USER_CONTEXT_PORT, useExisting: RedisTokenBlacklistAdapter },
+    {
+      provide: CLEAR_USER_CONTEXT_PORT,
+      useExisting: RedisTokenBlacklistAdapter,
+    },
     RedisUserContextCacheAdapter,
-    { provide: USER_CONTEXT_CACHE_PORT, useExisting: RedisUserContextCacheAdapter },
+    {
+      provide: USER_CONTEXT_CACHE_PORT,
+      useExisting: RedisUserContextCacheAdapter,
+    },
     RedisSessionActivityAdapter,
-    { provide: SESSION_ACTIVITY_PORT, useExisting: RedisSessionActivityAdapter },
+    {
+      provide: SESSION_ACTIVITY_PORT,
+      useExisting: RedisSessionActivityAdapter,
+    },
     RedisIpBlockAdapter,
     { provide: IP_BLOCK_PORT, useExisting: RedisIpBlockAdapter },
   ],

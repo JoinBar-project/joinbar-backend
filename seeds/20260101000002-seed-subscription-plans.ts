@@ -15,7 +15,8 @@ const PLANS = [
     subType: 'monthly',
     price: 999,
     durationDays: 30,
-    description: 'VIP 專屬特調 1 次、合作酒吧招待飲品 1 次、合作酒吧招待小點 1 次',
+    description:
+      'VIP 專屬特調 1 次、合作酒吧招待飲品 1 次、合作酒吧招待小點 1 次',
     isActive: true,
   },
   {
@@ -23,7 +24,8 @@ const PLANS = [
     subType: 'seasonal',
     price: 1999,
     durationDays: 90,
-    description: 'VIP 專屬特調 2 次、合作酒吧招待飲品 3 次、合作酒吧招待小點 3 次',
+    description:
+      'VIP 專屬特調 2 次、合作酒吧招待飲品 3 次、合作酒吧招待小點 3 次',
     isActive: true,
   },
   {
@@ -31,7 +33,8 @@ const PLANS = [
     subType: 'vip',
     price: 2999,
     durationDays: 365,
-    description: 'VIP 專屬特調 3 次、合作酒吧招待飲品 6 次、合作酒吧招待小點 6 次',
+    description:
+      'VIP 專屬特調 3 次、合作酒吧招待飲品 6 次、合作酒吧招待小點 6 次',
     isActive: true,
   },
 ];
