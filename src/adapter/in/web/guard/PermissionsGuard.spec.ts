@@ -62,6 +62,8 @@ describe('PermissionsGuard', () => {
 
   it('使用者無任何權限 → ForbiddenException', () => {
     reflector.getAllAndOverride.mockReturnValue(['user.view']);
-    expect(() => guard.canActivate(makeContext([]))).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(makeContext([]))).toThrow(
+      ForbiddenException,
+    );
   });
 });
