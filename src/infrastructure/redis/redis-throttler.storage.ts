@@ -5,7 +5,7 @@ import { RedisService } from './redis.service';
 
 /**
  * Redis-backed ThrottlerStorage — 支援水平擴展。
- * Lua Script で原子性を保証し、Sorted Set でスライディングウィンドウを実装。
+ * 以 Lua Script 保證原子性，透過 Sorted Set 實作滑動視窗。
  * Redis 不可用時靜默降級（不節流）。
  */
 @Injectable()

@@ -18,9 +18,7 @@ export const formatDate = (d: Date | string | null): string => {
 export const formatYMD = (y: number, m: number, d: number): string =>
   dayjs(new Date(y, m - 1, d)).format('YYYY年MM月DD日');
 
-/**
- * Date を UTC 基準の YYYY-MM-DD 文字列に変換 / 將 Date 轉為 UTC 基準的 YYYY-MM-DD 字串
- */
+/** 將 Date 轉為 UTC 基準的 YYYY-MM-DD 字串 */
 export const toDateStr = (d: Date): string => d.toISOString().slice(0, 10);
 
 export const formatDateWithDay = (d: Date | string | null): string => {
@@ -29,14 +27,10 @@ export const formatDateWithDay = (d: Date | string | null): string => {
   return `${date.format('YYYY-MM-DD')} (${DAY_NAMES[date.day()]})`;
 };
 
-/**
- * 現在時刻を APP_TIMEZONE で取得 / 以 APP_TIMEZONE 取得當下時間
- */
+/** 以 APP_TIMEZONE 取得當下時間 */
 export const nowInAppTz = (): dayjs.Dayjs => dayjs().tz(getEnv().APP_TIMEZONE);
 
-/**
- * APP_TIMEZONE 基準の今日（YYYY-MM-DD）/ 以 APP_TIMEZONE 為基準的今日（YYYY-MM-DD）
- */
+/** 以 APP_TIMEZONE 為基準的今日（YYYY-MM-DD） */
 export const todayInAppTz = (): string => nowInAppTz().format('YYYY-MM-DD');
 
 export default dayjs;

@@ -4,9 +4,8 @@ import { sanitize, sanitizeUrl } from '../../../../infrastructure/sanitize';
 import { SystemLogData } from '../../../../application/port/out/shared/SaveSystemLogPort';
 
 /**
- * HTTP request から SystemLogData の共通フィールドを生成する。
- * LoggingInterceptor（成功パス）と GlobalExceptionFilter（エラーパス）で共用。
- * HTTP request 建立 SystemLogData 的公共欄位，供 LoggingInterceptor 與 GlobalExceptionFilter 共用。
+ * 從 HTTP request 建立 SystemLogData 的公共欄位，
+ * 供 LoggingInterceptor（成功路徑）與 GlobalExceptionFilter（錯誤路徑）共用。
  */
 export function buildSystemLogData(
   request: Request,
