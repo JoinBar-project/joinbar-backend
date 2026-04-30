@@ -13,6 +13,7 @@ import { SecurityModule } from './modules/security.module';
 import { SystemLogModule } from './modules/system-log.module';
 import { EmailModule } from './modules/email.module';
 import { FirebaseModule } from './modules/firebase.module';
+import { RecaptchaModule } from './modules/recaptcha.module';
 import { HealthController } from './adapter/in/web/HealthController';
 import { GlobalExceptionFilter } from './adapter/in/web/filter/GlobalExceptionFilter';
 import { LoggingInterceptor } from './adapter/in/web/interceptor/LoggingInterceptor';
@@ -109,6 +110,7 @@ import { getEnv } from './infrastructure/validate-env';
     SystemLogModule,
     EmailModule,
     FirebaseModule,
+    RecaptchaModule,
   ],
   controllers: [HealthController],
   providers: [
