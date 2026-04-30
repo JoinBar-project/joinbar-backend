@@ -133,10 +133,7 @@ const bootstrap = async (): Promise<void> => {
   await app.listen(env.PORT);
   app
     .get(Logger)
-    .log(
-      `Swagger 文件：http://localhost:${env.PORT}/api/docs`,
-      'Bootstrap',
-    );
+    .log(`Swagger 文件：http://localhost:${env.PORT}/api/docs`, 'Bootstrap');
   app.get(Logger).log(`應用程式啟動：${await app.getUrl()}`, 'Bootstrap');
 };
 
