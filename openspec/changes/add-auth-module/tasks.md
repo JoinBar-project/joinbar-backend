@@ -52,15 +52,15 @@
 
 ## 8. Controller & DTO
 
-- [ ] 8.1 建立 `src/adapter/in/web/auth/dto/LoginRequest.ts`（email、password、recaptchaToken?）
-- [ ] 8.2 建立 `src/adapter/in/web/auth/dto/LogoutRequest.ts`（refreshToken?）
-- [ ] 8.3 建立 `src/adapter/in/web/auth/dto/RefreshTokenRequest.ts`（refreshToken）
-- [ ] 8.4 建立 `src/adapter/in/web/auth/dto/LineLoginRequest.ts`（code、redirectUri）
-- [ ] 8.5 建立 `src/adapter/in/web/auth/dto/RegisterRequest.ts`（email、password、username）
-- [ ] 8.6 建立 `src/adapter/in/web/auth/dto/RequestPasswordResetRequest.ts`（email）
-- [ ] 8.7 建立 `src/adapter/in/web/auth/dto/ConfirmPasswordResetRequest.ts`（token、newPassword）
-- [ ] 8.8 建立 `src/adapter/in/web/auth/dto/VerifyEmailRequest.ts`（token）
-- [ ] 8.9 建立 `src/adapter/in/web/auth/AuthController.ts`（所有 auth 端點，公開路由加 `@Public()`）
+- [x] 8.1 建立 `src/adapter/in/web/auth/dto/LoginRequest.ts`（email、password、recaptchaToken?）
+- [x] 8.2 建立 `src/adapter/in/web/auth/dto/LogoutRequest.ts`（refreshToken?）
+- [x] 8.3 建立 `src/adapter/in/web/auth/dto/RefreshTokenRequest.ts`（refreshToken）
+- [x] 8.4 建立 `src/adapter/in/web/auth/dto/LineLoginRequest.ts`（code、redirectUri）
+- [x] 8.5 建立 `src/adapter/in/web/auth/dto/RegisterRequest.ts`（email、password、username）
+- [x] 8.6 建立 `src/adapter/in/web/auth/dto/RequestPasswordResetRequest.ts`（email）
+- [x] 8.7 建立 `src/adapter/in/web/auth/dto/ConfirmPasswordResetRequest.ts`（token、newPassword）
+- [x] 8.8 建立 `src/adapter/in/web/auth/dto/VerifyEmailRequest.ts`（token）
+- [x] 8.9 建立 `src/adapter/in/web/auth/AuthController.ts`（所有 auth 端點，公開路由加 `@Public()`）
 
 ## 9. Module 配線
 
