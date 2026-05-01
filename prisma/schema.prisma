@@ -79,8 +79,9 @@ model UserRecord {
   avatarLastUpdated DateTime @default(now()) @map("avatar_last_updated") @db.Timestamptz
 
   // 帳號安全
-  failedLoginCount Int       @default(0) @map("failed_login_count")
-  lockedAt         DateTime? @map("locked_at") @db.Timestamptz
+  failedLoginCount   Int       @default(0) @map("failed_login_count")
+  lockedAt           DateTime? @map("locked_at") @db.Timestamptz
+  lastPasswordChange DateTime? @map("last_password_change") @db.Timestamptz
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz

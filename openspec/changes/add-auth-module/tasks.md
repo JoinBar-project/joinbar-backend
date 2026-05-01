@@ -1,6 +1,6 @@
 ## 1. Schema 補全
 
-- [ ] 1.1 在 `UserRecord` 加入 `lastPasswordChange DateTime?` 欄位並執行 `prisma migrate dev`
+- [x] 1.1 在 `UserRecord` 加入 `lastPasswordChange DateTime?` 欄位並執行 `prisma migrate dev`
 - [ ] 1.2 執行 `npm run db:generate` 重新產生 Prisma client
 
 ## 2. Domain Model
