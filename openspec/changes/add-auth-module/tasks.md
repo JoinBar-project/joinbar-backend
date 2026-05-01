@@ -26,9 +26,9 @@
 
 ## 5. Persistence Adapter
 
-- [ ] 5.1 建立 `src/adapter/out/persistence/user/PrismaUserRepository.ts`，實作 `FindUserPort`、`SaveUserPort`、`LoadUserContextPort`
-- [ ] 5.2 建立 `src/adapter/out/persistence/auth/PrismaPasswordResetTokenRepository.ts`，實作 `PasswordResetTokenPort`
-- [ ] 5.3 建立對應單元測試（mock PrismaService）
+- [x] 5.1 建立 `src/adapter/out/persistence/user/PrismaUserRepository.ts`，實作 `FindUserPort`、`SaveUserPort`、`LoadUserContextPort`
+- [x] 5.2 建立 `src/adapter/out/persistence/auth/PrismaPasswordResetTokenRepository.ts`，實作 `PasswordResetTokenPort`
+- [x] 5.3 建立對應單元測試（mock PrismaService）
 
 ## 6. Application Services
 
