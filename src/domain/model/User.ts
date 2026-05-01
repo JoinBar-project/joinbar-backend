@@ -101,7 +101,13 @@ export class User {
     this._lockedAt = new Date();
   }
 
-  /** パスワードが期限切れかを確認 / 檢查密碼是否已過期 */
+  /**
+   * パスワードが期限切れかを確認 / 檢查密碼是否已過期
+   *
+   * 語意說明：`lastPasswordChange` 為 null（從未設定過）時，回傳 false（視為未過期）。
+   * 這適用於 EMAIL 新用戶建立帳號時的初始狀態；若需對舊帳號強制輪換，
+   * 應在呼叫端以 null → 需強制修改 的邏輯另行判斷。
+   */
   isPasswordExpired(periodMonths: number): boolean {
     if (!this._lastPasswordChange) return false;
     const expireDate = new Date(this._lastPasswordChange);

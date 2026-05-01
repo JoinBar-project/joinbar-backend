@@ -104,9 +104,14 @@ export class RegisterService implements RegisterUseCase {
     baseUrl?: string,
   ): Promise<void> {
     try {
+      if (!baseUrl) {
+        this.logger.warn(
+          'API_BASE_URL 未設定，驗證信無法產生可點擊的連結，請設定環境變數',
+        );
+      }
       const verifyUrl = baseUrl
         ? `${baseUrl}/api/auth/verify-email?token=${token}`
-        : token;
+        : `（請聯絡管理員取得驗證，驗證碼：${token}）`;
 
       await this.sendEmail.sendMail({
         to,

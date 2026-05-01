@@ -109,9 +109,13 @@ export class LineOAuthAdapter implements LineOAuthPort {
     }
   }
 
-  /** id_token（JWT）から email を抽出（署名検証なし：LINE API から取得した信頼済みトークン） */
+  /**
+   * id_token（JWT）から email を抽出
+   * 署名検証なし：HTTPS で取得した LINE API レスポンス内のトークンであり信頼済み
+   */
   private extractEmailFromIdToken(idToken: string): string | null {
     try {
+      if (idToken.length > 4096) return null;
       const parts = idToken.split('.');
       if (parts.length !== 3) return null;
       const payload = JSON.parse(

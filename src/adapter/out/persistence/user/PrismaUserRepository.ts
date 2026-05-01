@@ -196,8 +196,8 @@ export class PrismaUserRepository
 
   async updateLastLoginAt(userId: string): Promise<void> {
     // fire-and-forget：失敗不影響主流程
-    this.prisma.userAuthProvider
-      .updateMany({ where: { userId }, data: {} })
+    this.prisma.userRecord
+      .update({ where: { id: userId }, data: { updatedAt: new Date() } })
       .catch(() => {});
   }
 

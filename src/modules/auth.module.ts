@@ -58,7 +58,7 @@ import { LINE_OAUTH_PORT } from '../application/port/out/auth/LineOAuthPort';
     //   RECAPTCHA_VERIFY_PORT                                                  → RecaptchaModule
     //   FeatureFlagService                                                     → FeatureFlagModule
     PasswordPolicyService,
-    // ─── Application Services ────────────────────────────────────────��
+    // ─── Application Services ──────────────────────────────────────────
     LoginService,
     { provide: LOGIN_USE_CASE, useExisting: LoginService },
     LogoutService,

@@ -66,7 +66,7 @@ export class ConfirmPasswordResetService implements ConfirmPasswordResetUseCase 
     await this.resetToken.markUsed(tokenData.id);
 
     // 強制登出（清除 UserContext 快取）
-    if (env.APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET) {
+    if (this.featureFlags.isEnabled('logoutAfterPasswordResetEnabled')) {
       await this.clearUserContext.clearUserContext(tokenData.userId);
     }
 

@@ -11,7 +11,6 @@ import { RoleName } from '../../../domain/value-object/Role';
 jest.mock('../../../infrastructure/validate-env', () => ({
   getEnv: () => ({
     BCRYPT_ROUNDS: 1,
-    APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET: true,
   }),
 }));
 
@@ -46,7 +45,10 @@ const makeTokenData = (overrides?: {
   createdAt: new Date(),
 });
 
-const makeDeps = (overrides?: { authLogEnabled?: boolean }) => {
+const makeDeps = (overrides?: {
+  authLogEnabled?: boolean;
+  logoutAfterPasswordResetEnabled?: boolean;
+}) => {
   const findUser = {
     findById: jest.fn().mockResolvedValue(makeUser()),
     findByEmailWithPassword: jest.fn(),
@@ -81,10 +83,12 @@ const makeDeps = (overrides?: { authLogEnabled?: boolean }) => {
     maxLength: 32,
   } as unknown as PasswordPolicyService;
   const featureFlags = {
-    isEnabled: jest.fn(
-      (flag: string) =>
-        flag === 'authLogEnabled' && (overrides?.authLogEnabled ?? false),
-    ),
+    isEnabled: jest.fn((flag: string) => {
+      if (flag === 'authLogEnabled') return overrides?.authLogEnabled ?? false;
+      if (flag === 'logoutAfterPasswordResetEnabled')
+        return overrides?.logoutAfterPasswordResetEnabled ?? true;
+      return false;
+    }),
   } as unknown as FeatureFlagService;
 
   const service = new ConfirmPasswordResetService(
@@ -130,12 +134,24 @@ describe('ConfirmPasswordResetService', () => {
       expect(clearUserContext.clearUserContext).toHaveBeenCalledWith(USER_ID);
     });
 
-    it('APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET=true → clearUserContext を呼ぶ', async () => {
-      const { service, clearUserContext } = makeDeps();
+    it('logoutAfterPasswordResetEnabled=true → clearUserContext を呼ぶ', async () => {
+      const { service, clearUserContext } = makeDeps({
+        logoutAfterPasswordResetEnabled: true,
+      });
 
       await service.execute({ token: VALID_TOKEN, newPassword: NEW_PASSWORD });
 
       expect(clearUserContext.clearUserContext).toHaveBeenCalledWith(USER_ID);
+    });
+
+    it('logoutAfterPasswordResetEnabled=false → clearUserContext を呼ばない', async () => {
+      const { service, clearUserContext } = makeDeps({
+        logoutAfterPasswordResetEnabled: false,
+      });
+
+      await service.execute({ token: VALID_TOKEN, newPassword: NEW_PASSWORD });
+
+      expect(clearUserContext.clearUserContext).not.toHaveBeenCalled();
     });
   });
 
