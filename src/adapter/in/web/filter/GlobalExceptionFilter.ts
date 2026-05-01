@@ -18,6 +18,7 @@ import { InvalidRefreshTokenException } from '../../../../domain/exception/Inval
 import { PasswordChangeRequiredException } from '../../../../domain/exception/PasswordChangeRequiredException';
 import { EmailAlreadyExistsException } from '../../../../domain/exception/EmailAlreadyExistsException';
 import { InvalidPasswordResetTokenException } from '../../../../domain/exception/InvalidPasswordResetTokenException';
+import { InvalidEmailVerificationTokenException } from '../../../../domain/exception/InvalidEmailVerificationTokenException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -64,6 +65,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.BAD_REQUEST;
       message = exception.message;
       code = 'INVALID_PASSWORD_RESET_TOKEN';
+    } else if (exception instanceof InvalidEmailVerificationTokenException) {
+      status = HttpStatus.BAD_REQUEST;
+      message = exception.message;
+      code = 'INVALID_EMAIL_VERIFICATION_TOKEN';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;

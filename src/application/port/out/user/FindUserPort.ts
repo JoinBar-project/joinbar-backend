@@ -16,6 +16,11 @@ export interface LineProviderData {
   statusMessage: string | null;
 }
 
+export interface EmailVerifyTokenData {
+  userId: string;
+  verifyExpires: Date | null;
+}
+
 export const FIND_USER_PORT = 'FIND_USER_PORT';
 
 export interface FindUserPort {
@@ -30,4 +35,6 @@ export interface FindUserPort {
   findById(userId: string): Promise<User | null>;
   /** 檢查 EMAIL provider 是否已存在（註冊用） */
   existsByEmail(email: string): Promise<boolean>;
+  /** Email 驗證 token 查詢（VerifyEmail 用） */
+  findByEmailVerifyToken(token: string): Promise<EmailVerifyTokenData | null>;
 }

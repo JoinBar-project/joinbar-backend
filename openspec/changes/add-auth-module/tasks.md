@@ -44,7 +44,7 @@
 - [x] 6.10 建立 `src/application/service/auth/RegisterService.spec.ts`
 - [x] 6.11 建立 `src/application/service/auth/RequestPasswordResetService.ts`（查 email → 建 token → 寄信）
 - [x] 6.12 建立 `src/application/service/auth/ConfirmPasswordResetService.ts`（驗 token → 更新密碼 → 強制登出 flag → auth log）
-- [ ] 6.13 建立 `src/application/service/auth/VerifyEmailService.ts`（驗 token → 設 isVerified）
+- [x] 6.13 建立 `src/application/service/auth/VerifyEmailService.ts`（驗 token → 設 isVerified）
 
 ## 7. Facade
 

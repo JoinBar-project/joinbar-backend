@@ -5,6 +5,7 @@ import {
   FindUserPort,
   UserWithPassword,
   LineProviderData,
+  EmailVerifyTokenData,
 } from '../../../../application/port/out/user/FindUserPort';
 import { SaveUserPort } from '../../../../application/port/out/user/SaveUserPort';
 import {
@@ -66,6 +67,16 @@ export class PrismaUserRepository
       where: { provider: ProviderTypeEnum.EMAIL, email },
     });
     return count > 0;
+  }
+
+  async findByEmailVerifyToken(
+    token: string,
+  ): Promise<EmailVerifyTokenData | null> {
+    const provider = await this.prisma.userAuthProvider.findFirst({
+      where: { provider: ProviderTypeEnum.EMAIL, verifyToken: token },
+      select: { userId: true, verifyExpires: true },
+    });
+    return provider ?? null;
   }
 
   // ─── SaveUserPort ────────────────────────────────────────────────────
