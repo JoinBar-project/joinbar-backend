@@ -47,6 +47,7 @@ const makeDeps = (overrides?: { authLogEnabled?: boolean }) => {
     findByEmailWithPassword: jest.fn(),
     findById: jest.fn(),
     existsByEmail: jest.fn(),
+    findByEmailVerifyToken: jest.fn(),
   };
   const saveUser = {
     upsertLineProvider: jest.fn().mockResolvedValue(undefined),

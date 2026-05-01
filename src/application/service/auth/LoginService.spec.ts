@@ -47,6 +47,7 @@ const mockFindUser = {
   findByProviderUid: jest.fn(),
   findById: jest.fn(),
   existsByEmail: jest.fn(),
+  findByEmailVerifyToken: jest.fn(),
 };
 
 const mockSaveUser = {

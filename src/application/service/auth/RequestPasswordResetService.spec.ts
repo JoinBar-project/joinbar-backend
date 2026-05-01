@@ -50,6 +50,7 @@ const makeDeps = () => {
     findByProviderUid: jest.fn(),
     findById: jest.fn(),
     existsByEmail: jest.fn(),
+    findByEmailVerifyToken: jest.fn(),
   };
   const resetToken = {
     createToken: jest.fn().mockResolvedValue(undefined),

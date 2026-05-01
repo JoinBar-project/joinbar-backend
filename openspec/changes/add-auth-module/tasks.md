@@ -64,9 +64,9 @@
 
 ## 9. Module 配線
 
-- [ ] 9.1 建立 `src/modules/auth.module.ts`（imports: MemberModule/UserModule、JwtModule；providers: services + facade；controllers: AuthController）
-- [ ] 9.2 在 `src/app.module.ts` 引入 `AuthModule`
-- [ ] 9.3 確認 `JwtAuthGuard` + `SessionIdleGuard` 掛載順序正確
+- [x] 9.1 建立 `src/modules/auth.module.ts`（imports: MemberModule/UserModule、JwtModule；providers: services + facade；controllers: AuthController）
+- [x] 9.2 在 `src/app.module.ts` 引入 `AuthModule`
+- [x] 9.3 確認 `JwtAuthGuard` + `SessionIdleGuard` 掛載順序正確
 
 ## 10. Swagger 文件
 

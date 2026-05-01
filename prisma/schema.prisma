@@ -514,6 +514,7 @@ model BenefitRedemption {
 enum AuthLogActionEnum {
   LOGIN_SUCCESS
   LOGIN_FAILURE
+  LINE_LOGIN
   LOGOUT
   REFRESH
   PASSWORD_RESET
