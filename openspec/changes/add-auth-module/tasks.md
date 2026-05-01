@@ -5,8 +5,8 @@
 
 ## 2. Domain Model
 
-- [ ] 2.1 建立 `src/domain/model/User.ts`（含 `create()`、`reconstitute()` 工廠方法，封裝業務規則）
-- [ ] 2.2 建立 `src/domain/model/User.spec.ts` 單元測試
+- [x] 2.1 建立 `src/domain/model/User.ts`（含 `create()`、`reconstitute()` 工廠方法，封裝業務規則）
+- [x] 2.2 建立 `src/domain/model/User.spec.ts` 單元測試
 
 ## 3. Port/in — Use Case 介面
 
