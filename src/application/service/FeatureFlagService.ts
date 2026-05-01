@@ -14,7 +14,8 @@ export type FeatureFlagName =
   | 'sessionIdleEnabled'
   | 'googleRecaptchaEnabled'
   | 'apiLogEnabled'
-  | 'operationLogEnabled';
+  | 'operationLogEnabled'
+  | 'logoutAfterPasswordResetEnabled';
 
 /**
  * 功能開關服務：從環境變數讀取功能啟用狀態。
@@ -43,6 +44,8 @@ export class FeatureFlagService implements OnModuleInit {
       googleRecaptchaEnabled: env.APPLICATION_GOOGLE_RECAPTCHA_ENABLED,
       apiLogEnabled: env.APPLICATION_API_LOG_ENABLED,
       operationLogEnabled: env.APPLICATION_OPERATION_LOG_ENABLED,
+      logoutAfterPasswordResetEnabled:
+        env.APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET,
     };
   }
 

@@ -103,10 +103,6 @@ components:
 
 paths:
   # ─── Auth ─────────────────────────────────
-  /auth/register:
-    post:
-      $ref: './auth/register.yaml'
-
   /auth/login:
     post:
       $ref: './auth/login.yaml'
@@ -119,158 +115,24 @@ paths:
     post:
       $ref: './auth/refresh.yaml'
 
-  /auth/line/url:
-    get:
-      $ref: './auth/line-url.yaml'
-
-  /auth/line/callback:
-    get:
-      $ref: './auth/line-callback.yaml'
-
-  /auth/google:
+  /auth/line:
     post:
-      $ref: './auth/google.yaml'
+      $ref: './auth/line-login.yaml'
+
+  /auth/register:
+    post:
+      $ref: './auth/register.yaml'
+
+  /auth/password-reset/request:
+    post:
+      $ref: './auth/password-reset-request.yaml'
+
+  /auth/password-reset/confirm:
+    post:
+      $ref: './auth/password-reset-confirm.yaml'
 
   /auth/verify-email:
-    get:
+    post:
       $ref: './auth/verify-email.yaml'
 
-  # ─── Users ────────────────────────────────
-  /users/me:
-    get:
-      $ref: './users/get-me.yaml'
-    patch:
-      $ref: './users/update-me.yaml'
-
-  /users/me/avatar:
-    post:
-      $ref: './users/upload-avatar.yaml'
-
-  /users/me/tags:
-    put:
-      $ref: './users/update-tags.yaml'
-
-  # ─── Bars ─────────────────────────────────
-  /bars:
-    get:
-      $ref: './bars/list.yaml'
-
-  /bars/{id}:
-    get:
-      $ref: './bars/get.yaml'
-
-  /bars/recommend:
-    get:
-      $ref: './bars/recommend.yaml'
-
-  # ─── Events ───────────────────────────────
-  /events:
-    get:
-      $ref: './events/list.yaml'
-    post:
-      $ref: './events/create.yaml'
-
-  /events/{id}:
-    get:
-      $ref: './events/get.yaml'
-    patch:
-      $ref: './events/update.yaml'
-    delete:
-      $ref: './events/delete.yaml'
-
-  /events/{id}/join:
-    post:
-      $ref: './events/join.yaml'
-    delete:
-      $ref: './events/leave.yaml'
-
-  /events/{id}/messages:
-    get:
-      $ref: './events/list-messages.yaml'
-    post:
-      $ref: './events/create-message.yaml'
-
-  /events/{id}/messages/{messageId}:
-    delete:
-      $ref: './events/delete-message.yaml'
-
-  # ─── Cart ─────────────────────────────────
-  /cart:
-    get:
-      $ref: './cart/list.yaml'
-    post:
-      $ref: './cart/add.yaml'
-
-  /cart/{id}:
-    delete:
-      $ref: './cart/remove.yaml'
-
-  # ─── Orders ───────────────────────────────
-  /orders:
-    get:
-      $ref: './orders/list.yaml'
-
-  /orders/{id}:
-    get:
-      $ref: './orders/get.yaml'
-
-  # ─── LINE Pay ─────────────────────────────
-  /linepay/request:
-    post:
-      $ref: './linepay/request.yaml'
-
-  /linepay/confirm:
-    get:
-      $ref: './linepay/confirm.yaml'
-
-  /linepay/cancel:
-    get:
-      $ref: './linepay/cancel.yaml'
-
-  # ─── Subscriptions ────────────────────────
-  /subscriptions:
-    get:
-      $ref: './subscriptions/list.yaml'
-
-  /subscriptions/plans:
-    get:
-      $ref: './subscriptions/plans.yaml'
-
-  # ─── Benefits ─────────────────────────────
-  /benefits:
-    get:
-      $ref: './benefits/list.yaml'
-
-  /benefits/{id}/redeem:
-    post:
-      $ref: './benefits/redeem.yaml'
-
-  # ─── Favorites ────────────────────────────
-  /favorites/bars:
-    get:
-      $ref: './favorites/list-bars.yaml'
-    post:
-      $ref: './favorites/add-bar.yaml'
-
-  /favorites/bars/{id}:
-    delete:
-      $ref: './favorites/remove-bar.yaml'
-
-  /favorites/events:
-    get:
-      $ref: './favorites/list-events.yaml'
-    post:
-      $ref: './favorites/add-event.yaml'
-
-  /favorites/events/{id}:
-    delete:
-      $ref: './favorites/remove-event.yaml'
-
-  # ─── Notifications ────────────────────────
-  /notifications:
-    get:
-      $ref: './notifications/list.yaml'
-
-  /notifications/{id}/read:
-    patch:
-      $ref: './notifications/read.yaml'
+  # ─── 其他模組（尚未實作）────────────────────

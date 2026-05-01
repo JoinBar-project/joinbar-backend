@@ -1,0 +1,51 @@
+tags: [Auth]
+summary: 更新 Access Token
+description: |
+  使用有效的 Refresh Token 換發新 Access Token。
+  Refresh Token 本身不旋轉（絕對 7 天有效）。
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [refreshToken]
+        properties:
+          refreshToken:
+            type: string
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+responses:
+  '200':
+    description: 換發成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            accessTokenExpiresIn: 7200
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    description: 無效的 Refresh Token（已過期、格式錯誤、已在黑名單）
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: 無效的 Refresh Token，請重新登入
+          code: INVALID_REFRESH_TOKEN
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '403':
+    description: 帳號已停用
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'

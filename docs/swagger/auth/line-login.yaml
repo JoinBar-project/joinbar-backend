@@ -1,0 +1,59 @@
+tags: [Auth]
+summary: LINE 登入
+description: |
+  使用 LINE authorization code 登入。
+  使用者不存在時自動建立新帳號（upsert），存在則更新 LINE provider 資料。
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [code, redirectUri]
+        properties:
+          code:
+            type: string
+            description: LINE authorization code
+            example: 1234567890abcdef
+          redirectUri:
+            type: string
+            format: uri
+            description: OAuth redirect URI（必須與 LINE Channel 設定一致）
+            example: https://app.example.com/auth/line/callback
+responses:
+  '200':
+    description: LINE 登入成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            accessTokenExpiresIn: 7200
+            refreshTokenExpiresIn: 604800
+            user:
+              id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+              email: null
+              username: Alan
+              role: USER
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    description: LINE 授權碼無效或已過期
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+  '403':
+    description: 帳號已停用
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'
