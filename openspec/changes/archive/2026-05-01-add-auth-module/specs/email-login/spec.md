@@ -7,7 +7,7 @@
 #### Scenario: 登入成功
 
 - **WHEN** 使用者提交有效的 email 與密碼
-- **THEN** 系統回傳 `{ accessToken, refreshToken, user: { id, username, role } }` 且 HTTP 200
+- **THEN** 系統回傳 `{ accessToken, refreshToken, accessTokenExpiresIn, refreshTokenExpiresIn, user: { id, email, username, role } }` 且 HTTP 200
 
 #### Scenario: 密碼錯誤
 
@@ -31,7 +31,7 @@
 #### Scenario: reCAPTCHA 驗證失敗
 
 - **WHEN** `googleRecaptchaEnabled=true` 且 `recaptchaToken` 無效或分數低於門檻
-- **THEN** 系統回傳 HTTP 400，不執行密碼比對
+- **THEN** 系統回傳 HTTP 401，不執行密碼比對
 
 ### Requirement: 帳號鎖定（可選）
 
@@ -45,12 +45,12 @@
 #### Scenario: 達到鎖定門檻
 
 - **WHEN** 連續失敗次數達到 `ACCOUNT_LOCK_THRESHOLD`
-- **THEN** 帳號被鎖定，後續登入回傳 HTTP 423
+- **THEN** 帳號被鎖定，後續登入回傳 HTTP 403
 
 #### Scenario: 帳號已鎖定
 
 - **WHEN** 帳號 `lockedAt` 不為 null
-- **THEN** 系統回傳 HTTP 423，不執行密碼比對
+- **THEN** 系統回傳 HTTP 403，不執行密碼比對
 
 ### Requirement: Auth Log 記錄（可選）
 

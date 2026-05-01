@@ -19,14 +19,22 @@
 - **WHEN** 使用無效的 authorization code 或 LINE 服務不可用
 - **THEN** 回傳 HTTP 401
 
-### Requirement: LINE Token 驗證
+### Requirement: LINE id_token 解析（不驗簽）
 
-系統 SHALL 使用 `LINE_CHANNEL_ID` 驗證 id_token 的 audience，防止 token 替換攻擊。
+系統 SHALL 從 HTTPS LINE API 回應中取得的 id_token 解析 email，不驗證 JWT 簽章與 audience。
 
-#### Scenario: audience 不符
+**設計決策**：id_token 來自 LINE API 的 HTTPS 回應（非使用者自行提交），視為已信任來源，省略簽章驗證。
+若 id_token 長度超過 4096 字元或格式不符，靜默回傳 `null`（email 欄位為 null，不中斷登入流程）。
 
-- **WHEN** id_token 的 aud 不等於 `LINE_CHANNEL_ID`
-- **THEN** 回傳 HTTP 401，不建立 session
+#### Scenario: id_token 含 email
+
+- **WHEN** LINE 回傳的 id_token 包含 `email` claim
+- **THEN** 解析並設定使用者 email（新建使用者時寫入 `UserAuthProvider.email`）
+
+#### Scenario: id_token 無 email 或解析失敗
+
+- **WHEN** id_token 不含 email 或長度超過 4096 字元
+- **THEN** email 設為 null，登入流程繼續（LINE 帳號允許無 email）
 
 ### Requirement: Auth Log 記錄 LINE 登入（可選）
 

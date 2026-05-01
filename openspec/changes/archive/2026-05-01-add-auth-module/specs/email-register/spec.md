@@ -7,12 +7,12 @@
 #### Scenario: 註冊成功（email 驗證停用）
 
 - **WHEN** `emailVerificationEnabled=false` 且 email 未被使用
-- **THEN** 建立使用者，`isVerified=true`，回傳 `{ message: 'registered' }` HTTP 201
+- **THEN** 建立使用者，`isVerified=true`，回傳 `{ verified: true }` HTTP 201
 
 #### Scenario: 註冊成功（email 驗證啟用）
 
 - **WHEN** `emailVerificationEnabled=true` 且 email 未被使用
-- **THEN** 建立使用者，`isVerified=false`，寄出驗證信，回傳 HTTP 201（不含 token）
+- **THEN** 建立使用者，`isVerified=false`，寄出驗證信，回傳 `{ verified: false }` HTTP 201
 
 #### Scenario: Email 已存在
 

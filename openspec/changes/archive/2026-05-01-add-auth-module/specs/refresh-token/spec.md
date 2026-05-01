@@ -7,7 +7,7 @@
 #### Scenario: 換發成功
 
 - **WHEN** 提供未過期且未在黑名單中的 refresh token
-- **THEN** 回傳新的 `{ accessToken }` 且 HTTP 200
+- **THEN** 回傳新的 `{ accessToken, accessTokenExpiresIn }` 且 HTTP 200
 
 #### Scenario: Token 在黑名單中
 
@@ -28,10 +28,10 @@
 
 換發前系統 SHALL 確認使用者帳號仍然有效。
 
-#### Scenario: 帳號已被鎖定
+#### Scenario: 帳號已停用
 
-- **WHEN** 換發時發現帳號 `lockedAt` 不為 null
-- **THEN** 回傳 HTTP 423
+- **WHEN** 換發時發現帳號 `deletedAt` 不為 null（帳號已被停用）
+- **THEN** 回傳 HTTP 403
 
 ### Requirement: Auth Log 記錄換發（可選）
 

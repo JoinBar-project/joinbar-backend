@@ -1,5 +1,8 @@
-## ADDED Requirements
+# logout Specification
 
+## Purpose
+TBD - created by archiving change add-auth-module. Update Purpose after archive.
+## Requirements
 ### Requirement: 登出使 Token 失效
 
 系統 SHALL 將 access token 加入黑名單，並在提供 refresh token 時一併加入黑名單。
@@ -12,7 +15,7 @@
 #### Scenario: 未提供 refresh token
 
 - **WHEN** 登出請求未包含 `refreshToken`
-- **THEN** 僅 access token 加入黑名單，登出仍成功（HTTP 200）
+- **THEN** 僅 access token 加入黑名單，登出仍成功（HTTP 204）
 
 ### Requirement: 清除 User Context 快取
 
@@ -21,7 +24,7 @@
 #### Scenario: 快取清除
 
 - **WHEN** 登出成功
-- **THEN** 呼叫 `ClearUserContextPort.clearByUserId(userId)`
+- **THEN** 呼叫 `ClearUserContextPort.clearUserContext(userId)`
 
 ### Requirement: Auth Log 記錄登出（可選）
 
@@ -31,3 +34,4 @@
 
 - **WHEN** 登出成功且 `authLogEnabled=true`
 - **THEN** 寫入含 userId、email、ipAddress 的 LOGOUT log
+
