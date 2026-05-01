@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProviderTypeEnum } from '@prisma/client';
+import { ProviderTypeEnum, UserRoleEnum } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import {
   FindUserPort,
@@ -93,7 +93,7 @@ export class PrismaUserRepository
         username: user.username,
         nickname: user.nickname,
         email: user.email?.toString() ?? null,
-        role: user.role as any,
+        role: user.role as UserRoleEnum,
         authProviders: {
           create: {
             provider: ProviderTypeEnum.EMAIL,
@@ -118,7 +118,7 @@ export class PrismaUserRepository
         username: user.username,
         nickname: user.nickname,
         email: lineData.email ?? null,
-        role: user.role as any,
+        role: user.role as UserRoleEnum,
         authProviders: {
           create: {
             provider: ProviderTypeEnum.LINE,

@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { LoginService } from './LoginService';
 import { User } from '../../../domain/model/User';
-import { Email } from '../../../domain/value-object/Email';
 import { RoleName } from '../../../domain/value-object/Role';
 import { FeatureFlagService } from '../FeatureFlagService';
 import { AccountDisabledException } from '../../../domain/exception/AccountDisabledException';

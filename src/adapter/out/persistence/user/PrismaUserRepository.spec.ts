@@ -1,4 +1,5 @@
 import { PrismaUserRepository } from './PrismaUserRepository';
+import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { RoleName } from '../../../../domain/value-object/Role';
 
 const makeUserRecord = (overrides = {}) => ({
@@ -57,7 +58,7 @@ describe('PrismaUserRepository', () => {
 
   beforeEach(() => {
     prisma = makePrisma();
-    repo = new PrismaUserRepository(prisma as any);
+    repo = new PrismaUserRepository(prisma as unknown as PrismaService);
   });
 
   describe('findByEmailWithPassword()', () => {

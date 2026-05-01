@@ -76,11 +76,11 @@
 
 ## 11. E2E 測試
 
-- [ ] 11.1 建立 `test/auth.e2e-spec.ts`，涵蓋：登入成功/失敗、登出、換發 token、帳號鎖定、reCAPTCHA bypass（test env）
+- [x] 11.1 建立 `test/auth.e2e-spec.ts`，涵蓋：登入成功/失敗、登出、換發 token、帳號鎖定、reCAPTCHA bypass（test env）
 
 ## 12. 品質驗證
 
-- [ ] 12.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
-- [ ] 12.2 執行 `npm run lint`，修正所有 lint 警告
-- [ ] 12.3 執行 `npm run test`，確認所有單元測試通過
-- [ ] 12.4 執行 `npm run test:e2e`，確認 E2E 測試通過
+- [x] 12.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
+- [x] 12.2 執行 `npm run lint`，修正所有 lint 警告
+- [x] 12.3 執行 `npm run test`，確認所有單元測試通過
+- [x] 12.4 執行 `npm run test:e2e`，確認 E2E 測試通過

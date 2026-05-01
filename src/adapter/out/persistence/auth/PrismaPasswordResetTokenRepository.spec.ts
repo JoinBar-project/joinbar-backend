@@ -1,4 +1,5 @@
 import { PrismaPasswordResetTokenRepository } from './PrismaPasswordResetTokenRepository';
+import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 
 const makeTokenRecord = (overrides = {}) => ({
   id: 'tok-1',
@@ -24,7 +25,9 @@ describe('PrismaPasswordResetTokenRepository', () => {
 
   beforeEach(() => {
     prisma = makePrisma();
-    repo = new PrismaPasswordResetTokenRepository(prisma as any);
+    repo = new PrismaPasswordResetTokenRepository(
+      prisma as unknown as PrismaService,
+    );
   });
 
   describe('createToken()', () => {

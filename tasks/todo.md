@@ -12,7 +12,7 @@
 
 ## 跨模組待處理
 
-- [ ] **Guard 全域註冊**：auth/user module 接入後，確認 `JwtAuthGuard` + `SessionIdleGuard` 掛載順序（Throttler → IpBlacklist → IpWhitelist → JwtAuthGuard → SessionIdleGuard），公開路由加 `@Public()`。
+- [x] **Guard 全域註冊**：`JwtAuthGuard` 在 `AuthController` 的 logout 以 `@UseGuards(JwtAuthGuard)` 套用，掛載順序（Throttler → IpBlacklist → IpWhitelist）為全域 APP_GUARD，JwtAuthGuard 按需套用。公開路由已加 `@Public()`。
 - [ ] **openspec/project.md 環境變數名稱**：將舊名稱（`JWT_ACCESS_SECRET` 等）更新為現行名稱（`ACCESS_SECRET`、`COOKIE_SECRET`）。
 - [ ] **Firebase Storage 對帳腳本**：延後，待 storage 功能上線後再補。
 
@@ -27,21 +27,21 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 
 ---
 
-### auth 模組
+### auth 模組 ✅ 已完成
 
 參考：atago `src/adapter/in/web/auth/`、`src/application/service/auth/`、`src/modules/auth.module.ts`
 
-- [ ] Domain Model：`User`（認證相關欄位：id、email、passwordHash、lineUid、status、roles）
-- [ ] Port/in：`LoginUseCase`、`LogoutUseCase`、`RefreshTokenUseCase`、`RegisterUseCase`（含 email 驗證流程）、`LineLoginUseCase`、`ResetPasswordUseCase`
-- [ ] Port/out：`FindUserByEmailPort`、`FindUserByLineUidPort`、`SaveUserPort`（auth 用）
-- [ ] Service：`LoginService`（含 accountLockEnabled、googleRecaptchaEnabled）、`LogoutService`、`RefreshTokenService`、`RegisterService`（含 emailVerificationEnabled）、`LineLoginService`、`ResetPasswordService`（含 `APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET`）
-- [ ] Facade：`AuthFacade`
-- [ ] Controller + DTO：`AuthController`（`/api/auth/*`，含 `@ApiProperty`）
-- [ ] Swagger：`@ApiOperation` / `@ApiResponse`，執行 `npm run swagger:bundle` 驗證
-- [ ] Persistence Adapter：`PrismaAuthRepository`
-- [ ] Module 配線：`auth.module.ts`
-- [ ] Feature Flags 接線：`authLogEnabled`、`accountLockEnabled`、`googleRecaptchaEnabled`、`emailVerificationEnabled`、`operationLogEnabled`
-- [ ] 測試：LoginService.spec、LogoutService.spec、RefreshTokenService.spec、auth.e2e-spec
+- [x] Domain Model：`User`（id、email、username、role、failedLoginCount、lockedAt、lastPasswordChange、deletedAt）
+- [x] Port/in：`LoginUseCase`、`LogoutUseCase`、`RefreshTokenUseCase`、`RegisterUseCase`、`LineLoginUseCase`、`PasswordResetUseCase`（Request + Confirm）、`VerifyEmailUseCase`
+- [x] Port/out：`FindUserPort`（byEmail+password, byProviderId, byId, byEmailVerifyToken）、`SaveUserPort`（createWithEmail/Line, upsertLine, updatePassword, setEmailVerified, updateLastLoginAt, updateLoginSecurity）、`LoadUserContextPort`、`PasswordResetTokenPort`、`LineOAuthPort`
+- [x] Service：`LoginService`、`LogoutService`、`RefreshTokenService`、`LineLoginService`、`RegisterService`、`RequestPasswordResetService`、`ConfirmPasswordResetService`、`VerifyEmailService`
+- [x] Facade：`AuthFacade`
+- [x] Controller + DTO：`AuthController`（`/api/auth/*`，Zod 驗證，8 個端點）
+- [x] Swagger：YAML 靜態文件（`docs/swagger/auth/*.yaml`），`npm run swagger:bundle` 驗證通過
+- [x] Persistence Adapter：`PrismaUserRepository`、`PrismaPasswordResetTokenRepository`、`LineOAuthAdapter`
+- [x] Module 配線：`auth.module.ts`，已注入 `app.module.ts`
+- [x] Feature Flags：`authLogEnabled`、`accountLockEnabled`、`googleRecaptchaEnabled`、`emailVerificationEnabled`、`sessionIdleEnabled`、`ipBlacklistEnabled`
+- [x] 測試：全部 spec（共 202 unit tests）+ `test/auth.e2e-spec.ts`（15 E2E tests）
 
 ---
 
@@ -188,3 +188,5 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 ---
 
 ## 已完成
+
+- **add-auth-module**（2026-05-01 完成）：完整 auth 模組，含 8 個端點、15 E2E tests、202 unit tests。
