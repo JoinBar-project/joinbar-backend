@@ -43,7 +43,7 @@
 - [x] 6.9 建立 `src/application/service/auth/RegisterService.ts`（密碼強度 → email 唯一 → 建立 user/provider → email 驗證 flag）
 - [x] 6.10 建立 `src/application/service/auth/RegisterService.spec.ts`
 - [x] 6.11 建立 `src/application/service/auth/RequestPasswordResetService.ts`（查 email → 建 token → 寄信）
-- [ ] 6.12 建立 `src/application/service/auth/ConfirmPasswordResetService.ts`（驗 token → 更新密碼 → 強制登出 flag → auth log）
+- [x] 6.12 建立 `src/application/service/auth/ConfirmPasswordResetService.ts`（驗 token → 更新密碼 → 強制登出 flag → auth log）
 - [ ] 6.13 建立 `src/application/service/auth/VerifyEmailService.ts`（驗 token → 設 isVerified）
 
 ## 7. Facade
