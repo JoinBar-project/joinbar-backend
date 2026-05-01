@@ -78,6 +78,10 @@ model UserRecord {
   avatarKey         String?  @map("avatar_key") @db.VarChar(500)
   avatarLastUpdated DateTime @default(now()) @map("avatar_last_updated") @db.Timestamptz
 
+  // 帳號安全
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedAt         DateTime? @map("locked_at") @db.Timestamptz
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz
@@ -510,6 +514,7 @@ enum AuthLogActionEnum {
   LOGIN_SUCCESS
   LOGIN_FAILURE
   LOGOUT
+  REFRESH
   PASSWORD_RESET
 
   @@map("auth_log_action")

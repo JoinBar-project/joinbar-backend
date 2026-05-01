@@ -7,3 +7,45 @@
 Prisma v7 breaking change：`schema.prisma` 的 `datasource` 不再支援 `url` 欄位。
 需建立 `prisma.config.ts`，以 `defineConfig` 傳入連線字串。
 `prisma validate` 需先執行 `npm install` 才能載入 `prisma/config` 模組。
+
+## Prisma v7：必須使用 driver adapter（@prisma/adapter-pg）
+
+Prisma v7 預設 engine 改為 WASM-based "client" engine，**強制要求 driver adapter 或 accelerateUrl**。
+
+```typescript
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+```
+
+套件：`@prisma/adapter-pg`（dependencies）、`pg`（dependencies）、`@types/pg`（devDependencies）。
+`PrismaService`、`seed-runner.ts` 等所有建立 PrismaClient 的地方都必須套用此模式。
+`new PrismaClient()` 不傳引數會拋 `PrismaClientInitializationError`（undefined 是 falsy）。
+
+## 環境變數預設值翻轉：APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET
+
+`validate-env.ts` 的 `APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET` 預設由 `false` 翻轉為 `true`（OWASP ASVS V3.3 建議：重設密碼後應強制登出所有 session）。
+
+**對既有部署的影響**：未明示設定此 env 的環境，密碼重設後會清空使用者所有 session，前端需處理隨後的 401 → 重新登入流程。release notes 須提示。
+
+## 環境變數移除：GOOGLE_RECAPTCHA_IS_PRODUCTION → 改綁 NODE_ENV
+
+reCAPTCHA 是否啟用實際驗證改由 `NODE_ENV === 'production'` 判斷，移除原獨立旗標 `GOOGLE_RECAPTCHA_IS_PRODUCTION`。
+
+理由：避免「production 部署誤把旗標設成 false → 驗證 silent bypass」的 footgun。
+
+**Breaking 行為**：
+
+- 之前以 `GOOGLE_RECAPTCHA_IS_PRODUCTION=false` 在 production 暫時關閉驗證的部署，會立即啟用驗證。應改用 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED=false`。
+- production 啟動會檢查 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED && !GOOGLE_RECAPTCHA_SECRET`，缺 secret 直接退出。
+
+## CORS_ORIGIN production 預設值防呆
+
+`CORS_ORIGIN` 改為陣列（逗號分隔），預設含 `http://localhost:5173,http://localhost:3000`。production 額外阻擋：
+
+- 包含 `*`
+- 陣列為空
+- 含 `localhost` / `127.0.0.1`（避免預設值靜默保留到 production）

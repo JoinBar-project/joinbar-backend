@@ -211,9 +211,13 @@ The `application` and `domain` layers never import from `adapter`. Outbound adap
 
 - **JWT** (`@nestjs/jwt`) — access tokens signed with `ACCESS_SECRET`
 - **Token Blacklist** — Redis-backed (`TokenBlacklistPort`); logout invalidates tokens
-- **Member Context Cache** — Redis (`MemberContextCachePort`) caches permissions per JWT
-- **Guards**: `JwtAuthGuard` validates JWT + blacklist; `PermissionsGuard` / `RolesGuard` enforce RBAC
-- **Redis fallback**: if Redis is unavailable, `JwtAuthGuard` degrades to direct DB lookup (logged warning)
+- **User Context Cache** — Redis (`UserContextCachePort`) caches role/permissions per JWT
+- **Guards**: `JwtAuthGuard` validates JWT + blacklist; `PermissionsGuard` / `RolesGuard` enforce RBAC; `@Public()` skips JwtAuthGuard for open routes
+- **Redis fail strategy** (matrix authoritative source: `src/infrastructure/redis/redis.service.ts`):
+  - Token blacklist: **fail-closed** (Redis down → 503; prevents reuse of logged-out tokens)
+  - UserContext cache: **graceful** (cache miss → DB lookup with warn log)
+  - Throttler / generic counters: **silent degrade** (returns 0; 不節流，記 warn log)
+- **Guard wiring**: `JwtAuthGuard` is not registered as `APP_GUARD` until business modules provide `LOAD_USER_CONTEXT_PORT`. Apply via `@UseGuards(JwtAuthGuard, SessionIdleGuard)` on authenticated controllers; future global registration must keep order `… → JwtAuthGuard → SessionIdleGuard`.
 
 ### Logging
 

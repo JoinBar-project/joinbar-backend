@@ -1,0 +1,26 @@
+export interface UploadFileOptions {
+  key: string;
+  buffer: Buffer;
+  mimeType: string;
+}
+
+export interface GetSignedUrlOptions {
+  /** 有效期（秒）；預設 3600 */
+  expiresInSeconds?: number;
+  /** 回應的 content-disposition */
+  contentDisposition?: 'inline' | 'attachment';
+  /** attachment 時的下載檔名 */
+  downloadFileName?: string;
+}
+
+export const FILE_STORAGE_PORT = 'FILE_STORAGE_PORT';
+
+export interface FileStoragePort {
+  /**
+   * 上傳檔案至 Firebase Storage。
+   * 不直接回傳 public URL，瀏覽時透過 `getSignedUrl()` 取得 signed URL。
+   */
+  upload(options: UploadFileOptions): Promise<void>;
+  getSignedUrl(key: string, options?: GetSignedUrlOptions): Promise<string>;
+  delete(key: string): Promise<void>;
+}
