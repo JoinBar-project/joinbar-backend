@@ -1,7 +1,7 @@
 ## 1. Schema 補全
 
 - [x] 1.1 在 `UserRecord` 加入 `lastPasswordChange DateTime?` 欄位並執行 `prisma migrate dev`
-- [ ] 1.2 執行 `npm run db:generate` 重新產生 Prisma client
+- [x] 1.2 執行 `npm run db:generate` 重新產生 Prisma client
 
 ## 2. Domain Model
 
@@ -32,8 +32,8 @@
 
 ## 6. Application Services
 
-- [ ] 6.1 建立 `src/application/service/auth/LoginService.ts`（reCAPTCHA → 帳號鎖定 → 密碼驗證 → token 簽發 → session init → auth log）
-- [ ] 6.2 建立 `src/application/service/auth/LoginService.spec.ts`
+- [x] 6.1 建立 `src/application/service/auth/LoginService.ts`（reCAPTCHA → 帳號鎖定 → 密碼驗證 → token 簽發 → session init → auth log）
+- [x] 6.2 建立 `src/application/service/auth/LoginService.spec.ts`
 - [ ] 6.3 建立 `src/application/service/auth/LogoutService.ts`（token 黑名單 → context 清除 → auth log）
 - [ ] 6.4 建立 `src/application/service/auth/LogoutService.spec.ts`
 - [ ] 6.5 建立 `src/application/service/auth/RefreshTokenService.ts`（黑名單檢查 → token 驗證 → 帳號狀態 → 換發 → auth log）
