@@ -48,7 +48,7 @@
 
 ## 7. Facade
 
-- [ ] 7.1 建立 `src/application/facade/AuthFacade.ts`，彙整所有 auth use case
+- [x] 7.1 建立 `src/application/facade/AuthFacade.ts`，彙整所有 auth use case
 
 ## 8. Controller & DTO
 
