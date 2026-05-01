@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { RedisService } from '../infrastructure/redis/redis.service';
 import { RedisTokenBlacklistAdapter } from '../adapter/out/redis/RedisTokenBlacklistAdapter';
 import { RedisUserContextCacheAdapter } from '../adapter/out/redis/RedisUserContextCacheAdapter';
+import { RedisUserContextClearAdapter } from '../adapter/out/redis/RedisUserContextClearAdapter';
 import { RedisSessionActivityAdapter } from '../adapter/out/redis/RedisSessionActivityAdapter';
 import { RedisIpBlockAdapter } from '../adapter/out/redis/RedisIpBlockAdapter';
 import { TOKEN_BLACKLIST_PORT } from '../application/port/out/auth/TokenBlacklistPort';
@@ -19,9 +20,10 @@ import { IP_BLOCK_PORT } from '../application/port/out/security/IpBlockPort';
     RedisService,
     RedisTokenBlacklistAdapter,
     { provide: TOKEN_BLACKLIST_PORT, useExisting: RedisTokenBlacklistAdapter },
+    RedisUserContextClearAdapter,
     {
       provide: CLEAR_USER_CONTEXT_PORT,
-      useExisting: RedisTokenBlacklistAdapter,
+      useExisting: RedisUserContextClearAdapter,
     },
     RedisUserContextCacheAdapter,
     {

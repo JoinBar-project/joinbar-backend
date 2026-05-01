@@ -3,6 +3,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './JwtAuthGuard';
 import { TokenBlacklistPort } from '../../../../application/port/out/auth/TokenBlacklistPort';
@@ -28,8 +29,15 @@ const makeContext = (authHeader?: string): ExecutionContext => {
   };
   return {
     switchToHttp: () => ({ getRequest: () => request }),
+    getHandler: () => undefined,
+    getClass: () => undefined,
   } as unknown as ExecutionContext;
 };
+
+const makePublicReflector = (isPublic = false) =>
+  ({
+    getAllAndOverride: jest.fn().mockReturnValue(isPublic),
+  }) as unknown as Reflector;
 
 const mockJwt = {
   verify: jest.fn(),
@@ -61,6 +69,7 @@ describe('JwtAuthGuard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     guard = new JwtAuthGuard(
+      makePublicReflector(false),
       mockJwt,
       mockTokenBlacklist,
       mockUserContextCache,
@@ -68,6 +77,24 @@ describe('JwtAuthGuard', () => {
       mockFeatureFlags as unknown as FeatureFlagService,
     );
     guard.onModuleInit();
+  });
+
+  it('@Public 路由直接放行，不檢查 token 與黑名單', async () => {
+    const publicGuard = new JwtAuthGuard(
+      makePublicReflector(true),
+      mockJwt,
+      mockTokenBlacklist,
+      mockUserContextCache,
+      mockLoadUserContext,
+      mockFeatureFlags as unknown as FeatureFlagService,
+    );
+    publicGuard.onModuleInit();
+
+    const result = await publicGuard.canActivate(makeContext());
+
+    expect(result).toBe(true);
+    expect(mockTokenBlacklist.isBlacklisted).not.toHaveBeenCalled();
+    expect(mockJwt.verify).not.toHaveBeenCalled();
   });
 
   it('無 Authorization header → UnauthorizedException', async () => {

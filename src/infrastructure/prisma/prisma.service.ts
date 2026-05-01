@@ -32,10 +32,7 @@ export class PrismaService
 
   async onModuleInit(): Promise<void> {
     await this.$connect();
-    const env = getEnv();
-    this.logger.log(
-      `資料庫連線成功 {"host":"${env.DB_HOST}","database":"${env.DB_DATABASE}"}`,
-    );
+    this.logger.log('資料庫連線成功');
   }
 
   async onModuleDestroy(): Promise<void> {

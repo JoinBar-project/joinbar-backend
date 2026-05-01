@@ -12,7 +12,8 @@ interface RecaptchaResponse {
 
 /**
  * Google reCAPTCHA 驗證 Adapter。
- * 非正式環境（GOOGLE_RECAPTCHA_IS_PRODUCTION = false）時永遠回傳 true。
+ * 非正式環境（NODE_ENV !== 'production'）時永遠回傳 true，
+ * 與 NODE_ENV 綁定避免額外旗標誤設導致 production silent bypass。
  */
 @Injectable()
 export class GoogleRecaptchaAdapter
@@ -26,7 +27,7 @@ export class GoogleRecaptchaAdapter
   onModuleInit(): void {
     const env = getEnv();
     this.secret = env.GOOGLE_RECAPTCHA_SECRET ?? '';
-    this.isProduction = env.GOOGLE_RECAPTCHA_IS_PRODUCTION;
+    this.isProduction = env.NODE_ENV === 'production';
     this.version = env.GOOGLE_RECAPTCHA_VERSION;
   }
 

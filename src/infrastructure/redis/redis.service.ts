@@ -9,6 +9,19 @@ import { createClient, RedisClientType } from 'redis';
 import { createHash } from 'crypto';
 import { getEnv } from '../validate-env';
 
+/**
+ * Redis 不可用時的降級策略 matrix（修改任一方法請同步更新此表）：
+ *
+ * | 方法                    | 策略             | 行為                                |
+ * | ----------------------- | ---------------- | ----------------------------------- |
+ * | get / set / del         | 靜默降級         | 視為快取未命中，回傳 null / no-op    |
+ * | increment               | 靜默降級         | 回傳 0，不寫入                      |
+ * | addToBlacklist          | 靜默降級         | 透過 set，不阻擋 logout 流程         |
+ * | isTokenBlacklisted      | **fail-closed** | 拋 503，避免已登出 token 被沿用      |
+ * | throttleIncrement       | 靜默降級         | 回傳 0，節流暫時停用（記 warn log）  |
+ *
+ * UserContext cache（呼叫端：JwtAuthGuard）採 graceful：未命中時 fallback 到 DB。
+ */
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);

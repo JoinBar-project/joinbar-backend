@@ -16,7 +16,9 @@ import { getEnv } from '../../../../infrastructure/validate-env';
 
 /**
  * 全域 Guard：sessionIdleEnabled 開啟時，檢查認證使用者的 session 是否因閒置而過期。
- * 必須在 JwtAuthGuard 之後執行。對未認證路由直接放行。
+ * 註冊順序必須在 JwtAuthGuard 之後（依 app.module.ts 的 APP_GUARD 順序），
+ * 以確保此 guard 執行時 request.user 已由 JwtAuthGuard 設定。
+ * 公開路由（@Public()）不會經過 JwtAuthGuard，request.user 為 undefined 直接放行。
  */
 @Injectable()
 export class SessionIdleGuard implements CanActivate {

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import pino from 'pino';
+import { getEnv } from '../src/infrastructure/validate-env';
 
 const log = pino({
   name: 'seed-admin',
@@ -10,14 +11,22 @@ const log = pino({
   },
 });
 
-const BCRYPT_ROUNDS = 10;
-const adminEmail = process.env.ADMIN_DEFAULT_EMAIL || 'admin@test.com';
-const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'Admin1234!';
-
 export default async function seed(prisma: PrismaClient): Promise<void> {
+  const env = getEnv();
+
+  if (!env.ADMIN_DEFAULT_EMAIL || !env.ADMIN_DEFAULT_PASSWORD) {
+    throw new Error(
+      'seed-admin 需要明示設定 ADMIN_DEFAULT_EMAIL 與 ADMIN_DEFAULT_PASSWORD（密碼至少 12 字元）',
+    );
+  }
+
+  const adminEmail = env.ADMIN_DEFAULT_EMAIL;
+  const adminPassword = env.ADMIN_DEFAULT_PASSWORD;
+
   log.info('插入管理員帳號...');
 
-  const passwordHash = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
+  // 使用 env.BCRYPT_ROUNDS 與 production 規則一致（≥ 12）
+  const passwordHash = await bcrypt.hash(adminPassword, env.BCRYPT_ROUNDS);
 
   const user = await prisma.userRecord.upsert({
     where: { email: adminEmail },

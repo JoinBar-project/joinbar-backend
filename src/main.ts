@@ -87,6 +87,9 @@ const bootstrap = async (): Promise<void> => {
 
   app.use(cookieParser(env.COOKIE_SECRET));
 
+  // CORS_ORIGIN 已被 zod transform 為陣列，可直接交給 enableCors。
+  // 配合 credentials: true 必須是明確 origin（不可為 *），由 validate-env 在
+  // production block 把關。
   app.enableCors({
     origin: env.CORS_ORIGIN,
     credentials: true,

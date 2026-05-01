@@ -7,6 +7,7 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import {
@@ -25,6 +26,7 @@ import { FeatureFlagService } from '../../../../application/service/FeatureFlagS
 import { JwtPayload } from '../../../../application/port/jwt-payload';
 import { getEnv } from '../../../../infrastructure/validate-env';
 import { UserContext } from '../decorator/current-user.decorator';
+import { IS_PUBLIC_KEY } from '../decorator/public.decorator';
 import { AccountDisabledException } from '../../../../domain/exception/AccountDisabledException';
 import { PasswordChangeRequiredException } from '../../../../domain/exception/PasswordChangeRequiredException';
 
@@ -35,6 +37,7 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
   private permissionCacheTtl = 0;
 
   constructor(
+    private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     @Inject(TOKEN_BLACKLIST_PORT)
     private readonly tokenBlacklist: TokenBlacklistPort,
@@ -52,36 +55,60 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (this.isPublicRoute(context)) return true;
+
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
-
     if (!token) throw new UnauthorizedException('缺少授權憑證，請先登入');
 
+    await this.assertNotBlacklisted(token);
+    const payload = this.verifyAccessToken(token);
+
+    const user = await this.resolveUserContext(payload);
+    this.assertActive(user);
+    this.checkPasswordExpiry(user);
+
+    (request as Request & { user: UserContext }).user = user;
+    return true;
+  }
+
+  /** 判斷路由是否標註 @Public()（method 或 class 任一即可） */
+  private isPublicRoute(context: ExecutionContext): boolean {
+    return (
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) === true
+    );
+  }
+
+  private async assertNotBlacklisted(token: string): Promise<void> {
     if (await this.tokenBlacklist.isBlacklisted(token)) {
       this.logger.warn('Token 已在黑名單中');
       throw new UnauthorizedException('Token 已登出或失效');
     }
+  }
 
+  private verifyAccessToken(token: string): JwtPayload {
     let payload: JwtPayload;
     try {
       payload = this.jwtService.verify<JwtPayload>(token);
     } catch {
       throw new UnauthorizedException('Token 驗證失敗');
     }
-
     if (payload.type !== 'access') {
       throw new UnauthorizedException('Token 類型不正確');
     }
+    return payload;
+  }
 
-    // 先嘗試從快取取得 UserContext
+  /**
+   * 先讀 Redis cache；命中則直接返回，未命中時查 DB 並回寫快取。
+   * Redis 不可用時記錄警告並 fallback 到 DB（每次 request 直接查）。
+   */
+  private async resolveUserContext(payload: JwtPayload): Promise<UserContext> {
     const cached = await this.userContextCache.getByUserId(payload.sub);
-    if (cached) {
-      const cachedUser = JSON.parse(cached) as UserContext;
-      if (!cachedUser.status) throw new AccountDisabledException();
-      (request as Request & { user: UserContext }).user = cachedUser;
-      this.checkPasswordExpiry(cachedUser);
-      return true;
-    }
+    if (cached) return JSON.parse(cached) as UserContext;
 
     if (!this.userContextCache.isAvailable) {
       this.logger.warn(
@@ -91,9 +118,8 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
 
     const data = await this.loadUserContext.loadUserContext(payload.sub);
     if (!data) throw new UnauthorizedException('使用者不存在');
-    if (!data.status) throw new AccountDisabledException();
 
-    const userContext: UserContext = {
+    const user: UserContext = {
       sub: data.id,
       email: data.email,
       roleName: data.roleName,
@@ -104,8 +130,6 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
         : null,
     };
 
-    (request as Request & { user: UserContext }).user = userContext;
-
     // 寫入快取，TTL 取 JWT 剩餘效期與 PERMISSION_CACHE_TTL 的最小值
     const now = Math.floor(Date.now() / 1000);
     const jwtTtl = payload.exp ? payload.exp - now : this.jwtExpiresIn;
@@ -113,20 +137,21 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
     if (ttl > 0) {
       await this.userContextCache.setByUserId(
         payload.sub,
-        JSON.stringify(userContext),
+        JSON.stringify(user),
         ttl,
       );
     }
+    return user;
+  }
 
-    this.checkPasswordExpiry(userContext);
-    return true;
+  private assertActive(user: UserContext): void {
+    if (!user.status) throw new AccountDisabledException();
   }
 
   private checkPasswordExpiry(user: UserContext): void {
     if (!this.featureFlags.isEnabled('passwordChangeEnabled')) return;
 
-    const env = getEnv();
-    const period = env.APPLICATION_PASSWORD_CHANGE_PERIOD;
+    const period = getEnv().APPLICATION_PASSWORD_CHANGE_PERIOD;
     if (period <= 0) return;
 
     if (!user.lastPasswordChange) throw new PasswordChangeRequiredException();

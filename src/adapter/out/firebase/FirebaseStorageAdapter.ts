@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import type { Bucket } from '@google-cloud/storage';
 import {
   FileStoragePort,
   GetSignedUrlOptions,
@@ -12,11 +13,7 @@ const APP_NAME = 'firebase-storage';
 @Injectable()
 export class FirebaseStorageAdapter implements FileStoragePort, OnModuleInit {
   private readonly logger = new Logger(FirebaseStorageAdapter.name);
-  private bucket: ReturnType<admin.app.App['storage']>['bucket'] extends (
-    name?: string,
-  ) => infer B
-    ? B
-    : never = null as never;
+  private bucket!: Bucket;
   private initialized = false;
 
   onModuleInit(): void {

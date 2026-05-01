@@ -21,7 +21,6 @@ import { LoggingInterceptor } from './adapter/in/web/interceptor/LoggingIntercep
 import { TransformInterceptor } from './adapter/in/web/interceptor/TransformInterceptor';
 import { IpBlacklistGuard } from './adapter/in/web/guard/IpBlacklistGuard';
 import { IpWhitelistGuard } from './adapter/in/web/guard/IpWhitelistGuard';
-import { SessionIdleGuard } from './adapter/in/web/guard/SessionIdleGuard';
 import { getEnv } from './infrastructure/validate-env';
 
 @Module({
@@ -117,11 +116,17 @@ import { getEnv } from './infrastructure/validate-env';
   controllers: [HealthController],
   providers: [
     // APP_GUARD 的執行順序依照宣告順序：
-    // Throttler（流量控制）→ Blacklist（明確拒絕）→ Whitelist（限制 IP）→ SessionIdle（閒置逾時）
+    // Throttler（流量控制）→ Blacklist（明確拒絕）→ Whitelist（限制 IP）
+    //
+    // SessionIdleGuard 不在此處註冊：它依賴 request.user（由 JwtAuthGuard 設定），
+    // 而 JwtAuthGuard 需要業務模組（如 user.module）提供 LOAD_USER_CONTEXT_PORT。
+    // 待 user/auth controller 加入後，於 user.module 內以
+    //   @UseGuards(JwtAuthGuard, SessionIdleGuard)
+    // 的方式套到需認證的 controller，或統一註冊為 APP_GUARD（順序須在此 3 個之後），
+    // 並對公開路由標 @Public() 由 JwtAuthGuard 跳過。
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: IpBlacklistGuard },
     { provide: APP_GUARD, useClass: IpWhitelistGuard },
-    { provide: APP_GUARD, useClass: SessionIdleGuard },
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },

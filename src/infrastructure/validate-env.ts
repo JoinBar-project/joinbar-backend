@@ -44,7 +44,17 @@ const envSchema = z.object({
   REDIS_URL: z.string().optional(),
 
   // ─── CORS / Cookie ───
-  CORS_ORIGIN: z.string().default('*'),
+  // 以逗號分隔多個 origin；transform 為陣列後給 enableCors。
+  // 預設為本機常見前端 port，禁止 `*` + credentials 並用（規範矛盾）。
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:5173,http://localhost:3000')
+    .transform((v) =>
+      v
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
   COOKIE_SECRET: z.string().min(32),
 
   // ─── Firebase（Auth + Storage）───
@@ -162,9 +172,10 @@ const envSchema = z.object({
     .max(3)
     .default(1),
   APPLICATION_PASSWORD_CHANGE_PERIOD: z.coerce.number().int().min(0).default(6),
+  // 預設 true：重設密碼後強制登出所有 session（OWASP ASVS V3.3 建議）
   APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET: z
     .string()
-    .default('false')
+    .default('true')
     .transform((v) => v === 'true'),
 
   // ─── 帳號鎖定 ───
@@ -172,13 +183,11 @@ const envSchema = z.object({
   APPLICATION_IP_BLOCK_THRESHOLD: z.coerce.number().int().min(1).default(10),
 
   // ─── Google reCAPTCHA ───
+  // 是否啟用實際驗證由 NODE_ENV === 'production' 決定，不再用獨立旗標
+  // 避免部署誤設導致 production silent bypass。
   GOOGLE_RECAPTCHA_SECRET: z.string().optional(),
   GOOGLE_RECAPTCHA_SITE_KEY: z.string().optional(),
   GOOGLE_RECAPTCHA_VERSION: z.enum(['v2', 'v3']).default('v2'),
-  GOOGLE_RECAPTCHA_IS_PRODUCTION: z
-    .string()
-    .default('false')
-    .transform((v) => v === 'true'),
 
   // ─── 閒置自動登出（分鐘）───
   APPLICATION_SESSION_IDLE_TIMEOUT: z.coerce.number().int().min(1).default(120),
@@ -192,8 +201,9 @@ const envSchema = z.object({
   APP_PASSWORD_RESET_URL: z.string().optional(),
 
   // ─── Seed 預設帳號 ───
-  ADMIN_DEFAULT_EMAIL: z.string().default('admin@test.com'),
-  ADMIN_DEFAULT_PASSWORD: z.string().default('Admin1234!'),
+  // 不提供預設值：seed-admin 啟動時若未設定會直接拋錯，避免弱密碼遺留到部署
+  ADMIN_DEFAULT_EMAIL: z.email().optional(),
+  ADMIN_DEFAULT_PASSWORD: z.string().min(12).optional(),
 
   // ─── 時區 ───
   APP_TIMEZONE: z
@@ -241,9 +251,15 @@ export const getEnv = (): Env => {
   // 生產環境額外驗證
   if (_env.NODE_ENV === 'production') {
     const productionErrors: string[] = [];
-    if (_env.CORS_ORIGIN === '*') {
+    if (_env.CORS_ORIGIN.length === 0 || _env.CORS_ORIGIN.includes('*')) {
       productionErrors.push(
-        'CORS_ORIGIN: 生產環境不允許設定為 *，請指定明確的來源網域',
+        'CORS_ORIGIN: 生產環境必須指定明確的來源網域，且不可包含 *',
+      );
+    }
+    // 預設值含 localhost；若 production 沒覆寫會靜默套用，瀏覽器端不會抱怨但實際 CORS 不正確
+    if (_env.CORS_ORIGIN.some((o) => /localhost|127\.0\.0\.1/i.test(o))) {
+      productionErrors.push(
+        'CORS_ORIGIN: 生產環境不可包含 localhost / 127.0.0.1，請覆寫為實際網域',
       );
     }
     if (!_env.DB_PASSWORD) {
@@ -275,6 +291,14 @@ export const getEnv = (): Env => {
     if (_env.BCRYPT_ROUNDS < 12) {
       productionErrors.push(
         'BCRYPT_ROUNDS: 生產環境建議設定為 12 以上以確保密碼安全性',
+      );
+    }
+    if (
+      _env.APPLICATION_GOOGLE_RECAPTCHA_ENABLED &&
+      !_env.GOOGLE_RECAPTCHA_SECRET
+    ) {
+      productionErrors.push(
+        'GOOGLE_RECAPTCHA_SECRET: reCAPTCHA 已啟用，生產環境必須設定',
       );
     }
     if (productionErrors.length > 0) {
