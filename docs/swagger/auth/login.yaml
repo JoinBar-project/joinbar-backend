@@ -1,0 +1,72 @@
+tags: [Auth]
+summary: 登入
+description: |
+  使用 Email 與密碼登入，成功後取得 Access Token + Refresh Token。
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [email, password]
+        properties:
+          email:
+            type: string
+            format: email
+            maxLength: 100
+            example: user@example.com
+          password:
+            type: string
+            format: password
+            maxLength: 128
+            example: MyPass123!
+          recaptchaToken:
+            type: string
+            description: reCAPTCHA Token（googleRecaptchaEnabled 啟用時必填）
+responses:
+  '200':
+    description: 登入成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            accessTokenExpiresIn: 7200
+            refreshTokenExpiresIn: 604800
+            user:
+              id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+              email: user@example.com
+              username: alan
+              role: USER
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    description: 帳號或密碼錯誤
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: 帳號或密碼錯誤
+          code: UNAUTHORIZED
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '403':
+    description: 帳號已停用
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: 帳號已被停用，請聯繫管理員
+          code: ACCOUNT_DISABLED
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'

@@ -70,9 +70,9 @@
 
 ## 10. Swagger 文件
 
-- [ ] 10.1 在所有 DTO 加上 `@ApiProperty()` 裝飾器
-- [ ] 10.2 在 `AuthController` 每個端點加 `@ApiOperation()`、`@ApiResponse()`
-- [ ] 10.3 執行 `npm run swagger:bundle` 確認輸出正確
+- [x] 10.1 在所有 DTO 加上 `@ApiProperty()` 裝飾器
+- [x] 10.2 在 `AuthController` 每個端點加 `@ApiOperation()`、`@ApiResponse()`
+- [x] 10.3 執行 `npm run swagger:bundle` 確認輸出正確
 
 ## 11. E2E 測試
 

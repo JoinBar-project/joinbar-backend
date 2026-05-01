@@ -1,0 +1,57 @@
+tags: [Auth]
+summary: 註冊
+description: |
+  使用 Email + 密碼建立新帳號。
+  若 emailVerificationEnabled 啟用，回傳 verified=false 並寄送驗證信。
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [email, password, username]
+        properties:
+          email:
+            type: string
+            format: email
+            maxLength: 100
+            example: user@example.com
+          password:
+            type: string
+            format: password
+            minLength: 8
+            maxLength: 128
+            example: MyPass123!
+          username:
+            type: string
+            minLength: 1
+            maxLength: 50
+            example: alan_t
+responses:
+  '201':
+    description: 註冊成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            verified: false
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '409':
+    description: Email 已被註冊
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: Email 已被註冊
+          code: EMAIL_ALREADY_EXISTS
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'

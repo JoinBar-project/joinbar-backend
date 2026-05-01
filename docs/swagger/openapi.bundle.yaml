@@ -1,0 +1,505 @@
+openapi: 3.0.0
+info:
+  title: JoinBar API
+  version: 1.0.0
+  description: |
+    JoinBar 酒吧社交平台 API 文件
+
+    ## 認證
+
+    大多數 API 需要 JWT Bearer Token 認證。
+
+    **步驟：**
+    1. 呼叫 `POST /api/auth/login` 取得 `data.accessToken` 與 `data.refreshToken`
+    2. 點擊右上角 **Authorize** 按鈕
+    3. 輸入 `Bearer {accessToken}` 後按 Authorize
+servers:
+  - url: 'http://localhost:3000/api'
+    description: 本地開發環境
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          example: '2024-01-01T00:00:00.000Z'
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: 發生錯誤
+        code:
+          type: string
+          example: ERROR_CODE
+        timestamp:
+          type: string
+          format: date-time
+          example: '2024-01-01T00:00:00.000Z'
+  responses:
+    BadRequest:
+      description: 請求參數錯誤
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: 缺少或無效的授權憑證
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 權限不足
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 資源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: 資源已存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: 伺服器內部錯誤
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 登入
+      description: |
+        使用 Email 與密碼登入，成功後取得 Access Token + Refresh Token。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 100
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  maxLength: 128
+                  example: MyPass123!
+                recaptchaToken:
+                  type: string
+                  description: reCAPTCHA Token（googleRecaptchaEnabled 啟用時必填）
+      responses:
+        '200':
+          description: 登入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  accessTokenExpiresIn: 7200
+                  refreshTokenExpiresIn: 604800
+                  user:
+                    id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    email: user@example.com
+                    username: alan
+                    role: USER
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: 帳號或密碼錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 帳號或密碼錯誤
+                code: UNAUTHORIZED
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '403':
+          description: 帳號已停用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 帳號已被停用，請聯繫管理員
+                code: ACCOUNT_DISABLED
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 登出
+      description: |
+        登出並將 Access Token 加入黑名單，若提供 Refresh Token 則一併加入。
+        需要 JWT Bearer Token 認證。
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh Token（選填）
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '204':
+          description: 登出成功（無 body）
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: 更新 Access Token
+      description: |
+        使用有效的 Refresh Token 換發新 Access Token。
+        Refresh Token 本身不旋轉（絕對 7 天有效）。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: 換發成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  accessTokenExpiresIn: 7200
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: 無效的 Refresh Token（已過期、格式錯誤、已在黑名單）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 無效的 Refresh Token，請重新登入
+                code: INVALID_REFRESH_TOKEN
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '403':
+          description: 帳號已停用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/line:
+    post:
+      tags:
+        - Auth
+      summary: LINE 登入
+      description: |
+        使用 LINE authorization code 登入。
+        使用者不存在時自動建立新帳號（upsert），存在則更新 LINE provider 資料。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - redirectUri
+              properties:
+                code:
+                  type: string
+                  description: LINE authorization code
+                  example: 1234567890abcdef
+                redirectUri:
+                  type: string
+                  format: uri
+                  description: OAuth redirect URI（必須與 LINE Channel 設定一致）
+                  example: 'https://app.example.com/auth/line/callback'
+      responses:
+        '200':
+          description: LINE 登入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  accessTokenExpiresIn: 7200
+                  refreshTokenExpiresIn: 604800
+                  user:
+                    id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    email: null
+                    username: Alan
+                    role: USER
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: LINE 授權碼無效或已過期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 帳號已停用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: 註冊
+      description: |
+        使用 Email + 密碼建立新帳號。
+        若 emailVerificationEnabled 啟用，回傳 verified=false 並寄送驗證信。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - username
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 100
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 128
+                  example: MyPass123!
+                username:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  example: alan_t
+      responses:
+        '201':
+          description: 註冊成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  verified: false
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email 已被註冊
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Email 已被註冊
+                code: EMAIL_ALREADY_EXISTS
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/password-reset/request:
+    post:
+      tags:
+        - Auth
+      summary: 請求密碼重設
+      description: |
+        對指定 Email 寄送密碼重設連結。
+        無論 Email 是否存在，一律回傳 204（防止 Email 列舉攻擊）。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 100
+                  example: user@example.com
+      responses:
+        '204':
+          description: 請求已接收（無論 Email 是否存在）
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/password-reset/confirm:
+    post:
+      tags:
+        - Auth
+      summary: 確認密碼重設
+      description: |
+        使用重設 token 更新密碼。Token 使用後立即作廢。
+        APPLICATION_IS_LOGOUT_AFTER_PASSWORD_RESET 啟用時，所有現有 session 將被清除。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  description: 密碼重設 token（從重設信取得）
+                  example: a3f8b2c1d4e5...（64 字元 hex）
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 128
+                  example: NewSecurePass1!
+      responses:
+        '204':
+          description: 密碼重設成功
+        '400':
+          description: Token 無效、已使用或已過期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 密碼重設 token 無效或已過期
+                code: INVALID_PASSWORD_RESET_TOKEN
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '403':
+          description: 帳號已停用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/verify-email:
+    post:
+      tags:
+        - Auth
+      summary: 驗證 Email
+      description: |
+        使用驗證 token 完成 Email 驗證。Token 來自註冊時寄送的驗證信。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  description: Email 驗證 token（從驗證信取得）
+                  example: b7e9a1f3c2d8...（64 字元 hex）
+      responses:
+        '204':
+          description: Email 驗證成功
+        '400':
+          description: Token 無效或已過期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Email 驗證 token 無效或已過期
+                code: INVALID_EMAIL_VERIFICATION_TOKEN
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

@@ -1,0 +1,33 @@
+tags: [Auth]
+summary: 驗證 Email
+description: |
+  使用驗證 token 完成 Email 驗證。Token 來自註冊時寄送的驗證信。
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [token]
+        properties:
+          token:
+            type: string
+            description: Email 驗證 token（從驗證信取得）
+            example: b7e9a1f3c2d8...（64 字元 hex）
+responses:
+  '204':
+    description: Email 驗證成功
+  '400':
+    description: Token 無效或已過期
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: Email 驗證 token 無效或已過期
+          code: INVALID_EMAIL_VERIFICATION_TOKEN
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'

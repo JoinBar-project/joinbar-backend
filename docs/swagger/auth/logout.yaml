@@ -1,0 +1,25 @@
+tags: [Auth]
+summary: 登出
+description: |
+  登出並將 Access Token 加入黑名單，若提供 Refresh Token 則一併加入。
+  需要 JWT Bearer Token 認證。
+security:
+  - bearerAuth: []
+requestBody:
+  required: false
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          refreshToken:
+            type: string
+            description: Refresh Token（選填）
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+responses:
+  '204':
+    description: 登出成功（無 body）
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '500':
+    $ref: '../openapi.yaml#/components/responses/InternalServerError'
