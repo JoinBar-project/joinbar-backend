@@ -34,8 +34,8 @@
 
 - [x] 6.1 建立 `src/application/service/auth/LoginService.ts`（reCAPTCHA → 帳號鎖定 → 密碼驗證 → token 簽發 → session init → auth log）
 - [x] 6.2 建立 `src/application/service/auth/LoginService.spec.ts`
-- [ ] 6.3 建立 `src/application/service/auth/LogoutService.ts`（token 黑名單 → context 清除 → auth log）
-- [ ] 6.4 建立 `src/application/service/auth/LogoutService.spec.ts`
+- [x] 6.3 建立 `src/application/service/auth/LogoutService.ts`（token 黑名單 → context 清除 → auth log）
+- [x] 6.4 建立 `src/application/service/auth/LogoutService.spec.ts`
 - [ ] 6.5 建立 `src/application/service/auth/RefreshTokenService.ts`（黑名單檢查 → token 驗證 → 帳號狀態 → 換發 → auth log）
 - [ ] 6.6 建立 `src/application/service/auth/RefreshTokenService.spec.ts`
 - [ ] 6.7 建立 `src/application/service/auth/LineLoginService.ts`（LINE token 驗證 → upsert user → token 簽發 → auth log）
