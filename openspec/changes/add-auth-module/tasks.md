@@ -20,9 +20,9 @@
 
 ## 4. Port/out — Repository 介面
 
-- [ ] 4.1 建立 `src/application/port/out/user/FindUserPort.ts`（byEmail, byId, byLineUid, byProviderId）
-- [ ] 4.2 建立 `src/application/port/out/user/SaveUserPort.ts`（save, updateAuthProvider, updatePassword, updateLastLogin）
-- [ ] 4.3 建立 `src/application/port/out/auth/PasswordResetTokenPort.ts`（createToken, findByToken, markUsed）
+- [x] 4.1 建立 `src/application/port/out/user/FindUserPort.ts`（byEmail, byId, byLineUid, byProviderId）
+- [x] 4.2 建立 `src/application/port/out/user/SaveUserPort.ts`（save, updateAuthProvider, updatePassword, updateLastLogin）
+- [x] 4.3 建立 `src/application/port/out/auth/PasswordResetTokenPort.ts`（createToken, findByToken, markUsed）
 
 ## 5. Persistence Adapter
 
