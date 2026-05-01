@@ -4,6 +4,7 @@ export interface AuthLogData {
   action:
     | 'LOGIN_SUCCESS'
     | 'LOGIN_FAILURE'
+    | 'LINE_LOGIN'
     | 'LOGOUT'
     | 'REFRESH'
     | 'PASSWORD_RESET';

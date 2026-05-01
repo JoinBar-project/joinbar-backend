@@ -38,8 +38,8 @@
 - [x] 6.4 建立 `src/application/service/auth/LogoutService.spec.ts`
 - [x] 6.5 建立 `src/application/service/auth/RefreshTokenService.ts`（黑名單檢查 → token 驗證 → 帳號狀態 → 換發 → auth log）
 - [x] 6.6 建立 `src/application/service/auth/RefreshTokenService.spec.ts`
-- [ ] 6.7 建立 `src/application/service/auth/LineLoginService.ts`（LINE token 驗證 → upsert user → token 簽發 → auth log）
-- [ ] 6.8 建立 `src/application/service/auth/LineLoginService.spec.ts`
+- [x] 6.7 建立 `src/application/service/auth/LineLoginService.ts`（LINE token 驗證 → upsert user → token 簽發 → auth log）
+- [x] 6.8 建立 `src/application/service/auth/LineLoginService.spec.ts`
 - [ ] 6.9 建立 `src/application/service/auth/RegisterService.ts`（密碼強度 → email 唯一 → 建立 user/provider → email 驗證 flag）
 - [ ] 6.10 建立 `src/application/service/auth/RegisterService.spec.ts`
 - [ ] 6.11 建立 `src/application/service/auth/RequestPasswordResetService.ts`（查 email → 建 token → 寄信）
