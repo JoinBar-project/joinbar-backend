@@ -10,13 +10,13 @@
 
 ## 3. Port/in — Use Case 介面
 
-- [ ] 3.1 建立 `src/application/port/in/auth/LoginUseCase.ts`（LoginCommand、LoginResult）
-- [ ] 3.2 建立 `src/application/port/in/auth/LogoutUseCase.ts`（LogoutCommand）
-- [ ] 3.3 建立 `src/application/port/in/auth/RefreshTokenUseCase.ts`（RefreshTokenCommand、RefreshTokenResult）
-- [ ] 3.4 建立 `src/application/port/in/auth/LineLoginUseCase.ts`（LineLoginCommand、LineLoginResult）
-- [ ] 3.5 建立 `src/application/port/in/auth/RegisterUseCase.ts`（RegisterCommand）
-- [ ] 3.6 建立 `src/application/port/in/auth/PasswordResetUseCase.ts`（RequestResetCommand、ConfirmResetCommand）
-- [ ] 3.7 建立 `src/application/port/in/auth/VerifyEmailUseCase.ts`（VerifyEmailCommand）
+- [x] 3.1 建立 `src/application/port/in/auth/LoginUseCase.ts`（LoginCommand、LoginResult）
+- [x] 3.2 建立 `src/application/port/in/auth/LogoutUseCase.ts`（LogoutCommand）
+- [x] 3.3 建立 `src/application/port/in/auth/RefreshTokenUseCase.ts`（RefreshTokenCommand、RefreshTokenResult）
+- [x] 3.4 建立 `src/application/port/in/auth/LineLoginUseCase.ts`（LineLoginCommand、LineLoginResult）
+- [x] 3.5 建立 `src/application/port/in/auth/RegisterUseCase.ts`（RegisterCommand）
+- [x] 3.6 建立 `src/application/port/in/auth/PasswordResetUseCase.ts`（RequestResetCommand、ConfirmResetCommand）
+- [x] 3.7 建立 `src/application/port/in/auth/VerifyEmailUseCase.ts`（VerifyEmailCommand）
 
 ## 4. Port/out — Repository 介面
 
