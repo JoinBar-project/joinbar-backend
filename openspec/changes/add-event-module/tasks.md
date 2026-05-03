@@ -41,11 +41,11 @@
 
 ## 5. Application Services
 
-- [ ] 5.1 新增 `ListEventsService` + spec（getPagination → findMany + count → buildPaginationMeta）
-- [ ] 5.2 新增 `GetEventService` + spec（findById → EventNotFoundException if null）
-- [ ] 5.3 新增 `CreateEventService` + spec（驗證 tags 存在 → create → findById 回傳完整資料）
-- [ ] 5.4 新增 `UpdateEventService` + spec（findById → 檢查 ADMIN/hostUser → 驗證 tags → update）
-- [ ] 5.5 新增 `DeleteEventService` + spec（findById → 檢查 ADMIN/hostUser → softDelete）
+- [x] 5.1 新增 `ListEventsService` + spec（getPagination → findMany + count → buildPaginationMeta）
+- [x] 5.2 新增 `GetEventService` + spec（findById → EventNotFoundException if null）
+- [x] 5.3 新增 `CreateEventService` + spec（驗證 tags 存在 → create → findById 回傳完整資料）
+- [x] 5.4 新增 `UpdateEventService` + spec（findById → 檢查 ADMIN/hostUser → 驗證 tags → update）
+- [x] 5.5 新增 `DeleteEventService` + spec（findById → 檢查 ADMIN/hostUser → softDelete）
 - [ ] 5.6 新增 `JoinEventService` + spec（findById → countParticipants → 檢查 maxPeople → create）
 - [ ] 5.7 新增 `LeaveEventService` + spec（findByUserAndEvent → ParticipationNotFoundException → delete）
 - [ ] 5.8 新增 `ListMessagesService` + spec（findById event → findByEventId messages）
