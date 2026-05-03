@@ -34,8 +34,8 @@ import {
 } from '../port/in/user/DeleteAvatarUseCase';
 
 /**
- * User ドメインの公開 API / User 領域的公開 API。
- * Controller はこの Facade 経由で全 use case を呼び出す。
+ * User 領域的公開 API。
+ * Controller 透過此 Facade 呼叫所有 use case。
  */
 @Injectable()
 export class UserFacade {

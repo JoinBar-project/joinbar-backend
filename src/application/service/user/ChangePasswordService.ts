@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import {
   ChangePasswordCommand,
@@ -8,6 +8,7 @@ import { FIND_USER_PORT, FindUserPort } from '../../port/out/user/FindUserPort';
 import { SAVE_USER_PORT, SaveUserPort } from '../../port/out/user/SaveUserPort';
 import { PasswordPolicyService } from '../PasswordPolicyService';
 import { NoEmailProviderException } from '../../../domain/exception/NoEmailProviderException';
+import { InvalidCurrentPasswordException } from '../../../domain/exception/InvalidCurrentPasswordException';
 import { getEnv } from '../../../infrastructure/validate-env';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class ChangePasswordService implements ChangePasswordUseCase {
 
     // 驗證舊密碼
     const isMatch = await bcrypt.compare(oldPassword, found.passwordHash);
-    if (!isMatch) throw new UnauthorizedException('舊密碼錯誤');
+    if (!isMatch) throw new InvalidCurrentPasswordException();
 
     // 驗證新密碼強度
     this.passwordPolicy.validateOrThrow(newPassword);

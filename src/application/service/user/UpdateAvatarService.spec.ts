@@ -75,11 +75,20 @@ describe('UpdateAvatarService', () => {
     expect(result.avatarUrl).toBe(SIGNED_URL);
   });
 
-  it('有舊頭像時先刪除再上傳', async () => {
+  it('有舊頭像時先上傳新檔、更新 DB，再刪除舊檔', async () => {
+    const order: string[] = [];
     mockFindUser.findProfileById.mockResolvedValue(
       makeProfile({ avatarKey: 'avatars/old.jpg', avatarUrl: 'https://old' }),
     );
-    mockFileStorage.delete.mockResolvedValue(undefined);
+    mockFileStorage.upload.mockImplementation(async () => {
+      order.push('upload');
+    });
+    mockUpdateUser.updateAvatar.mockImplementation(async () => {
+      order.push('updateAvatar');
+    });
+    mockFileStorage.delete.mockImplementation(async () => {
+      order.push('delete');
+    });
 
     await service.execute({
       userId: USER_ID,
@@ -88,8 +97,8 @@ describe('UpdateAvatarService', () => {
       originalName: 'new.png',
     });
 
+    expect(order).toEqual(['upload', 'updateAvatar', 'delete']);
     expect(mockFileStorage.delete).toHaveBeenCalledWith('avatars/old.jpg');
-    expect(mockFileStorage.upload).toHaveBeenCalledTimes(1);
   });
 
   it('產生的 avatarKey 以 avatars/{userId}/ 開頭', async () => {
@@ -104,5 +113,19 @@ describe('UpdateAvatarService', () => {
 
     const uploadCall = mockFileStorage.upload.mock.calls[0][0];
     expect(uploadCall.key).toMatch(new RegExp(`^avatars/${USER_ID}/`));
+  });
+
+  it('無副檔名的檔名使用 bin 作為副檔名', async () => {
+    mockFindUser.findProfileById.mockResolvedValue(makeProfile());
+
+    await service.execute({
+      userId: USER_ID,
+      fileBuffer: Buffer.from('img'),
+      mimeType: 'image/jpeg',
+      originalName: 'avatar',
+    });
+
+    const uploadCall = mockFileStorage.upload.mock.calls[0][0];
+    expect(uploadCall.key).toMatch(/\.bin$/);
   });
 });

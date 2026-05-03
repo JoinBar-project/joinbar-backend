@@ -27,7 +27,7 @@ import { UPDATE_USER_PORT } from '../application/port/out/user/UpdateUserPort';
   controllers: [UserController],
   providers: [
     // ─── Persistence Adapter ─────────────────────────────────────────
-    // PrismaUserRepository は FindUserPort / SaveUserPort / UpdateUserPort を実装
+    // PrismaUserRepository 實作 FindUserPort / SaveUserPort / UpdateUserPort
     PrismaUserRepository,
     { provide: FIND_USER_PORT, useExisting: PrismaUserRepository },
     { provide: SAVE_USER_PORT, useExisting: PrismaUserRepository },

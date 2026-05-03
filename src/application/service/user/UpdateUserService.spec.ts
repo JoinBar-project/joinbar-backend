@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { UpdateUserService } from './UpdateUserService';
 import { UserProfileData } from '../../port/out/user/FindUserPort';
 
@@ -35,17 +34,26 @@ const mockUpdateUser = {
   clearAvatar: jest.fn(),
 };
 
+const mockFileStorage = {
+  upload: jest.fn(),
+  getSignedUrl: jest.fn(),
+  delete: jest.fn(),
+};
+
 describe('UpdateUserService', () => {
   let service: UpdateUserService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockUpdateUser.updateProfile.mockResolvedValue(undefined);
-    service = new UpdateUserService(mockFindUser, mockUpdateUser);
+    service = new UpdateUserService(
+      mockFindUser,
+      mockUpdateUser,
+      mockFileStorage,
+    );
   });
 
   it('成功更新 username 後回傳更新後 profile', async () => {
-    // service 更新後重查一次，mock 回傳已更新的資料
     mockFindUser.findProfileById.mockResolvedValue(
       makeProfile({ username: 'bob' }),
     );
@@ -61,19 +69,6 @@ describe('UpdateUserService', () => {
     expect(result.username).toBe('bob');
   });
 
-  it('body 為空物件時拋出 BadRequestException', async () => {
-    await expect(service.execute({ userId: USER_ID })).rejects.toThrow(
-      BadRequestException,
-    );
-    expect(mockUpdateUser.updateProfile).not.toHaveBeenCalled();
-  });
-
-  it('username 為空字串時拋出 BadRequestException', async () => {
-    await expect(
-      service.execute({ userId: USER_ID, username: '' }),
-    ).rejects.toThrow(BadRequestException);
-  });
-
   it('可更新 birthday', async () => {
     const birthday = new Date('1995-06-15');
     mockFindUser.findProfileById.mockResolvedValue(makeProfile({ birthday }));
@@ -84,5 +79,20 @@ describe('UpdateUserService', () => {
       birthday,
     });
     expect(result.birthday).toEqual(birthday);
+  });
+
+  it('有頭像時 avatarUrl 為即時產生的 signed URL', async () => {
+    const SIGNED_URL = 'https://storage.googleapis.com/signed/avatar.jpg';
+    mockFindUser.findProfileById.mockResolvedValue(
+      makeProfile({ avatarKey: 'avatars/user-001.jpg' }),
+    );
+    mockFileStorage.getSignedUrl.mockResolvedValue(SIGNED_URL);
+
+    const result = await service.execute({ userId: USER_ID, nickname: 'test' });
+
+    expect(mockFileStorage.getSignedUrl).toHaveBeenCalledWith(
+      'avatars/user-001.jpg',
+    );
+    expect(result.avatarUrl).toBe(SIGNED_URL);
   });
 });

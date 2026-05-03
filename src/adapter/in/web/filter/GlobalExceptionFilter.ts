@@ -20,6 +20,8 @@ import { EmailAlreadyExistsException } from '../../../../domain/exception/EmailA
 import { InvalidPasswordResetTokenException } from '../../../../domain/exception/InvalidPasswordResetTokenException';
 import { InvalidEmailVerificationTokenException } from '../../../../domain/exception/InvalidEmailVerificationTokenException';
 import { NoEmailProviderException } from '../../../../domain/exception/NoEmailProviderException';
+import { UserNotFoundException } from '../../../../domain/exception/UserNotFoundException';
+import { InvalidCurrentPasswordException } from '../../../../domain/exception/InvalidCurrentPasswordException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -74,6 +76,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       message = exception.message;
       code = 'NO_EMAIL_PROVIDER';
+    } else if (exception instanceof UserNotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      message = exception.message;
+      code = 'USER_NOT_FOUND';
+    } else if (exception instanceof InvalidCurrentPasswordException) {
+      status = HttpStatus.UNAUTHORIZED;
+      message = exception.message;
+      code = 'INVALID_CURRENT_PASSWORD';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;

@@ -1,9 +1,9 @@
-import { UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { ChangePasswordService } from './ChangePasswordService';
 import { User } from '../../../domain/model/User';
 import { RoleName } from '../../../domain/value-object/Role';
 import { NoEmailProviderException } from '../../../domain/exception/NoEmailProviderException';
+import { InvalidCurrentPasswordException } from '../../../domain/exception/InvalidCurrentPasswordException';
 
 jest.mock('../../../infrastructure/validate-env', () => ({
   getEnv: () => ({ BCRYPT_ROUNDS: 1 }),
@@ -85,7 +85,7 @@ describe('ChangePasswordService', () => {
     );
   });
 
-  it('舊密碼錯誤時拋出 UnauthorizedException', async () => {
+  it('舊密碼錯誤時拋出 InvalidCurrentPasswordException', async () => {
     mockFindUser.findById.mockResolvedValue(makeUser());
     mockFindUser.findByEmailWithPassword.mockResolvedValue({
       user: makeUser(),
@@ -99,7 +99,7 @@ describe('ChangePasswordService', () => {
         oldPassword: 'WrongPass!',
         newPassword: NEW_PASSWORD,
       }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(InvalidCurrentPasswordException);
 
     expect(mockSaveUser.updatePassword).not.toHaveBeenCalled();
   });

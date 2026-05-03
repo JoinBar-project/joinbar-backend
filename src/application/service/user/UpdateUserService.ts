@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   UpdateUserCommand,
   UpdateUserResult,
@@ -9,28 +9,22 @@ import {
   UPDATE_USER_PORT,
   UpdateUserPort,
 } from '../../port/out/user/UpdateUserPort';
+import {
+  FILE_STORAGE_PORT,
+  FileStoragePort,
+} from '../../port/out/shared/FileStoragePort';
+import { UserNotFoundException } from '../../../domain/exception/UserNotFoundException';
 
 @Injectable()
 export class UpdateUserService implements UpdateUserUseCase {
   constructor(
     @Inject(FIND_USER_PORT) private readonly findUser: FindUserPort,
     @Inject(UPDATE_USER_PORT) private readonly updateUser: UpdateUserPort,
+    @Inject(FILE_STORAGE_PORT) private readonly fileStorage: FileStoragePort,
   ) {}
 
   async execute(command: UpdateUserCommand): Promise<UpdateUserResult> {
     const { userId, username, nickname, birthday } = command;
-
-    const hasAnyField =
-      username !== undefined ||
-      nickname !== undefined ||
-      birthday !== undefined;
-    if (!hasAnyField) {
-      throw new BadRequestException('至少需提供一個更新欄位');
-    }
-
-    if (username !== undefined && username.trim().length === 0) {
-      throw new BadRequestException('username 不可為空字串');
-    }
 
     await this.updateUser.updateProfile(userId, {
       ...(username !== undefined && { username: username.trim() }),
@@ -40,15 +34,21 @@ export class UpdateUserService implements UpdateUserUseCase {
 
     // 重新查詢以回傳最新資料
     const updated = await this.findUser.findProfileById(userId);
+    if (!updated) throw new UserNotFoundException();
+
+    const avatarUrl = updated.avatarKey
+      ? await this.fileStorage.getSignedUrl(updated.avatarKey)
+      : null;
+
     return {
-      id: updated!.id,
-      email: updated!.email,
-      username: updated!.username,
-      nickname: updated!.nickname,
-      role: updated!.role,
-      birthday: updated!.birthday,
-      avatarUrl: updated!.avatarUrl,
-      createdAt: updated!.createdAt,
+      id: updated.id,
+      email: updated.email,
+      username: updated.username,
+      nickname: updated.nickname,
+      role: updated.role,
+      birthday: updated.birthday,
+      avatarUrl,
+      createdAt: updated.createdAt,
     };
   }
 }

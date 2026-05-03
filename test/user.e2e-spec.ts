@@ -256,10 +256,15 @@ describe('User E2E', () => {
       const res = await request(app.getHttpServer())
         .post('/api/users/me/avatar')
         .set('Authorization', `Bearer ${accessToken}`)
-        .attach('file', Buffer.from('fake-image'), {
-          filename: 'avatar.jpg',
-          contentType: 'image/jpeg',
-        });
+        .attach(
+          'file',
+          // JPEG magic bytes (FF D8 FF E0) + padding，通過 magic number 驗證
+          Buffer.concat([
+            Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+            Buffer.from('fake-content'),
+          ]),
+          { filename: 'avatar.jpg', contentType: 'image/jpeg' },
+        );
 
       expect(res.status).toBe(200);
       const data = (res.body as { data: Record<string, unknown> }).data;

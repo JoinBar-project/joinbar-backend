@@ -26,22 +26,20 @@ export class UpdateAvatarService implements UpdateAvatarUseCase {
     const { userId, fileBuffer, mimeType, originalName } = command;
 
     const profile = await this.findUser.findProfileById(userId);
-
-    // 有舊頭像時先刪除
-    if (profile?.avatarKey) {
-      await this.fileStorage.delete(profile.avatarKey);
-    }
+    const oldKey = profile?.avatarKey ?? null;
 
     // 產生唯一 key 避免快取衝突
-    const ext = originalName.split('.').pop() ?? 'bin';
+    const extMatch = originalName.match(/\.([^.]+)$/);
+    const ext = extMatch ? extMatch[1] : 'bin';
     const avatarKey = `avatars/${userId}/${Date.now()}.${ext}`;
 
+    // 先上傳新檔，再更新 DB，最後刪除舊檔
+    // 此順序確保 DB 失敗時舊資料不受影響
     await this.fileStorage.upload({
       key: avatarKey,
       buffer: fileBuffer,
       mimeType,
     });
-
     const avatarUrl = await this.fileStorage.getSignedUrl(avatarKey);
 
     await this.updateUser.updateAvatar(userId, {
@@ -49,6 +47,11 @@ export class UpdateAvatarService implements UpdateAvatarUseCase {
       avatarKey,
       avatarLastUpdated: new Date(),
     });
+
+    if (oldKey) {
+      // 舊頭像刪除失敗不影響主流程，可由定期清理任務補處理
+      await this.fileStorage.delete(oldKey).catch(() => undefined);
+    }
 
     return { avatarUrl };
   }

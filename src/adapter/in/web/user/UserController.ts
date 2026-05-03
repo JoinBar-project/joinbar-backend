@@ -26,6 +26,28 @@ import {
 import { UserProfileResponse } from './dto/UserProfileResponse';
 import { AvatarResponse } from './dto/AvatarResponse';
 
+/** 以 magic number 驗證 Buffer 是否為常見圖片格式 */
+const isImageFile = (buf: Buffer): boolean => {
+  if (buf.length < 4) return false;
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true; // JPEG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
+    return true; // PNG
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38)
+    return true; // GIF
+  if (
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf.length >= 12 &&
+    buf.subarray(8, 12).toString('ascii') === 'WEBP'
+  )
+    return true; // WebP
+  return false;
+};
+
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
+
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UserController {
@@ -71,14 +93,18 @@ export class UserController {
 
   @Post('me/avatar')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_AVATAR_SIZE } }),
+  )
   async uploadAvatar(
     @CurrentUser() actor: UserContext,
     @UploadedFile() file: Express.Multer.File | undefined,
   ): Promise<AvatarResponse> {
     if (!file) throw new BadRequestException('請提供 file 欄位');
-    if (!file.mimetype.startsWith('image/')) {
-      throw new UnprocessableEntityException('檔案類型必須為圖片（image/*）');
+    if (!isImageFile(file.buffer)) {
+      throw new UnprocessableEntityException(
+        '檔案類型必須為圖片（JPEG / PNG / GIF / WebP）',
+      );
     }
 
     return this.userFacade.updateAvatar({
