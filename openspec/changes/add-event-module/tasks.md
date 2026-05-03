@@ -1,36 +1,36 @@
 ## 1. Domain 層
 
-- [ ] 1.1 新增 `src/domain/model/event.ts`（Event domain model）
-- [ ] 1.2 新增 `src/domain/exception/EventNotFoundException.ts`
-- [ ] 1.3 新增 `src/domain/exception/EventFullException.ts`
-- [ ] 1.4 新增 `src/domain/exception/AlreadyJoinedException.ts`
-- [ ] 1.5 新增 `src/domain/exception/ParticipationNotFoundException.ts`
-- [ ] 1.6 新增 `src/domain/exception/MessageNotFoundException.ts`
-- [ ] 1.7 在 `GlobalExceptionFilter` 新增上述所有 exception → HTTP 狀態碼對應
+- [x] 1.1 新增 `src/domain/model/event.ts`（Event domain model）
+- [x] 1.2 新增 `src/domain/exception/EventNotFoundException.ts`
+- [x] 1.3 新增 `src/domain/exception/EventFullException.ts`
+- [x] 1.4 新增 `src/domain/exception/AlreadyJoinedException.ts`
+- [x] 1.5 新增 `src/domain/exception/ParticipationNotFoundException.ts`
+- [x] 1.6 新增 `src/domain/exception/MessageNotFoundException.ts`
+- [x] 1.7 在 `GlobalExceptionFilter` 新增上述所有 exception → HTTP 狀態碼對應
 
 ## 2. Port/in（Use Case 介面）
 
-- [ ] 2.1 新增 `ListEventsUseCase`（含 ListEventsCommand、EventListItem、ListEventsResult）
-- [ ] 2.2 新增 `GetEventUseCase`（含 GetEventCommand、EventDetail）
-- [ ] 2.3 新增 `CreateEventUseCase`（含 CreateEventCommand、CreateEventResult）
-- [ ] 2.4 新增 `UpdateEventUseCase`（含 UpdateEventCommand、UpdateEventResult）
-- [ ] 2.5 新增 `DeleteEventUseCase`（含 DeleteEventCommand）
-- [ ] 2.6 新增 `JoinEventUseCase`（含 JoinEventCommand）
-- [ ] 2.7 新增 `LeaveEventUseCase`（含 LeaveEventCommand）
-- [ ] 2.8 新增 `ListMessagesUseCase`（含 ListMessagesCommand、MessageItem、ListMessagesResult）
-- [ ] 2.9 新增 `CreateMessageUseCase`（含 CreateMessageCommand、MessageResult）
-- [ ] 2.10 新增 `DeleteMessageUseCase`（含 DeleteMessageCommand）
-- [ ] 2.11 新增 `ListTagsUseCase`（含 TagItem、ListTagsResult）
+- [x] 2.1 新增 `ListEventsUseCase`（含 ListEventsCommand、EventListItem、ListEventsResult）
+- [x] 2.2 新增 `GetEventUseCase`（含 GetEventCommand、EventDetail）
+- [x] 2.3 新增 `CreateEventUseCase`（含 CreateEventCommand、CreateEventResult）
+- [x] 2.4 新增 `UpdateEventUseCase`（含 UpdateEventCommand、UpdateEventResult）
+- [x] 2.5 新增 `DeleteEventUseCase`（含 DeleteEventCommand）
+- [x] 2.6 新增 `JoinEventUseCase`（含 JoinEventCommand）
+- [x] 2.7 新增 `LeaveEventUseCase`（含 LeaveEventCommand）
+- [x] 2.8 新增 `ListMessagesUseCase`（含 ListMessagesCommand、MessageItem、ListMessagesResult）
+- [x] 2.9 新增 `CreateMessageUseCase`（含 CreateMessageCommand、MessageResult）
+- [x] 2.10 新增 `DeleteMessageUseCase`（含 DeleteMessageCommand）
+- [x] 2.11 新增 `ListTagsUseCase`（含 TagItem、ListTagsResult）
 
 ## 3. Port/out（Repository 介面）
 
-- [ ] 3.1 新增 `FindEventPort`（findById、findMany、count、countParticipants）
-- [ ] 3.2 新增 `SaveEventPort`（create、update、softDelete）
-- [ ] 3.3 新增 `FindTagPort`（findAll、findByNames）
-- [ ] 3.4 新增 `FindParticipationPort`（findByUserAndEvent）
-- [ ] 3.5 新增 `SaveParticipationPort`（create、delete）
-- [ ] 3.6 新增 `FindMessagePort`（findByEventId、findById）
-- [ ] 3.7 新增 `SaveMessagePort`（create、softDelete）
+- [x] 3.1 新增 `FindEventPort`（findById、findMany、count、countParticipants）
+- [x] 3.2 新增 `SaveEventPort`（create、update、softDelete）
+- [x] 3.3 新增 `FindTagPort`（findAll、findByNames）
+- [x] 3.4 新增 `FindParticipationPort`（findByUserAndEvent）
+- [x] 3.5 新增 `SaveParticipationPort`（create、delete）
+- [x] 3.6 新增 `FindMessagePort`（findByEventId、findById）
+- [x] 3.7 新增 `SaveMessagePort`（create、softDelete）
 
 ## 4. Persistence Adapter
 

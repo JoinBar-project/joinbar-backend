@@ -23,6 +23,11 @@ import { NoEmailProviderException } from '../../../../domain/exception/NoEmailPr
 import { UserNotFoundException } from '../../../../domain/exception/UserNotFoundException';
 import { InvalidCurrentPasswordException } from '../../../../domain/exception/InvalidCurrentPasswordException';
 import { BarNotFoundException } from '../../../../domain/exception/BarNotFoundException';
+import { EventNotFoundException } from '../../../../domain/exception/EventNotFoundException';
+import { EventFullException } from '../../../../domain/exception/EventFullException';
+import { AlreadyJoinedException } from '../../../../domain/exception/AlreadyJoinedException';
+import { ParticipationNotFoundException } from '../../../../domain/exception/ParticipationNotFoundException';
+import { MessageNotFoundException } from '../../../../domain/exception/MessageNotFoundException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -89,6 +94,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.NOT_FOUND;
       message = exception.message;
       code = 'BAR_NOT_FOUND';
+    } else if (exception instanceof EventNotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      message = exception.message;
+      code = 'EVENT_NOT_FOUND';
+    } else if (exception instanceof EventFullException) {
+      status = HttpStatus.CONFLICT;
+      message = exception.message;
+      code = 'EVENT_FULL';
+    } else if (exception instanceof AlreadyJoinedException) {
+      status = HttpStatus.CONFLICT;
+      message = exception.message;
+      code = 'ALREADY_JOINED';
+    } else if (exception instanceof ParticipationNotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      message = exception.message;
+      code = 'PARTICIPATION_NOT_FOUND';
+    } else if (exception instanceof MessageNotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      message = exception.message;
+      code = 'MESSAGE_NOT_FOUND';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;
