@@ -13,7 +13,7 @@
 
 ## 3. Persistence Adapter
 
-- [ ] 3.1 在 `PrismaUserRepository` 新增 `UpdateUserPort` 實作（updateProfile：username/nickname/birthday；softDelete：設 deletedAt；updateAvatar：avatarUrl/avatarKey/avatarLastUpdated；clearAvatar：清空三個欄位）
+- [x] 3.1 在 `PrismaUserRepository` 新增 `UpdateUserPort` 實作（updateProfile：username/nickname/birthday；softDelete：設 deletedAt；updateAvatar：avatarUrl/avatarKey/avatarLastUpdated；clearAvatar：清空三個欄位）
 
 ## 4. Application Services
 

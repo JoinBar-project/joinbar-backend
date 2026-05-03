@@ -14,6 +14,7 @@ const makeDeps = () => {
     findByProviderUid: jest.fn(),
     findById: jest.fn(),
     existsByEmail: jest.fn(),
+    findProfileById: jest.fn(),
   };
   const saveUser = {
     setEmailVerified: jest.fn().mockResolvedValue(undefined),
