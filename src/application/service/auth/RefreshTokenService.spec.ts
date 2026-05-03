@@ -28,7 +28,6 @@ const makeDeps = (overrides?: { authLogEnabled?: boolean }) => {
       id: USER_ID,
       email: 'user@example.com',
       roleName: 'USER',
-      permissions: [],
       status: true,
       lastPasswordChange: null,
     }),

@@ -6,7 +6,6 @@ export interface UserContext {
   sub: string;
   email: string;
   roleName: string;
-  permissions: string[];
   /** 帳號啟用狀態（false 時 Guard 會拒絕請求） */
   status: boolean;
   lastPasswordChange?: string | null;

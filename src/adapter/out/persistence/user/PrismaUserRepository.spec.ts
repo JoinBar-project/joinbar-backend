@@ -123,7 +123,7 @@ describe('PrismaUserRepository', () => {
   });
 
   describe('loadUserContext()', () => {
-    it('存在 → 回傳 UserContextData，permissions 為空陣列', async () => {
+    it('存在 → 回傳 UserContextData（roleName、status）', async () => {
       prisma.userRecord.findUnique.mockResolvedValue({
         id: 'user-1',
         email: 'a@b.com',
@@ -133,7 +133,6 @@ describe('PrismaUserRepository', () => {
       });
       const ctx = await repo.loadUserContext('user-1');
       expect(ctx?.roleName).toBe('ADMIN');
-      expect(ctx?.permissions).toEqual([]);
       expect(ctx?.status).toBe(true);
     });
 
