@@ -1,11 +1,11 @@
 ## 1. Port/in — Use Case 介面
 
-- [ ] 1.1 建立 `src/application/port/in/user/GetUserUseCase.ts`（GetUserCommand、GetUserResult）
-- [ ] 1.2 建立 `src/application/port/in/user/UpdateUserUseCase.ts`（UpdateUserCommand、UpdateUserResult）
-- [ ] 1.3 建立 `src/application/port/in/user/ChangePasswordUseCase.ts`（ChangePasswordCommand）
-- [ ] 1.4 建立 `src/application/port/in/user/DeleteUserUseCase.ts`（DeleteUserCommand）
-- [ ] 1.5 建立 `src/application/port/in/user/UpdateAvatarUseCase.ts`（UpdateAvatarCommand、UpdateAvatarResult）
-- [ ] 1.6 建立 `src/application/port/in/user/DeleteAvatarUseCase.ts`（DeleteAvatarCommand）
+- [x] 1.1 建立 `src/application/port/in/user/GetUserUseCase.ts`（GetUserCommand、GetUserResult）
+- [x] 1.2 建立 `src/application/port/in/user/UpdateUserUseCase.ts`（UpdateUserCommand、UpdateUserResult）
+- [x] 1.3 建立 `src/application/port/in/user/ChangePasswordUseCase.ts`（ChangePasswordCommand）
+- [x] 1.4 建立 `src/application/port/in/user/DeleteUserUseCase.ts`（DeleteUserCommand）
+- [x] 1.5 建立 `src/application/port/in/user/UpdateAvatarUseCase.ts`（UpdateAvatarCommand、UpdateAvatarResult）
+- [x] 1.6 建立 `src/application/port/in/user/DeleteAvatarUseCase.ts`（DeleteAvatarCommand）
 
 ## 2. Port/out — Repository 介面
 
