@@ -23,18 +23,18 @@
 
 ## 5. Application Services
 
-- [ ] 5.1 建立 `src/application/service/bar/ListBarsService.ts`（呼叫 findMany + count，用 getPagination / buildPaginationMeta 組裝回傳）
-- [ ] 5.2 建立 `src/application/service/bar/ListBarsService.spec.ts`
-- [ ] 5.3 建立 `src/application/service/bar/GetBarService.ts`（findById，不存在或已刪除拋 NotFoundException）
-- [ ] 5.4 建立 `src/application/service/bar/GetBarService.spec.ts`
-- [ ] 5.5 建立 `src/application/service/bar/CreateBarService.ts`（create，回傳完整 BarResult）
-- [ ] 5.6 建立 `src/application/service/bar/CreateBarService.spec.ts`
-- [ ] 5.7 建立 `src/application/service/bar/UpdateBarService.ts`（findById 確認存在 → update，回傳更新後資料）
-- [ ] 5.8 建立 `src/application/service/bar/UpdateBarService.spec.ts`
-- [ ] 5.9 建立 `src/application/service/bar/DeleteBarService.ts`（findById 確認存在 → softDelete）
-- [ ] 5.10 建立 `src/application/service/bar/DeleteBarService.spec.ts`
-- [ ] 5.11 建立 `src/application/service/bar/AiDescribeBarService.ts`（geminiEnabled 檢查 → findById → 組 prompt → geminiPort.generate，失敗拋 ServiceUnavailableException）
-- [ ] 5.12 建立 `src/application/service/bar/AiDescribeBarService.spec.ts`
+- [x] 5.1 建立 `src/application/service/bar/ListBarsService.ts`（呼叫 findMany + count，用 getPagination / buildPaginationMeta 組裝回傳）
+- [x] 5.2 建立 `src/application/service/bar/ListBarsService.spec.ts`
+- [x] 5.3 建立 `src/application/service/bar/GetBarService.ts`（findById，不存在或已刪除拋 NotFoundException）
+- [x] 5.4 建立 `src/application/service/bar/GetBarService.spec.ts`
+- [x] 5.5 建立 `src/application/service/bar/CreateBarService.ts`（create，回傳完整 BarResult）
+- [x] 5.6 建立 `src/application/service/bar/CreateBarService.spec.ts`
+- [x] 5.7 建立 `src/application/service/bar/UpdateBarService.ts`（findById 確認存在 → update，回傳更新後資料）
+- [x] 5.8 建立 `src/application/service/bar/UpdateBarService.spec.ts`
+- [x] 5.9 建立 `src/application/service/bar/DeleteBarService.ts`（findById 確認存在 → softDelete）
+- [x] 5.10 建立 `src/application/service/bar/DeleteBarService.spec.ts`
+- [x] 5.11 建立 `src/application/service/bar/AiDescribeBarService.ts`（geminiEnabled 檢查 → findById → 組 prompt → geminiPort.generate，失敗拋 ServiceUnavailableException）
+- [x] 5.12 建立 `src/application/service/bar/AiDescribeBarService.spec.ts`
 
 ## 6. Facade
 

@@ -22,6 +22,7 @@ import { InvalidEmailVerificationTokenException } from '../../../../domain/excep
 import { NoEmailProviderException } from '../../../../domain/exception/NoEmailProviderException';
 import { UserNotFoundException } from '../../../../domain/exception/UserNotFoundException';
 import { InvalidCurrentPasswordException } from '../../../../domain/exception/InvalidCurrentPasswordException';
+import { BarNotFoundException } from '../../../../domain/exception/BarNotFoundException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -84,6 +85,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.UNAUTHORIZED;
       message = exception.message;
       code = 'INVALID_CURRENT_PASSWORD';
+    } else if (exception instanceof BarNotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      message = exception.message;
+      code = 'BAR_NOT_FOUND';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;
