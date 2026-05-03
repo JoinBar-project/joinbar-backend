@@ -34,10 +34,10 @@
 
 ## 4. Persistence Adapter
 
-- [ ] 4.1 新增 `PrismaEventRepository`（實作 FindEventPort + SaveEventPort）：findById（含 tags + participantCount）、findMany（篩選 + 分頁）、count、create（含 EventTag）、update（含 EventTag 覆寫）、softDelete
-- [ ] 4.2 新增 `PrismaTagRepository`（實作 FindTagPort）：findAll、findByNames
-- [ ] 4.3 新增 `PrismaParticipationRepository`（實作 FindParticipationPort + SaveParticipationPort）
-- [ ] 4.4 新增 `PrismaMessageRepository`（實作 FindMessagePort + SaveMessagePort）
+- [x] 4.1 新增 `PrismaEventRepository`（實作 FindEventPort + SaveEventPort）：findById（含 tags + participantCount）、findMany（篩選 + 分頁）、count、create（含 EventTag）、update（含 EventTag 覆寫）、softDelete
+- [x] 4.2 新增 `PrismaTagRepository`（實作 FindTagPort）：findAll、findByNames
+- [x] 4.3 新增 `PrismaParticipationRepository`（實作 FindParticipationPort + SaveParticipationPort）
+- [x] 4.4 新增 `PrismaMessageRepository`（實作 FindMessagePort + SaveMessagePort）
 
 ## 5. Application Services
 
