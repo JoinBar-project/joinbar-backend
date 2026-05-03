@@ -154,4 +154,23 @@ paths:
     delete:
       $ref: './user/delete-avatar.yaml'
 
+  # ─── Bar ──────────────────────────────────
+  /bars:
+    get:
+      $ref: './bar/list-bars.yaml'
+    post:
+      $ref: './bar/create-bar.yaml'
+
+  /bars/{id}:
+    get:
+      $ref: './bar/get-bar.yaml'
+    patch:
+      $ref: './bar/update-bar.yaml'
+    delete:
+      $ref: './bar/delete-bar.yaml'
+
+  /bars/{id}/describe:
+    post:
+      $ref: './bar/ai-describe-bar.yaml'
+
   # ─── 其他模組（尚未實作）────────────────────

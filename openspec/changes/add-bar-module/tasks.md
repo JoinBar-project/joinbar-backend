@@ -58,14 +58,14 @@
 
 ## 9. Swagger 文件
 
-- [ ] 9.1 建立 `docs/swagger/bar/list-bars.yaml`
-- [ ] 9.2 建立 `docs/swagger/bar/get-bar.yaml`
-- [ ] 9.3 建立 `docs/swagger/bar/create-bar.yaml`
-- [ ] 9.4 建立 `docs/swagger/bar/update-bar.yaml`
-- [ ] 9.5 建立 `docs/swagger/bar/delete-bar.yaml`
-- [ ] 9.6 建立 `docs/swagger/bar/ai-describe-bar.yaml`
-- [ ] 9.7 在 `docs/swagger/openapi.yaml` 新增 `/bars`、`/bars/{id}`、`/bars/{id}/describe` 路徑
-- [ ] 9.8 執行 `npm run swagger:bundle` 確認輸出正確
+- [x] 9.1 建立 `docs/swagger/bar/list-bars.yaml`
+- [x] 9.2 建立 `docs/swagger/bar/get-bar.yaml`
+- [x] 9.3 建立 `docs/swagger/bar/create-bar.yaml`
+- [x] 9.4 建立 `docs/swagger/bar/update-bar.yaml`
+- [x] 9.5 建立 `docs/swagger/bar/delete-bar.yaml`
+- [x] 9.6 建立 `docs/swagger/bar/ai-describe-bar.yaml`
+- [x] 9.7 在 `docs/swagger/openapi.yaml` 新增 `/bars`、`/bars/{id}`、`/bars/{id}/describe` 路徑
+- [x] 9.8 執行 `npm run swagger:bundle` 確認輸出正確
 
 ## 10. 測試
 

@@ -1,0 +1,36 @@
+tags: [Bar]
+summary: 取得酒吧詳情
+description: 公開端點，無需登入。回傳指定酒吧的完整資訊（含標籤）。
+security: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            id: 00000000-0000-0000-0000-000000000001
+            name: 運動酒吧
+            address: 台北市信義區松仁路
+            phone: '02-1234-5678'
+            website: 'https://example.com'
+            imageUrl: null
+            latitude: 25.033
+            longitude: 121.565
+            googlePlaceId: ChIJexampleplaceid
+            tags: [sport, drink]
+            createdAt: '2024-01-01T00:00:00.000Z'
+            updatedAt: '2024-01-01T00:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

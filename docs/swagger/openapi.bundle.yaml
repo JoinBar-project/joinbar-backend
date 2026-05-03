@@ -697,3 +697,344 @@ paths:
           description: 頭像刪除成功（或本無頭像）
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /bars:
+    get:
+      tags:
+        - Bar
+      summary: 列出酒吧
+      description: |
+        公開端點，無需登入。
+        支援標籤篩選（OR 邏輯）與關鍵字搜尋，回傳分頁結果。
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: keyword
+          in: query
+          description: 對 name、address 做模糊搜尋
+          schema:
+            type: string
+            example: 台北
+        - name: tags
+          in: query
+          description: '逗號分隔的標籤名稱，合法值：sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy'
+          schema:
+            type: string
+            example: 'sport,music'
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  items:
+                    - id: 00000000-0000-0000-0000-000000000001
+                      name: 運動酒吧
+                      address: 台北市信義區
+                      phone: 02-1234-5678
+                      website: null
+                      imageUrl: null
+                      latitude: 25.033
+                      longitude: 121.565
+                      tags:
+                        - sport
+                        - drink
+                  meta:
+                    page: 1
+                    limit: 20
+                    total: 1
+                    totalPages: 1
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags:
+        - Bar
+      summary: 建立酒吧
+      description: 需 JWT。建立酒吧記錄，可選附帶 BarTag。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: 新潮酒吧
+                address:
+                  type: string
+                  maxLength: 255
+                  example: 台北市大安區忠孝東路
+                phone:
+                  type: string
+                  maxLength: 20
+                  example: 02-8765-4321
+                website:
+                  type: string
+                  format: uri
+                  example: 'https://bar.example.com'
+                imageUrl:
+                  type: string
+                  format: uri
+                latitude:
+                  type: number
+                  example: 25.041
+                longitude:
+                  type: number
+                  example: 121.545
+                googlePlaceId:
+                  type: string
+                  example: ChIJexampleplaceid
+                tags:
+                  type: object
+                  properties:
+                    sport:
+                      type: boolean
+                    music:
+                      type: boolean
+                    student:
+                      type: boolean
+                    bistro:
+                      type: boolean
+                    drink:
+                      type: boolean
+                    joy:
+                      type: boolean
+                    romantic:
+                      type: boolean
+                    oldschool:
+                      type: boolean
+                    highlevel:
+                      type: boolean
+                    easy:
+                      type: boolean
+      responses:
+        '201':
+          description: 建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  id: 00000000-0000-0000-0000-000000000002
+                  name: 新潮酒吧
+                  address: 台北市大安區忠孝東路
+                  phone: 02-8765-4321
+                  website: 'https://bar.example.com'
+                  imageUrl: null
+                  latitude: 25.041
+                  longitude: 121.545
+                  googlePlaceId: ChIJexampleplaceid
+                  tags:
+                    - music
+                    - romantic
+                  createdAt: '2024-01-01T00:00:00.000Z'
+                  updatedAt: '2024-01-01T00:00:00.000Z'
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  '/bars/{id}':
+    get:
+      tags:
+        - Bar
+      summary: 取得酒吧詳情
+      description: 公開端點，無需登入。回傳指定酒吧的完整資訊（含標籤）。
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  id: 00000000-0000-0000-0000-000000000001
+                  name: 運動酒吧
+                  address: 台北市信義區松仁路
+                  phone: 02-1234-5678
+                  website: 'https://example.com'
+                  imageUrl: null
+                  latitude: 25.033
+                  longitude: 121.565
+                  googlePlaceId: ChIJexampleplaceid
+                  tags:
+                    - sport
+                    - drink
+                  createdAt: '2024-01-01T00:00:00.000Z'
+                  updatedAt: '2024-01-01T00:00:00.000Z'
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Bar
+      summary: 更新酒吧
+      description: |
+        需 JWT。部分更新酒吧資料，至少需提供一個欄位。
+        若帶 tags 則整體覆寫 BarTag（upsert）。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                address:
+                  type: string
+                  maxLength: 255
+                phone:
+                  type: string
+                  maxLength: 20
+                website:
+                  type: string
+                  format: uri
+                imageUrl:
+                  type: string
+                  format: uri
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                googlePlaceId:
+                  type: string
+                tags:
+                  type: object
+                  properties:
+                    sport:
+                      type: boolean
+                    music:
+                      type: boolean
+                    student:
+                      type: boolean
+                    bistro:
+                      type: boolean
+                    drink:
+                      type: boolean
+                    joy:
+                      type: boolean
+                    romantic:
+                      type: boolean
+                    oldschool:
+                      type: boolean
+                    highlevel:
+                      type: boolean
+                    easy:
+                      type: boolean
+      responses:
+        '200':
+          description: 更新成功，回傳更新後酒吧資料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Bar
+      summary: 刪除酒吧
+      description: 需 JWT。對酒吧執行軟刪除（設定 deletedAt）。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 刪除成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/bars/{id}/describe':
+    post:
+      tags:
+        - Bar
+      summary: AI 生成酒吧描述
+      description: |
+        需 JWT。呼叫 Gemini API 依酒吧名稱、地址、標籤生成自然語言介紹文字。
+        `geminiEnabled=false` 或 Gemini API 失敗時回傳 503。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  description: 這是一間充滿活力的運動酒吧，位於台北市信義區，以體育賽事直播和精釀啤酒聞名。
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          description: AI 服務不可用（功能未啟用或 Gemini API 錯誤）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: AI 描述功能目前未啟用
+                code: SERVICE_UNAVAILABLE
+                timestamp: '2024-01-01T00:00:00.000Z'
