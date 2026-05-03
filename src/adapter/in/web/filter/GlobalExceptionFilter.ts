@@ -19,6 +19,7 @@ import { PasswordChangeRequiredException } from '../../../../domain/exception/Pa
 import { EmailAlreadyExistsException } from '../../../../domain/exception/EmailAlreadyExistsException';
 import { InvalidPasswordResetTokenException } from '../../../../domain/exception/InvalidPasswordResetTokenException';
 import { InvalidEmailVerificationTokenException } from '../../../../domain/exception/InvalidEmailVerificationTokenException';
+import { NoEmailProviderException } from '../../../../domain/exception/NoEmailProviderException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -69,6 +70,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.BAD_REQUEST;
       message = exception.message;
       code = 'INVALID_EMAIL_VERIFICATION_TOKEN';
+    } else if (exception instanceof NoEmailProviderException) {
+      status = HttpStatus.UNPROCESSABLE_ENTITY;
+      message = exception.message;
+      code = 'NO_EMAIL_PROVIDER';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;

@@ -9,7 +9,7 @@
 
 ## 2. Port/out — Repository 介面
 
-- [ ] 2.1 建立 `src/application/port/out/user/UpdateUserPort.ts`（updateProfile、softDelete、updateAvatar、clearAvatar）
+- [x] 2.1 建立 `src/application/port/out/user/UpdateUserPort.ts`（updateProfile、softDelete、updateAvatar、clearAvatar）
 
 ## 3. Persistence Adapter
 
