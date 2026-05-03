@@ -21,10 +21,7 @@ export class UpdateBarService implements UpdateBarUseCase {
     if (!existing) throw new BarNotFoundException();
 
     const { barId, ...data } = command;
-    await this.saveBar.update(barId, data);
-
-    const updated = await this.findBar.findById(barId);
-    if (!updated) throw new BarNotFoundException();
+    const updated = await this.saveBar.update(barId, data);
 
     return {
       id: updated.id,

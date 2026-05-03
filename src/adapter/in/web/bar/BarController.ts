@@ -14,7 +14,10 @@ import {
 import { BarFacade } from '../../../../application/facade/BarFacade';
 import { ZodValidationPipe } from '../../../../infrastructure/zod-validation.pipe';
 import { JwtAuthGuard } from '../guard/JwtAuthGuard';
+import { RolesGuard } from '../guard/RolesGuard';
 import { Public } from '../decorator/public.decorator';
+import { Roles } from '../decorator/roles.decorator';
+import { RoleName } from '../../../../domain/value-object/Role';
 
 import { ListBarsRequest, listBarsSchema } from './dto/ListBarsRequest';
 import { CreateBarRequest, createBarSchema } from './dto/CreateBarRequest';
@@ -48,6 +51,8 @@ export class BarController {
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN)
   createBar(
     @Body(new ZodValidationPipe(createBarSchema)) dto: CreateBarRequest,
   ): Promise<BarResponse> {
@@ -55,6 +60,8 @@ export class BarController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN)
   updateBar(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateBarSchema)) dto: UpdateBarRequest,
@@ -64,6 +71,8 @@ export class BarController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN)
   deleteBar(@Param('id') id: string): Promise<void> {
     return this.barFacade.deleteBar({ barId: id });
   }

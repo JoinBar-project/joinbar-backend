@@ -1,15 +1,19 @@
-export interface BarTagsData {
-  sport: boolean;
-  music: boolean;
-  student: boolean;
-  bistro: boolean;
-  drink: boolean;
-  joy: boolean;
-  romantic: boolean;
-  oldschool: boolean;
-  highlevel: boolean;
-  easy: boolean;
-}
+export const BAR_TAG_KEYS = [
+  'sport',
+  'music',
+  'student',
+  'bistro',
+  'drink',
+  'joy',
+  'romantic',
+  'oldschool',
+  'highlevel',
+  'easy',
+] as const;
+
+export type BarTagKey = (typeof BAR_TAG_KEYS)[number];
+
+export type BarTagsData = Record<BarTagKey, boolean>;
 
 export interface BarData {
   id: string;

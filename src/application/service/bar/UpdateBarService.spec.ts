@@ -40,9 +40,8 @@ describe('UpdateBarService', () => {
   });
 
   it('成功更新並回傳更新後資料', async () => {
-    mockFindBar.findById
-      .mockResolvedValueOnce(makeBar())
-      .mockResolvedValueOnce(makeBar({ name: '新名稱' }));
+    mockFindBar.findById.mockResolvedValueOnce(makeBar());
+    mockSaveBar.update.mockResolvedValueOnce(makeBar({ name: '新名稱' }));
 
     const result = await service.execute({ barId: BAR_ID, name: '新名稱' });
 

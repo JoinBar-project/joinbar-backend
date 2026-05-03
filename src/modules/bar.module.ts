@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth.module';
 import { JwtModule } from './jwt.module';
 import { BarController } from '../adapter/in/web/bar/BarController';
+import { RolesGuard } from '../adapter/in/web/guard/RolesGuard';
 import { BarFacade } from '../application/facade/BarFacade';
 import { ListBarsService } from '../application/service/bar/ListBarsService';
 import { GetBarService } from '../application/service/bar/GetBarService';
@@ -47,6 +48,8 @@ import { GEMINI_PORT } from '../application/port/out/shared/GeminiPort';
     { provide: AI_DESCRIBE_BAR_USE_CASE, useExisting: AiDescribeBarService },
     // ─── Facade ──────────────────────────────────────────────────────
     BarFacade,
+    // ─── Guards ──────────────────────────────────────────────────────
+    RolesGuard,
   ],
 })
 export class BarModule {}

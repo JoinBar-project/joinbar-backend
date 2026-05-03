@@ -4,6 +4,8 @@ import { PrismaService } from '../../../../infrastructure/prisma/prisma.service'
 import {
   FindBarPort,
   BarData,
+  BarTagKey,
+  BAR_TAG_KEYS,
   FindManyBarsOptions,
 } from '../../../../application/port/out/bar/FindBarPort';
 import {
@@ -11,22 +13,6 @@ import {
   CreateBarData,
   UpdateBarData,
 } from '../../../../application/port/out/bar/SaveBarPort';
-
-/** BarTag の全カラム名 / BarTag 的全欄位名稱 */
-const BAR_TAG_KEYS = [
-  'sport',
-  'music',
-  'student',
-  'bistro',
-  'drink',
-  'joy',
-  'romantic',
-  'oldschool',
-  'highlevel',
-  'easy',
-] as const;
-
-type BarTagKey = (typeof BAR_TAG_KEYS)[number];
 
 @Injectable()
 export class PrismaBarRepository implements FindBarPort, SaveBarPort {
@@ -81,9 +67,10 @@ export class PrismaBarRepository implements FindBarPort, SaveBarPort {
     return record.id;
   }
 
-  async update(barId: string, data: UpdateBarData): Promise<void> {
-    await this.prisma.bar.update({
+  async update(barId: string, data: UpdateBarData): Promise<BarData> {
+    const record = await this.prisma.bar.update({
       where: { id: barId },
+      include: { barTag: true },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.address !== undefined && { address: data.address }),
@@ -105,6 +92,7 @@ export class PrismaBarRepository implements FindBarPort, SaveBarPort {
         }),
       },
     });
+    return this.toBarData(record);
   }
 
   async softDelete(barId: string): Promise<void> {
@@ -152,23 +140,25 @@ export class PrismaBarRepository implements FindBarPort, SaveBarPort {
   }
 
   private toBarData(
-    record: Awaited<ReturnType<typeof this.prisma.bar.findUnique>> & {
+    record: NonNullable<
+      Awaited<ReturnType<typeof this.prisma.bar.findUnique>>
+    > & {
       barTag: Record<BarTagKey, boolean> | null;
     },
   ): BarData {
     return {
-      id: record!.id,
-      name: record!.name,
-      address: record!.address,
-      phone: record!.phone,
-      website: record!.website,
-      imageUrl: record!.imageUrl,
-      latitude: record!.latitude !== null ? Number(record!.latitude) : null,
-      longitude: record!.longitude !== null ? Number(record!.longitude) : null,
-      googlePlaceId: record!.googlePlaceId,
-      barTag: record!.barTag,
-      createdAt: record!.createdAt,
-      updatedAt: record!.updatedAt,
+      id: record.id,
+      name: record.name,
+      address: record.address,
+      phone: record.phone,
+      website: record.website,
+      imageUrl: record.imageUrl,
+      latitude: record.latitude !== null ? Number(record.latitude) : null,
+      longitude: record.longitude !== null ? Number(record.longitude) : null,
+      googlePlaceId: record.googlePlaceId,
+      barTag: record.barTag,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     };
   }
 }
