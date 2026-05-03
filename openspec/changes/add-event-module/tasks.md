@@ -46,12 +46,12 @@
 - [x] 5.3 新增 `CreateEventService` + spec（驗證 tags 存在 → create → findById 回傳完整資料）
 - [x] 5.4 新增 `UpdateEventService` + spec（findById → 檢查 ADMIN/hostUser → 驗證 tags → update）
 - [x] 5.5 新增 `DeleteEventService` + spec（findById → 檢查 ADMIN/hostUser → softDelete）
-- [ ] 5.6 新增 `JoinEventService` + spec（findById → countParticipants → 檢查 maxPeople → create）
-- [ ] 5.7 新增 `LeaveEventService` + spec（findByUserAndEvent → ParticipationNotFoundException → delete）
-- [ ] 5.8 新增 `ListMessagesService` + spec（findById event → findByEventId messages）
-- [ ] 5.9 新增 `CreateMessageService` + spec（findById event → create message）
-- [ ] 5.10 新增 `DeleteMessageService` + spec（findById message → 檢查本人/ADMIN → softDelete）
-- [ ] 5.11 新增 `ListTagsService` + spec（findAll tags）
+- [x] 5.6 新增 `JoinEventService` + spec（findById → countParticipants → 檢查 maxPeople → create）
+- [x] 5.7 新增 `LeaveEventService` + spec（findByUserAndEvent → ParticipationNotFoundException → delete）
+- [x] 5.8 新增 `ListMessagesService` + spec（findById event → findByEventId messages）
+- [x] 5.9 新增 `CreateMessageService` + spec（findById event → create message）
+- [x] 5.10 新增 `DeleteMessageService` + spec（findById message → 檢查本人/ADMIN → softDelete）
+- [x] 5.11 新增 `ListTagsService` + spec（findAll tags）
 
 ## 6. Facade
 
