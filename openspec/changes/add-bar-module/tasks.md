@@ -19,7 +19,7 @@
 
 ## 4. Gemini Adapter
 
-- [ ] 4.1 建立 `src/adapter/out/gemini/GeminiAdapter.ts`，實作 GeminiPort（使用 `@google/generative-ai` SDK，初始化時若 GEMINI_API_KEY 為空拋 ConfigurationException）
+- [x] 4.1 建立 `src/adapter/out/gemini/GeminiAdapter.ts`，實作 GeminiPort（使用 `@google/generative-ai` SDK，初始化時若 GEMINI_API_KEY 為空拋 ConfigurationException）
 
 ## 5. Application Services
 
