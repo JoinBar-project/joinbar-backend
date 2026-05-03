@@ -19,7 +19,7 @@
 
 ## 4. Gemini Adapter
 
-- [x] 4.1 建立 `src/adapter/out/gemini/GeminiAdapter.ts`，實作 GeminiPort（使用 `@google/generative-ai` SDK，初始化時若 GEMINI_API_KEY 為空拋 ConfigurationException）
+- [x] 4.1 建立 `src/adapter/out/gemini/GeminiAdapter.ts`，實作 GeminiPort（使用 `@google/generative-ai` SDK；GEMINI_API_KEY 為空時 warn log 並讓 client 保持 null，應用仍正常啟動；generate() 加 10 秒 Promise.race timeout，逾時拋 Error 由 AiDescribeBarService catch 轉 503）
 
 ## 5. Application Services
 
@@ -49,11 +49,11 @@
 - [x] 7.5 建立 `src/adapter/in/web/bar/dto/CreateBarRequest.ts`（Zod schema，name 必填）
 - [x] 7.6 建立 `src/adapter/in/web/bar/dto/UpdateBarRequest.ts`（Zod schema，全選填，.refine 至少一欄位）
 - [x] 7.7 建立 `src/adapter/in/web/bar/dto/AiDescribeResponse.ts`（description: string）
-- [x] 7.8 建立 `src/adapter/in/web/bar/BarController.ts`（@Controller('bars')，class-level @UseGuards(JwtAuthGuard)；GET / 與 GET /:id 加 @Public()；POST /、PATCH /:id、DELETE /:id、POST /:id/describe）
+- [x] 7.8 建立 `src/adapter/in/web/bar/BarController.ts`（@Controller('bars')，class-level @UseGuards(JwtAuthGuard)；GET / 與 GET /:id 加 @Public()；POST /、PATCH /:id、DELETE /:id 加 @UseGuards(RolesGuard) + @Roles(RoleName.ADMIN)；POST /:id/describe 需 JWT）
 
 ## 8. Module 配線
 
-- [x] 8.1 建立 `src/modules/bar.module.ts`（imports: AuthModule、GeminiModule 或直接 provide GeminiAdapter；providers: PrismaBarRepository with FIND_BAR_PORT/SAVE_BAR_PORT、所有 Service、GeminiAdapter with GEMINI_PORT、BarFacade；controllers: BarController）
+- [x] 8.1 建立 `src/modules/bar.module.ts`（imports: AuthModule、JwtModule；providers: PrismaBarRepository with FIND_BAR_PORT/SAVE_BAR_PORT、GeminiAdapter with GEMINI_PORT、所有 Service、BarFacade、RolesGuard；controllers: BarController）
 - [x] 8.2 在 `src/app.module.ts` 引入 `BarModule`
 
 ## 9. Swagger 文件

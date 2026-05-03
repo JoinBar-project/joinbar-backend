@@ -19,15 +19,21 @@ Prisma schema 已有 `Bar`、`BarTag` 模型。`Bar` 紀錄酒吧基本資訊（
 - 酒吧圖片上傳（imageUrl 由外部 URL 傳入，不走 Firebase Storage）
 - 收藏（BarFavorite / BarFolder）由獨立 favorite 模組處理
 - Google Places API 同步（seed 腳本範疇，不在此模組）
-- 使用者角色分級管理（目前所有 JWT 使用者均可執行管理操作）
 
 ---
 
 ## Decisions
 
-### 1. 公開端點不掛 JwtAuthGuard
+### 1. 公開端點與管理端點的存取控制
 
-`GET /bars`、`GET /bars/:id` 加 `@Public()` decorator，讓未登入使用者可瀏覽酒吧。管理操作（POST / PATCH / DELETE）保留 class-level `@UseGuards(JwtAuthGuard)`，僅覆寫公開端點。
+`GET /bars`、`GET /bars/:id` 加 `@Public()` decorator，讓未登入使用者可瀏覽酒吧。
+
+管理操作（POST / PATCH / DELETE）須同時通過：
+
+- class-level `@UseGuards(JwtAuthGuard)` — 驗身份（JWT 有效）
+- method-level `@UseGuards(RolesGuard)` + `@Roles(RoleName.ADMIN)` — 驗角色（ADMIN only）
+
+未帶 JWT 回傳 401；JWT 有效但非 ADMIN 回傳 403。
 
 **替代方案**：獨立 PublicBarController + AuthBarController → 兩個 controller 增加維護成本，不採用。
 
@@ -52,11 +58,11 @@ Gemini AI 能力跨模組共用（未來 event 推薦等也可使用），與 `F
 
 ## Risks / Trade-offs
 
-| 風險                                                 | 緩解                                                                             |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Gemini API key 未設定時呼叫 → runtime error          | GeminiAdapter 初始化時若 key 為空直接拋 ConfigurationException，不等到呼叫時才爆 |
-| BarTag 為 1:1 關係，upsert 時需注意 onDelete Cascade | 刪除 Bar 時 BarTag 自動隨之刪除（schema 已設 Cascade），無需額外處理             |
-| 列表查詢無 Bar 資料時回傳空陣列 vs 404               | 永遠回傳 200 + 空陣列，符合 REST 慣例                                            |
+| 風險                                                 | 緩解                                                                                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gemini API key 未設定時呼叫 → runtime error          | GeminiAdapter.onModuleInit 若 key 為空則 warn log 並將 client 設為 null；generate() 被呼叫時拋 Error，由 AiDescribeBarService catch 轉為 503，應用仍正常啟動 |
+| BarTag 為 1:1 關係，upsert 時需注意 onDelete Cascade | 刪除 Bar 時 BarTag 自動隨之刪除（schema 已設 Cascade），無需額外處理                                                                                         |
+| 列表查詢無 Bar 資料時回傳空陣列 vs 404               | 永遠回傳 200 + 空陣列，符合 REST 慣例                                                                                                                        |
 
 ---
 
@@ -70,5 +76,4 @@ Gemini AI 能力跨模組共用（未來 event 推薦等也可使用），與 `F
 
 ## Open Questions
 
-- 酒吧管理操作是否應限制 ADMIN role？（目前 JWT 使用者皆可，待產品確認）
 - 列表是否需要依距離排序（需前端傳入使用者座標）？（延後）

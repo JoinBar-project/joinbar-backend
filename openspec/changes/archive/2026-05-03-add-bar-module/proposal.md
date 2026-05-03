@@ -5,7 +5,7 @@
 ## What Changes
 
 - 新增公開讀取端點：列出酒吧（支援標籤篩選 + 關鍵字搜尋）、取得單一酒吧詳情
-- 新增管理端點（需 JWT）：建立、更新（含 BarTag）、軟刪除酒吧
+- 新增管理端點（需 JWT + ADMIN role）：建立、更新（含 BarTag）、軟刪除酒吧
 - 新增 Gemini AI 描述端點：依酒吧基本資訊與標籤呼叫 Gemini API 生成描述，受 `geminiEnabled` feature flag 控制
 - 新增 `GeminiPort`（port/out）與 `GeminiAdapter`（adapter/out）
 - 新增 `BarFacade`、6 個 Service、對應 Port/in 介面
@@ -18,7 +18,7 @@
 
 - `bar-list`: 列出酒吧，支援標籤多選篩選（sport / music / student / bistro / drink / joy / romantic / oldschool / highlevel / easy）與 name 關鍵字搜尋，回傳分頁結果
 - `bar-detail`: 依 ID 取得酒吧完整資訊（含 BarTag）
-- `bar-management`: 需 JWT 的 CRUD 操作（建立含 BarTag、更新、軟刪除）
+- `bar-management`: 需 JWT + ADMIN role 的 CRUD 操作（建立含 BarTag、更新、軟刪除）
 - `bar-ai-describe`: 呼叫 Gemini API 依酒吧 name / address / tags 生成自然語言描述，`geminiEnabled=false` 時回傳 503
 
 ### Modified Capabilities

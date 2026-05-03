@@ -35,6 +35,11 @@ Request body（JSON）：
 - **WHEN** POST /api/bars，無 Authorization header
 - **THEN** 回傳 HTTP 401
 
+#### Scenario: JWT 有效但非 ADMIN
+
+- **WHEN** POST /api/bars，帶有效 JWT（role = USER）
+- **THEN** 回傳 HTTP 403
+
 ---
 
 ### Requirement: 更新酒吧
@@ -64,6 +69,11 @@ Request body 欄位均為可選（至少需提供一個欄位，否則回傳 400
 - **WHEN** PATCH /api/bars/:id，id 不存在
 - **THEN** 回傳 HTTP 404
 
+#### Scenario: JWT 有效但非 ADMIN
+
+- **WHEN** PATCH /api/bars/:id，帶有效 JWT（role = USER）
+- **THEN** 回傳 HTTP 403
+
 ---
 
 ### Requirement: 軟刪除酒吧
@@ -82,3 +92,8 @@ Request body 欄位均為可選（至少需提供一個欄位，否則回傳 400
 
 - **WHEN** DELETE /api/bars/:id，id 不存在
 - **THEN** 回傳 HTTP 404
+
+#### Scenario: JWT 有效但非 ADMIN
+
+- **WHEN** DELETE /api/bars/:id，帶有效 JWT（role = USER）
+- **THEN** 回傳 HTTP 403
