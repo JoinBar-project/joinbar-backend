@@ -53,8 +53,8 @@
 
 ## 8. Module 配線
 
-- [ ] 8.1 建立 `src/modules/bar.module.ts`（imports: AuthModule、GeminiModule 或直接 provide GeminiAdapter；providers: PrismaBarRepository with FIND_BAR_PORT/SAVE_BAR_PORT、所有 Service、GeminiAdapter with GEMINI_PORT、BarFacade；controllers: BarController）
-- [ ] 8.2 在 `src/app.module.ts` 引入 `BarModule`
+- [x] 8.1 建立 `src/modules/bar.module.ts`（imports: AuthModule、GeminiModule 或直接 provide GeminiAdapter；providers: PrismaBarRepository with FIND_BAR_PORT/SAVE_BAR_PORT、所有 Service、GeminiAdapter with GEMINI_PORT、BarFacade；controllers: BarController）
+- [x] 8.2 在 `src/app.module.ts` 引入 `BarModule`
 
 ## 9. Swagger 文件
 
