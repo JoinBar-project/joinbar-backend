@@ -17,8 +17,8 @@
 
 ## 4. Application Services
 
-- [ ] 4.1 建立 `src/application/service/user/GetUserService.ts`
-- [ ] 4.2 建立 `src/application/service/user/GetUserService.spec.ts`
+- [x] 4.1 建立 `src/application/service/user/GetUserService.ts`
+- [x] 4.2 建立 `src/application/service/user/GetUserService.spec.ts`
 - [ ] 4.3 建立 `src/application/service/user/UpdateUserService.ts`
 - [ ] 4.4 建立 `src/application/service/user/UpdateUserService.spec.ts`
 - [ ] 4.5 建立 `src/application/service/user/ChangePasswordService.ts`（findByEmailWithPassword → bcrypt 比對 → validateOrThrow → updatePassword）
