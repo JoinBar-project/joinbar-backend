@@ -23,8 +23,8 @@
 - [x] 4.4 建立 `src/application/service/user/UpdateUserService.spec.ts`
 - [x] 4.5 建立 `src/application/service/user/ChangePasswordService.ts`（findByEmailWithPassword → bcrypt 比對 → validateOrThrow → updatePassword）
 - [x] 4.6 建立 `src/application/service/user/ChangePasswordService.spec.ts`
-- [ ] 4.7 建立 `src/application/service/user/DeleteUserService.ts`（softDelete → clearUserContext）
-- [ ] 4.8 建立 `src/application/service/user/DeleteUserService.spec.ts`
+- [x] 4.7 建立 `src/application/service/user/DeleteUserService.ts`（softDelete → clearUserContext）
+- [x] 4.8 建立 `src/application/service/user/DeleteUserService.spec.ts`
 - [ ] 4.9 建立 `src/application/service/user/UpdateAvatarService.ts`（若有舊 avatarKey 先 delete → upload → getSignedUrl → updateAvatar）
 - [ ] 4.10 建立 `src/application/service/user/UpdateAvatarService.spec.ts`
 - [ ] 4.11 建立 `src/application/service/user/DeleteAvatarService.ts`（若有 avatarKey 則 delete → clearAvatar；無則直接回傳）
