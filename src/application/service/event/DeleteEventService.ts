@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   DeleteEventCommand,
   DeleteEventUseCase,
@@ -12,6 +12,7 @@ import {
   SaveEventPort,
 } from '../../port/out/event/SaveEventPort';
 import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
 import { RoleName } from '../../../domain/value-object/Role';
 
 @Injectable()
@@ -29,7 +30,7 @@ export class DeleteEventService implements DeleteEventUseCase {
       command.actorRole !== RoleName.ADMIN &&
       event.hostUser !== command.actorId
     ) {
-      throw new ForbiddenException('僅 ADMIN 或活動主辦人可刪除活動');
+      throw new ForbiddenOperationException('僅 ADMIN 或活動主辦人可刪除活動');
     }
 
     await this.saveEvent.softDelete(command.eventId);

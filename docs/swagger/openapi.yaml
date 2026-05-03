@@ -205,7 +205,7 @@ paths:
       $ref: './event/delete-message.yaml'
 
   # ─── Tag ──────────────────────────────────
-  /tags:
+  /events/tags:
     get:
       $ref: './tag/list-tags.yaml'
 

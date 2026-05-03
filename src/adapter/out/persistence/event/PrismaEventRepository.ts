@@ -57,7 +57,7 @@ export class PrismaEventRepository implements FindEventPort, SaveEventPort {
 
   // ─── SaveEventPort ────────────────────────────────────────────────────
 
-  async create(data: CreateEventData): Promise<string> {
+  async create(data: CreateEventData): Promise<EventData> {
     const record = await this.prisma.eventRecord.create({
       data: {
         name: data.name,
@@ -78,8 +78,12 @@ export class PrismaEventRepository implements FindEventPort, SaveEventPort {
             },
           }),
       },
+      include: {
+        tags: { include: { tag: true } },
+        _count: { select: { participants: true } },
+      },
     });
-    return record.id;
+    return this.toEventData(record);
   }
 
   async update(eventId: string, data: UpdateEventData): Promise<EventData> {

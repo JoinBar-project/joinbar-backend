@@ -83,7 +83,7 @@ const MESSAGE_RECORD = {
 const mockPrisma = {
   $connect: jest.fn(),
   $disconnect: jest.fn(),
-  $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
+  $transaction: jest.fn(),
   userAuthProvider: {
     findFirst: jest.fn(),
     findUnique: jest.fn().mockResolvedValue(null),
@@ -124,6 +124,19 @@ const mockPrisma = {
   },
 };
 
+// 支援 interactive transaction（callback）與 batch transaction（陣列）
+// mockPrisma 須在此完整定義後才能在 callback 中引用
+mockPrisma.$transaction.mockImplementation(
+  async (
+    callbackOrOps: ((tx: unknown) => Promise<unknown>) | Promise<unknown>[],
+  ) => {
+    if (typeof callbackOrOps === 'function') {
+      return callbackOrOps(mockPrisma);
+    }
+    return Promise.all(callbackOrOps);
+  },
+);
+
 const mockRedis = createMockRedis();
 
 // ── E2E 測試套件 ─────────────────────────────────────────────────────────
@@ -152,7 +165,7 @@ describe('Event E2E', () => {
     mockPrisma.eventRecord.findUnique.mockResolvedValue(EVENT_RECORD);
     mockPrisma.eventRecord.findMany.mockResolvedValue([EVENT_RECORD]);
     mockPrisma.eventRecord.count.mockResolvedValue(1);
-    mockPrisma.eventRecord.create.mockResolvedValue({ id: EVENT_UUID });
+    mockPrisma.eventRecord.create.mockResolvedValue(EVENT_RECORD);
     mockPrisma.eventRecord.update.mockResolvedValue(EVENT_RECORD);
     mockPrisma.tag.findMany.mockResolvedValue([TAG_RECORD]);
     mockPrisma.eventParticipation.findUnique.mockResolvedValue(null);
@@ -527,11 +540,11 @@ describe('Event E2E', () => {
     });
   });
 
-  // ── GET /api/tags ─────────────────────────────────────────────────────
+  // ── GET /api/events/tags ──────────────────────────────────────────────
 
-  describe('GET /api/tags', () => {
+  describe('GET /api/events/tags', () => {
     it('無需 JWT，回傳標籤列表', async () => {
-      const res = await request(app.getHttpServer()).get('/api/tags');
+      const res = await request(app.getHttpServer()).get('/api/events/tags');
 
       expect(res.status).toBe(200);
       const data = (res.body as { data: Record<string, unknown> }).data;

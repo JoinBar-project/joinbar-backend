@@ -5,7 +5,11 @@ const EVENT_ID = '00000000-0000-0000-0000-000000000001';
 const USER_ID = 'user-1';
 
 const mockFindParticipation = { findByUserAndEvent: jest.fn() };
-const mockSaveParticipation = { create: jest.fn(), delete: jest.fn() };
+const mockSaveParticipation = {
+  create: jest.fn(),
+  createWithCapacityCheck: jest.fn(),
+  delete: jest.fn(),
+};
 
 describe('LeaveEventService', () => {
   let service: LeaveEventService;

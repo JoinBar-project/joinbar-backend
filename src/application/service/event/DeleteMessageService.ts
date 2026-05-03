@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   DeleteMessageCommand,
   DeleteMessageUseCase,
@@ -12,6 +12,7 @@ import {
   SaveMessagePort,
 } from '../../port/out/event/SaveMessagePort';
 import { MessageNotFoundException } from '../../../domain/exception/MessageNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
 import { RoleName } from '../../../domain/value-object/Role';
 
 @Injectable()
@@ -29,7 +30,7 @@ export class DeleteMessageService implements DeleteMessageUseCase {
       command.actorRole !== RoleName.ADMIN &&
       message.userId !== command.actorId
     ) {
-      throw new ForbiddenException('僅留言本人或 ADMIN 可刪除留言');
+      throw new ForbiddenOperationException('僅留言本人或 ADMIN 可刪除留言');
     }
 
     await this.saveMessage.softDelete(command.messageId);

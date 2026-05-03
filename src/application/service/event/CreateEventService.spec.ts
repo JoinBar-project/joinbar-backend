@@ -1,6 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
 import { CreateEventService } from './CreateEventService';
-import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { InvalidTagException } from '../../../domain/exception/InvalidTagException';
 import { EventData } from '../../port/out/event/FindEventPort';
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
@@ -26,12 +25,6 @@ const makeEvent = (overrides: Partial<EventData> = {}): EventData => ({
   ...overrides,
 });
 
-const mockFindEvent = {
-  findById: jest.fn(),
-  findMany: jest.fn(),
-  count: jest.fn(),
-  countParticipants: jest.fn(),
-};
 const mockSaveEvent = {
   create: jest.fn(),
   update: jest.fn(),
@@ -44,12 +37,11 @@ describe('CreateEventService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new CreateEventService(mockFindEvent, mockSaveEvent, mockFindTag);
+    service = new CreateEventService(mockSaveEvent, mockFindTag);
   });
 
   it('無 tags 時直接建立並回傳活動', async () => {
-    mockSaveEvent.create.mockResolvedValue(EVENT_ID);
-    mockFindEvent.findById.mockResolvedValue(makeEvent({ tags: [] }));
+    mockSaveEvent.create.mockResolvedValue(makeEvent({ tags: [] }));
 
     const result = await service.execute({
       name: '測試活動',
@@ -66,8 +58,7 @@ describe('CreateEventService', () => {
 
   it('tags 存在時解析 tagId 並傳給 saveEvent.create', async () => {
     mockFindTag.findByNames.mockResolvedValue([{ id: TAG_ID, name: 'music' }]);
-    mockSaveEvent.create.mockResolvedValue(EVENT_ID);
-    mockFindEvent.findById.mockResolvedValue(makeEvent());
+    mockSaveEvent.create.mockResolvedValue(makeEvent());
 
     await service.execute({
       name: '測試活動',
@@ -84,7 +75,7 @@ describe('CreateEventService', () => {
     );
   });
 
-  it('包含無效標籤名稱時拋出 BadRequestException', async () => {
+  it('包含無效標籤名稱時拋出 InvalidTagException', async () => {
     mockFindTag.findByNames.mockResolvedValue([]);
 
     await expect(
@@ -97,23 +88,6 @@ describe('CreateEventService', () => {
         hostUser: 'user-1',
         tags: ['invalid-tag'],
       }),
-    ).rejects.toThrow(BadRequestException);
-  });
-
-  it('建立後查詢回 null 時拋出 EventNotFoundException', async () => {
-    mockFindTag.findByNames.mockResolvedValue([]);
-    mockSaveEvent.create.mockResolvedValue(EVENT_ID);
-    mockFindEvent.findById.mockResolvedValue(null);
-
-    await expect(
-      service.execute({
-        name: '測試活動',
-        barName: '測試酒吧',
-        location: '台北市',
-        startAt: new Date(),
-        endAt: new Date(),
-        hostUser: 'user-1',
-      }),
-    ).rejects.toThrow(EventNotFoundException);
+    ).rejects.toThrow(InvalidTagException);
   });
 });

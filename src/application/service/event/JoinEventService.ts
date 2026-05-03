@@ -16,7 +16,6 @@ import {
   SaveParticipationPort,
 } from '../../port/out/event/SaveParticipationPort';
 import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
-import { EventFullException } from '../../../domain/exception/EventFullException';
 import { AlreadyJoinedException } from '../../../domain/exception/AlreadyJoinedException';
 
 @Injectable()
@@ -40,10 +39,14 @@ export class JoinEventService implements JoinEventUseCase {
     if (existing) throw new AlreadyJoinedException();
 
     if (event.maxPeople !== null) {
-      const count = await this.findEvent.countParticipants(command.eventId);
-      if (count >= event.maxPeople) throw new EventFullException();
+      // createWithCapacityCheck 在事務中原子性地檢查人數並建立報名
+      await this.saveParticipation.createWithCapacityCheck(
+        command.userId,
+        command.eventId,
+        event.maxPeople,
+      );
+    } else {
+      await this.saveParticipation.create(command.userId, command.eventId);
     }
-
-    await this.saveParticipation.create(command.userId, command.eventId);
   }
 }

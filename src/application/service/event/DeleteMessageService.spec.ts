@@ -1,6 +1,6 @@
-import { ForbiddenException } from '@nestjs/common';
 import { DeleteMessageService } from './DeleteMessageService';
 import { MessageNotFoundException } from '../../../domain/exception/MessageNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
 import { MessageData } from '../../port/out/event/FindMessagePort';
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
@@ -54,7 +54,7 @@ describe('DeleteMessageService', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('非本人、非 ADMIN 拋出 ForbiddenException', async () => {
+  it('非本人、非 ADMIN 拋出 ForbiddenOperationException', async () => {
     mockFindMessage.findById.mockResolvedValue(makeMessage());
 
     await expect(
@@ -64,7 +64,7 @@ describe('DeleteMessageService', () => {
         actorId: OTHER_ID,
         actorRole: 'USER',
       }),
-    ).rejects.toThrow(ForbiddenException);
+    ).rejects.toThrow(ForbiddenOperationException);
   });
 
   it('留言不存在時拋出 MessageNotFoundException', async () => {

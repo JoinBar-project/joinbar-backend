@@ -28,6 +28,8 @@ import { EventFullException } from '../../../../domain/exception/EventFullExcept
 import { AlreadyJoinedException } from '../../../../domain/exception/AlreadyJoinedException';
 import { ParticipationNotFoundException } from '../../../../domain/exception/ParticipationNotFoundException';
 import { MessageNotFoundException } from '../../../../domain/exception/MessageNotFoundException';
+import { ForbiddenOperationException } from '../../../../domain/exception/ForbiddenOperationException';
+import { InvalidTagException } from '../../../../domain/exception/InvalidTagException';
 
 export interface ApiErrorResponse {
   success: false;
@@ -114,6 +116,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = HttpStatus.NOT_FOUND;
       message = exception.message;
       code = 'MESSAGE_NOT_FOUND';
+    } else if (exception instanceof ForbiddenOperationException) {
+      status = HttpStatus.FORBIDDEN;
+      message = exception.message;
+      code = 'FORBIDDEN_OPERATION';
+    } else if (exception instanceof InvalidTagException) {
+      status = HttpStatus.BAD_REQUEST;
+      message = exception.message;
+      code = 'INVALID_TAG';
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;

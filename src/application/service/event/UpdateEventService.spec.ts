@@ -1,6 +1,7 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { UpdateEventService } from './UpdateEventService';
 import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
+import { InvalidTagException } from '../../../domain/exception/InvalidTagException';
 import { EventData } from '../../port/out/event/FindEventPort';
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
@@ -76,7 +77,7 @@ describe('UpdateEventService', () => {
     ).resolves.toBeDefined();
   });
 
-  it('非主辦人、非 ADMIN 拋出 ForbiddenException', async () => {
+  it('非主辦人、非 ADMIN 拋出 ForbiddenOperationException', async () => {
     mockFindEvent.findById.mockResolvedValue(makeEvent());
 
     await expect(
@@ -86,7 +87,7 @@ describe('UpdateEventService', () => {
         actorRole: 'USER',
         name: '新名稱',
       }),
-    ).rejects.toThrow(ForbiddenException);
+    ).rejects.toThrow(ForbiddenOperationException);
   });
 
   it('活動不存在時拋出 EventNotFoundException', async () => {
@@ -102,7 +103,7 @@ describe('UpdateEventService', () => {
     ).rejects.toThrow(EventNotFoundException);
   });
 
-  it('包含無效標籤名稱時拋出 BadRequestException', async () => {
+  it('包含無效標籤名稱時拋出 InvalidTagException', async () => {
     mockFindEvent.findById.mockResolvedValue(makeEvent());
     mockFindTag.findByNames.mockResolvedValue([]);
 
@@ -113,6 +114,6 @@ describe('UpdateEventService', () => {
         actorRole: 'USER',
         tags: ['invalid'],
       }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(InvalidTagException);
   });
 });

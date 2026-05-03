@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   UpdateEventCommand,
   UpdateEventResult,
@@ -19,6 +14,8 @@ import {
 } from '../../port/out/event/SaveEventPort';
 import { FIND_TAG_PORT, FindTagPort } from '../../port/out/event/FindTagPort';
 import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
+import { InvalidTagException } from '../../../domain/exception/InvalidTagException';
 import { RoleName } from '../../../domain/value-object/Role';
 
 @Injectable()
@@ -37,14 +34,14 @@ export class UpdateEventService implements UpdateEventUseCase {
       command.actorRole !== RoleName.ADMIN &&
       existing.hostUser !== command.actorId
     ) {
-      throw new ForbiddenException('僅 ADMIN 或活動主辦人可更新活動');
+      throw new ForbiddenOperationException('僅 ADMIN 或活動主辦人可更新活動');
     }
 
     let tagIds: string[] | undefined;
     if (command.tags !== undefined) {
       const found = await this.findTag.findByNames(command.tags);
       if (found.length !== command.tags.length) {
-        throw new BadRequestException('包含無效的標籤名稱');
+        throw new InvalidTagException();
       }
       tagIds = found.map((t) => t.id);
     }

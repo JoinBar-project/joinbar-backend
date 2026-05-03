@@ -16,6 +16,15 @@ export const updateEventSchema = z
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: '至少需提供一個欄位',
-  });
+  })
+  .refine(
+    (data) => {
+      if (data.startAt !== undefined && data.endAt !== undefined) {
+        return data.endAt > data.startAt;
+      }
+      return true;
+    },
+    { message: 'endAt 必須晚於 startAt', path: ['endAt'] },
+  );
 
 export type UpdateEventRequest = z.infer<typeof updateEventSchema>;

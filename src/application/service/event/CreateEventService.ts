@@ -1,24 +1,19 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   CreateEventCommand,
   CreateEventResult,
   CreateEventUseCase,
 } from '../../port/in/event/CreateEventUseCase';
 import {
-  FIND_EVENT_PORT,
-  FindEventPort,
-} from '../../port/out/event/FindEventPort';
-import {
   SAVE_EVENT_PORT,
   SaveEventPort,
 } from '../../port/out/event/SaveEventPort';
 import { FIND_TAG_PORT, FindTagPort } from '../../port/out/event/FindTagPort';
-import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { InvalidTagException } from '../../../domain/exception/InvalidTagException';
 
 @Injectable()
 export class CreateEventService implements CreateEventUseCase {
   constructor(
-    @Inject(FIND_EVENT_PORT) private readonly findEvent: FindEventPort,
     @Inject(SAVE_EVENT_PORT) private readonly saveEvent: SaveEventPort,
     @Inject(FIND_TAG_PORT) private readonly findTag: FindTagPort,
   ) {}
@@ -28,12 +23,12 @@ export class CreateEventService implements CreateEventUseCase {
     if (command.tags && command.tags.length > 0) {
       const found = await this.findTag.findByNames(command.tags);
       if (found.length !== command.tags.length) {
-        throw new BadRequestException('包含無效的標籤名稱');
+        throw new InvalidTagException();
       }
       tagIds = found.map((t) => t.id);
     }
 
-    const newId = await this.saveEvent.create({
+    const event = await this.saveEvent.create({
       name: command.name,
       description: command.description,
       barId: command.barId,
@@ -47,9 +42,6 @@ export class CreateEventService implements CreateEventUseCase {
       hostUser: command.hostUser,
       tagIds,
     });
-
-    const event = await this.findEvent.findById(newId);
-    if (!event) throw new EventNotFoundException();
 
     return {
       id: event.id,

@@ -32,18 +32,17 @@ import {
 } from './dto/CreateMessageRequest';
 import { EventResponse } from './dto/EventResponse';
 import { EventListResponse } from './dto/EventListResponse';
-import { MessageResponse } from './dto/MessageResponse';
-import { ListTagsResult } from '../../../../application/port/in/event/ListTagsUseCase';
-import { ListMessagesResult } from '../../../../application/port/in/event/ListMessagesUseCase';
+import { MessageResponse, ListMessagesResponse } from './dto/MessageResponse';
+import { ListTagsResponse } from './dto/ListTagsResponse';
 
-@Controller()
+@Controller('events')
 @UseGuards(JwtAuthGuard)
 export class EventController {
   constructor(private readonly eventFacade: EventFacade) {}
 
   // ─── Events ───────────────────────────────────────────────────────────
 
-  @Get('events')
+  @Get()
   @Public()
   listEvents(
     @Query(new ZodValidationPipe(listEventsSchema)) query: ListEventsRequest,
@@ -51,13 +50,19 @@ export class EventController {
     return this.eventFacade.listEvents(query);
   }
 
-  @Get('events/:id')
+  @Get('tags')
+  @Public()
+  listTags(): Promise<ListTagsResponse> {
+    return this.eventFacade.listTags();
+  }
+
+  @Get(':id')
   @Public()
   getEvent(@Param('id') id: string): Promise<EventResponse> {
     return this.eventFacade.getEvent({ eventId: id });
   }
 
-  @Post('events')
+  @Post()
   createEvent(
     @Body(new ZodValidationPipe(createEventSchema)) dto: CreateEventRequest,
     @CurrentUser() user: UserContext,
@@ -65,7 +70,7 @@ export class EventController {
     return this.eventFacade.createEvent({ ...dto, hostUser: user.sub });
   }
 
-  @Patch('events/:id')
+  @Patch(':id')
   updateEvent(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateEventSchema)) dto: UpdateEventRequest,
@@ -79,7 +84,7 @@ export class EventController {
     });
   }
 
-  @Delete('events/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteEvent(
     @Param('id') id: string,
@@ -94,7 +99,7 @@ export class EventController {
 
   // ─── Participation ────────────────────────────────────────────────────
 
-  @Post('events/:id/join')
+  @Post(':id/join')
   @HttpCode(HttpStatus.CREATED)
   joinEvent(
     @Param('id') id: string,
@@ -103,7 +108,7 @@ export class EventController {
     return this.eventFacade.joinEvent({ eventId: id, userId: user.sub });
   }
 
-  @Delete('events/:id/join')
+  @Delete(':id/join')
   @HttpCode(HttpStatus.NO_CONTENT)
   leaveEvent(
     @Param('id') id: string,
@@ -114,13 +119,13 @@ export class EventController {
 
   // ─── Messages ─────────────────────────────────────────────────────────
 
-  @Get('events/:id/messages')
+  @Get(':id/messages')
   @Public()
-  listMessages(@Param('id') id: string): Promise<ListMessagesResult> {
+  listMessages(@Param('id') id: string): Promise<ListMessagesResponse> {
     return this.eventFacade.listMessages({ eventId: id });
   }
 
-  @Post('events/:id/messages')
+  @Post(':id/messages')
   createMessage(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(createMessageSchema))
@@ -134,7 +139,7 @@ export class EventController {
     });
   }
 
-  @Delete('events/:id/messages/:messageId')
+  @Delete(':id/messages/:messageId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteMessage(
     @Param('id') id: string,
@@ -147,13 +152,5 @@ export class EventController {
       actorId: user.sub,
       actorRole: user.roleName,
     });
-  }
-
-  // ─── Tags ─────────────────────────────────────────────────────────────
-
-  @Get('tags')
-  @Public()
-  listTags(): Promise<ListTagsResult> {
-    return this.eventFacade.listTags();
   }
 }

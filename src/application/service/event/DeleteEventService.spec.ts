@@ -1,6 +1,6 @@
-import { ForbiddenException } from '@nestjs/common';
 import { DeleteEventService } from './DeleteEventService';
 import { EventNotFoundException } from '../../../domain/exception/EventNotFoundException';
+import { ForbiddenOperationException } from '../../../domain/exception/ForbiddenOperationException';
 import { EventData } from '../../port/out/event/FindEventPort';
 
 const EVENT_ID = '00000000-0000-0000-0000-000000000001';
@@ -71,7 +71,7 @@ describe('DeleteEventService', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('非主辦人、非 ADMIN 拋出 ForbiddenException', async () => {
+  it('非主辦人、非 ADMIN 拋出 ForbiddenOperationException', async () => {
     mockFindEvent.findById.mockResolvedValue(makeEvent());
 
     await expect(
@@ -80,7 +80,7 @@ describe('DeleteEventService', () => {
         actorId: OTHER_ID,
         actorRole: 'USER',
       }),
-    ).rejects.toThrow(ForbiddenException);
+    ).rejects.toThrow(ForbiddenOperationException);
   });
 
   it('活動不存在時拋出 EventNotFoundException', async () => {

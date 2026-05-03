@@ -71,6 +71,46 @@ E2E 的 `mockPrisma` 若缺少此方法，ChangePassword 端點會拋 500。
 
 NestJS `@Post()` 預設 HTTP 201，若規格定義 200 需明確加 `@HttpCode(HttpStatus.OK)`。
 
+## E2E mock：$transaction 需同時支援 batch 與 interactive 兩種形式
+
+`PrismaService.$transaction` 有兩種呼叫方式：
+
+- **batch**：`$transaction([p1, p2, ...])`（陣列，`Promise.all`）
+- **interactive**：`$transaction(async (tx) => { ... }, { isolationLevel })`（callback）
+
+原始 mock 只處理 batch 形式：
+
+```typescript
+$transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops));
+```
+
+若新增使用 interactive transaction 的 repository 方法（例如 TOCTOU 問題修正），E2E 會拋
+`TypeError: ops is not iterable` → 500，且 try-catch 會把錯誤重新拋出，難以察覺根因。
+
+**修法**：拆成兩步驟避免 TypeScript 循環型別推導錯誤：
+
+```typescript
+const mockPrisma = {
+  $transaction: jest.fn(),
+  // ...其餘欄位
+};
+
+// 物件定義完成後再設實作，才能在 callback 中引用 mockPrisma
+mockPrisma.$transaction.mockImplementation(
+  async (
+    callbackOrOps: ((tx: unknown) => Promise<unknown>) | Promise<unknown>[],
+  ) => {
+    if (typeof callbackOrOps === 'function') {
+      return callbackOrOps(mockPrisma);
+    }
+    return Promise.all(callbackOrOps);
+  },
+);
+```
+
+注意：`jest.clearAllMocks()` 不會清除 `mockImplementation`，只有 `jest.resetAllMocks()` 才會。
+因此此寫法在 `beforeEach` 執行 `clearAllMocks` 後仍有效，無需在每個 test 重新設定。
+
 ## CORS_ORIGIN production 預設值防呆
 
 `CORS_ORIGIN` 改為陣列（逗號分隔），預設含 `http://localhost:5173,http://localhost:3000`。production 額外阻擋：

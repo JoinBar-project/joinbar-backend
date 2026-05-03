@@ -33,7 +33,7 @@ export interface UpdateEventData {
 export const SAVE_EVENT_PORT = 'SAVE_EVENT_PORT';
 
 export interface SaveEventPort {
-  create(data: CreateEventData): Promise<string>;
+  create(data: CreateEventData): Promise<EventData>;
   update(eventId: string, data: UpdateEventData): Promise<EventData>;
   softDelete(eventId: string): Promise<void>;
 }
