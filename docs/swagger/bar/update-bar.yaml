@@ -1,7 +1,7 @@
 tags: [Bar]
 summary: 更新酒吧
 description: |
-  需 JWT。部分更新酒吧資料，至少需提供一個欄位。
+  需 JWT 且具備 ADMIN 角色。部分更新酒吧資料，至少需提供一個欄位。
   若帶 tags 則整體覆寫 BarTag（upsert）。
 parameters:
   - name: id
@@ -63,5 +63,7 @@ responses:
     $ref: '../openapi.yaml#/components/responses/BadRequest'
   '401':
     $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '403':
+    $ref: '../openapi.yaml#/components/responses/Forbidden'
   '404':
     $ref: '../openapi.yaml#/components/responses/NotFound'
