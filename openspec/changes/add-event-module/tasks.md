@@ -59,14 +59,14 @@
 
 ## 7. Controller & DTOs
 
-- [ ] 7.1 新增 `ListEventsRequest` DTO（keyword、tags、startFrom、startTo、barId、page、limit）
-- [ ] 7.2 新增 `CreateEventRequest` DTO（name、location、startAt、endAt、barId、barName、description、maxPeople、imageUrl、price、tags）
-- [ ] 7.3 新增 `UpdateEventRequest` DTO（同 Create 但全選填 + refine 至少一欄位）
-- [ ] 7.4 新增 `CreateMessageRequest` DTO（content 非空字串）
-- [ ] 7.5 新增 `EventResponse` DTO（完整活動欄位含 tags、participantCount）
-- [ ] 7.6 新增 `EventListResponse` DTO（items: EventListItem[]、meta: PaginationMeta）
-- [ ] 7.7 新增 `MessageResponse` DTO
-- [ ] 7.8 新增 `EventController`（11 個端點：GET /events、GET /events/:id、POST /events、PATCH /events/:id、DELETE /events/:id、POST /events/:id/join、DELETE /events/:id/join、GET /events/:id/messages、POST /events/:id/messages、DELETE /events/:id/messages/:messageId、GET /tags）
+- [x] 7.1 新增 `ListEventsRequest` DTO（keyword、tags、startFrom、startTo、barId、page、limit）
+- [x] 7.2 新增 `CreateEventRequest` DTO（name、location、startAt、endAt、barId、barName、description、maxPeople、imageUrl、price、tags）
+- [x] 7.3 新增 `UpdateEventRequest` DTO（同 Create 但全選填 + refine 至少一欄位）
+- [x] 7.4 新增 `CreateMessageRequest` DTO（content 非空字串）
+- [x] 7.5 新增 `EventResponse` DTO（完整活動欄位含 tags、participantCount）
+- [x] 7.6 新增 `EventListResponse` DTO（items: EventListItem[]、meta: PaginationMeta）
+- [x] 7.7 新增 `MessageResponse` DTO
+- [x] 7.8 新增 `EventController`（11 個端點：GET /events、GET /events/:id、POST /events、PATCH /events/:id、DELETE /events/:id、POST /events/:id/join、DELETE /events/:id/join、GET /events/:id/messages、POST /events/:id/messages、DELETE /events/:id/messages/:messageId、GET /tags）
 
 ## 8. Module 配線
 
