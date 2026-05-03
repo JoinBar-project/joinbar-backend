@@ -36,11 +36,11 @@
 
 ## 6. Controller & DTO
 
-- [ ] 6.1 建立 `src/adapter/in/web/user/dto/UserProfileResponse.ts`（含 `@ApiProperty`）
-- [ ] 6.2 建立 `src/adapter/in/web/user/dto/UpdateUserRequest.ts`（Zod schema，username/nickname/birthday 皆可選）
-- [ ] 6.3 建立 `src/adapter/in/web/user/dto/ChangePasswordRequest.ts`（Zod schema，oldPassword + newPassword）
-- [ ] 6.4 建立 `src/adapter/in/web/user/dto/AvatarResponse.ts`（avatarUrl: string）
-- [ ] 6.5 建立 `src/adapter/in/web/user/UserController.ts`（GET /me、PATCH /me、POST /me/password、DELETE /me、POST /me/avatar、DELETE /me/avatar；全部加 `@UseGuards(JwtAuthGuard)`）
+- [x] 6.1 建立 `src/adapter/in/web/user/dto/UserProfileResponse.ts`（含 `@ApiProperty`）
+- [x] 6.2 建立 `src/adapter/in/web/user/dto/UpdateUserRequest.ts`（Zod schema，username/nickname/birthday 皆可選）
+- [x] 6.3 建立 `src/adapter/in/web/user/dto/ChangePasswordRequest.ts`（Zod schema，oldPassword + newPassword）
+- [x] 6.4 建立 `src/adapter/in/web/user/dto/AvatarResponse.ts`（avatarUrl: string）
+- [x] 6.5 建立 `src/adapter/in/web/user/UserController.ts`（GET /me、PATCH /me、POST /me/password、DELETE /me、POST /me/avatar、DELETE /me/avatar；全部加 `@UseGuards(JwtAuthGuard)`）
 
 ## 7. Module 配線
 
@@ -49,8 +49,8 @@
 
 ## 8. Swagger 文件
 
-- [ ] 8.1 在所有 DTO 與 Response 加上 `@ApiProperty()` 裝飾器
-- [ ] 8.2 在 `UserController` 每個端點加 `@ApiOperation()`、`@ApiResponse()`
+- [x] 8.1 在所有 DTO 與 Response 加上 `@ApiProperty()` 裝飾器
+- [x] 8.2 在 `UserController` 每個端點加 `@ApiOperation()`、`@ApiResponse()`
 - [ ] 8.3 執行 `npm run swagger:bundle` 確認輸出正確
 
 ## 9. 測試
