@@ -27,8 +27,8 @@
 - [x] 4.8 建立 `src/application/service/user/DeleteUserService.spec.ts`
 - [x] 4.9 建立 `src/application/service/user/UpdateAvatarService.ts`（若有舊 avatarKey 先 delete → upload → getSignedUrl → updateAvatar）
 - [x] 4.10 建立 `src/application/service/user/UpdateAvatarService.spec.ts`
-- [ ] 4.11 建立 `src/application/service/user/DeleteAvatarService.ts`（若有 avatarKey 則 delete → clearAvatar；無則直接回傳）
-- [ ] 4.12 建立 `src/application/service/user/DeleteAvatarService.spec.ts`
+- [x] 4.11 建立 `src/application/service/user/DeleteAvatarService.ts`（若有 avatarKey 則 delete → clearAvatar；無則直接回傳）
+- [x] 4.12 建立 `src/application/service/user/DeleteAvatarService.spec.ts`
 
 ## 5. Facade
 
