@@ -1,0 +1,10 @@
+tags: [User]
+summary: 刪除帳號
+description: |
+  軟刪除自身帳號（設定 deletedAt），並清除 Redis UserContext 快取。
+  刪除後使用同一 JWT 再次請求任何需認證 API 將回傳 403。
+responses:
+  '204':
+    description: 帳號刪除成功
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'

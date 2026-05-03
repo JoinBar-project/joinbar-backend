@@ -51,7 +51,7 @@
 
 - [x] 8.1 在所有 DTO 與 Response 加上 `@ApiProperty()` 裝飾器
 - [x] 8.2 在 `UserController` 每個端點加 `@ApiOperation()`、`@ApiResponse()`
-- [ ] 8.3 執行 `npm run swagger:bundle` 確認輸出正確
+- [x] 8.3 執行 `npm run swagger:bundle` 確認輸出正確
 
 ## 9. 測試
 

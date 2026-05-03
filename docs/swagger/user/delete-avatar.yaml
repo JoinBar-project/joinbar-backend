@@ -1,0 +1,10 @@
+tags: [User]
+summary: 刪除頭像
+description: |
+  刪除 Firebase Storage 上的頭像檔案，清空 avatarUrl、avatarKey、avatarLastUpdated。
+  若使用者本無頭像，冪等回傳 204。
+responses:
+  '204':
+    description: 頭像刪除成功（或本無頭像）
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'

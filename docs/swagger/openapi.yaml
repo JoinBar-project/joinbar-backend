@@ -135,4 +135,23 @@ paths:
     post:
       $ref: './auth/verify-email.yaml'
 
+  # ─── User ─────────────────────────────────
+  /users/me:
+    get:
+      $ref: './user/get-profile.yaml'
+    patch:
+      $ref: './user/update-profile.yaml'
+    delete:
+      $ref: './user/delete-account.yaml'
+
+  /users/me/password:
+    post:
+      $ref: './user/change-password.yaml'
+
+  /users/me/avatar:
+    post:
+      $ref: './user/update-avatar.yaml'
+    delete:
+      $ref: './user/delete-avatar.yaml'
+
   # ─── 其他模組（尚未實作）────────────────────

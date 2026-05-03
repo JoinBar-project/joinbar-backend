@@ -1,0 +1,24 @@
+tags: [User]
+summary: 取得個人資料
+description: 回傳目前登入使用者的完整 profile。
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            id: 00000000-0000-0000-0000-000000000001
+            email: user@example.com
+            username: alice
+            nickname: 小愛
+            role: USER
+            birthday: '1990-01-01T00:00:00.000Z'
+            avatarUrl: 'https://storage.googleapis.com/signed/avatar.jpg'
+            createdAt: '2024-01-01T00:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'

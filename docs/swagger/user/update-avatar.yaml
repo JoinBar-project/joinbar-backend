@@ -1,0 +1,44 @@
+tags: [User]
+summary: 上傳頭像
+description: |
+  上傳圖片至 Firebase Storage，更新 avatarUrl、avatarKey、avatarLastUpdated。
+  若使用者已有頭像，會先刪除舊檔再上傳新檔。
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        required: [file]
+        properties:
+          file:
+            type: string
+            format: binary
+            description: 圖片檔案（image/*）
+responses:
+  '200':
+    description: 上傳成功，回傳新的 avatarUrl
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            avatarUrl: 'https://storage.googleapis.com/signed/avatars/user-id/1234567890.jpg'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '422':
+    description: 檔案類型非 image/*
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: 檔案類型必須為圖片（image/*）
+          code: UNPROCESSABLE_ENTITY
+          timestamp: '2024-01-01T00:00:00.000Z'
