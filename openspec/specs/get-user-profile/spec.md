@@ -7,7 +7,7 @@
 #### Scenario: 正常查詢
 
 - **WHEN** 已登入使用者呼叫 `GET /api/users/me`
-- **THEN** 回傳 `{ id, email, username, nickname, role, birthday, avatarUrl, createdAt }` 且 HTTP 200
+- **THEN** 回傳 `{ id, email, username, nickname, role, birthday, avatarUrl, createdAt }` 且 HTTP 200；若使用者有 `avatarKey`，`avatarUrl` 為即時產生的 signed URL（非 DB 快取值）
 
 #### Scenario: 未登入
 

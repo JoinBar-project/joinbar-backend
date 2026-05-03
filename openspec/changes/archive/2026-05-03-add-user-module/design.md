@@ -47,11 +47,12 @@ auth 模組已完成：`User` domain entity、`PrismaUserRepository`（實作 `F
 **選擇**：`userId` 由 `@CurrentUser()` 從 JWT 取得，不接受路徑參數。
 **理由**：user 模組僅支援自我管理，不支援管理員操作他人帳號。
 
-### D6：Avatar 使用現有 FileStoragePort，不新增 StoragePort
+### D6：Avatar 使用現有 FileStoragePort，URL 於讀取時即時產生
 
-**選擇**：`UpdateAvatarUseCase` 注入 `FILE_STORAGE_PORT`（`FirebaseStorageAdapter` 已實作），上傳後存 `avatarKey`（Firebase 路徑）與 `avatarUrl`（signed URL）；`DeleteAvatarUseCase` 透過 `avatarKey` 刪除 Storage 上的檔案後清空三個欄位。
-**理由**：`StorageModule` 已 global export `FILE_STORAGE_PORT`，無需額外配線。`avatarKey` 分開存是為了讓 delete 不依賴 URL 格式。
-**替代方案**：每次取 profile 時重新產生 signed URL → 增加 Firebase 呼叫次數且 signed URL 有 TTL，不如存入 DB 在上傳時一次生成。
+**選擇**：`UpdateAvatarUseCase` 注入 `FILE_STORAGE_PORT`，上傳後存 `avatarKey`（Firebase 永久路徑）；`GetUserService`、`UpdateUserService` 在回傳 profile 時呼叫 `getSignedUrl(avatarKey)` 即時產生 URL，不依賴 DB 的 `avatarUrl` 快取欄位。`DeleteAvatarUseCase` 透過 `avatarKey` 刪除 Storage 上的檔案後清空三個欄位。
+**理由**：Signed URL 有時效性（預設 3600 秒），若存入 DB 會在過期後回傳失效連結；每次讀取產生可確保 URL 永遠有效。Firebase `getSignedUrl` 呼叫本身成本極低，且 profile 讀取頻率不高。
+**操作順序（UpdateAvatar）**：先上傳新檔 → 更新 DB → 刪除舊檔（`.catch` 吞錯，不影響主流程）。此順序確保 DB 更新失敗時舊資料不受影響；舊檔若刪除失敗可由定期清理任務補處理。
+**檔案驗證**：以 magic number（Buffer 前幾個 bytes）判斷圖片格式（JPEG / PNG / GIF / WebP），不依賴 client 提供的 Content-Type header（可偽造）。檔案大小上限 5 MB。
 
 ## Risks / Trade-offs
 
