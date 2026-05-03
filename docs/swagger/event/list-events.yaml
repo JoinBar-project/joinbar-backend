@@ -1,0 +1,78 @@
+tags: [Event]
+summary: 列出活動
+description: 公開端點，無需登入。支援關鍵字、標籤（OR 語意）、日期範圍與 barId 篩選，回傳分頁結果，依 startAt 升冪排列。
+security: []
+parameters:
+  - name: page
+    in: query
+    schema:
+      type: integer
+      minimum: 1
+      default: 1
+  - name: limit
+    in: query
+    schema:
+      type: integer
+      minimum: 1
+      maximum: 100
+      default: 10
+  - name: keyword
+    in: query
+    description: 對 name、location 做模糊搜尋
+    schema:
+      type: string
+      example: 台北
+  - name: tags
+    in: query
+    description: 逗號分隔的標籤名稱
+    schema:
+      type: string
+      example: 'music,sport'
+  - name: startFrom
+    in: query
+    schema:
+      type: string
+      format: date-time
+      example: '2024-06-01T00:00:00Z'
+  - name: startTo
+    in: query
+    schema:
+      type: string
+      format: date-time
+      example: '2024-12-31T23:59:59Z'
+  - name: barId
+    in: query
+    schema:
+      type: string
+      format: uuid
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            items:
+              - id: 00000000-0000-0000-0000-000000000001
+                name: 週五爵士之夜
+                barId: null
+                barName: 藍調酒吧
+                location: 台北市大安區
+                startAt: '2024-06-07T19:00:00.000Z'
+                endAt: '2024-06-07T23:00:00.000Z'
+                maxPeople: 30
+                imageUrl: null
+                price: 200
+                tags: [music]
+                participantCount: 12
+            meta:
+              page: 1
+              limit: 10
+              total: 1
+              totalPages: 1
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'

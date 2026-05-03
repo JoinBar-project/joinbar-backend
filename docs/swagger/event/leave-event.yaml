@@ -1,0 +1,17 @@
+tags: [Event]
+summary: 退出活動
+description: 需 JWT。刪除 EventParticipation 記錄。若未報名則回傳 404。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '204':
+    description: 退出成功
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

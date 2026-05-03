@@ -1,0 +1,23 @@
+tags: [Event]
+summary: 報名活動
+description: 需 JWT。建立 EventParticipation 記錄。若活動已滿或已報名則回傳 409。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '201':
+    description: 報名成功
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'
+  '409':
+    description: 活動已滿（EVENT_FULL）或已報名（ALREADY_JOINED）
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'

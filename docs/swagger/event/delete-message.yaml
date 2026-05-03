@@ -1,0 +1,25 @@
+tags: [Event]
+summary: 刪除留言
+description: 需 JWT。對留言執行軟刪除（設定 deletedAt）。僅留言本人或 ADMIN 可刪除。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+  - name: messageId
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '204':
+    description: 刪除成功
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '403':
+    $ref: '../openapi.yaml#/components/responses/Forbidden'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

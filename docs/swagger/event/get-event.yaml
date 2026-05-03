@@ -1,0 +1,40 @@
+tags: [Event]
+summary: 取得活動詳情
+description: 公開端點，無需登入。回傳活動完整資料，含標籤陣列與已報名人數。
+security: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            id: 00000000-0000-0000-0000-000000000001
+            name: 週五爵士之夜
+            description: 每週五爵士樂現場演出
+            barId: null
+            barName: 藍調酒吧
+            location: 台北市大安區
+            startAt: '2024-06-07T19:00:00.000Z'
+            endAt: '2024-06-07T23:00:00.000Z'
+            maxPeople: 30
+            imageUrl: null
+            price: 200
+            hostUser: 00000000-0000-0000-0000-000000000099
+            tags: [music]
+            participantCount: 12
+            createdAt: '2024-01-01T00:00:00.000Z'
+            updatedAt: '2024-01-01T00:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

@@ -1044,3 +1044,457 @@ paths:
                 message: AI 描述功能目前未啟用
                 code: SERVICE_UNAVAILABLE
                 timestamp: '2024-01-01T00:00:00.000Z'
+  /events:
+    get:
+      tags:
+        - Event
+      summary: 列出活動
+      description: 公開端點，無需登入。支援關鍵字、標籤（OR 語意）、日期範圍與 barId 篩選，回傳分頁結果，依 startAt 升冪排列。
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: keyword
+          in: query
+          description: 對 name、location 做模糊搜尋
+          schema:
+            type: string
+            example: 台北
+        - name: tags
+          in: query
+          description: 逗號分隔的標籤名稱
+          schema:
+            type: string
+            example: 'music,sport'
+        - name: startFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2024-06-01T00:00:00Z'
+        - name: startTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+            example: '2024-12-31T23:59:59Z'
+        - name: barId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  items:
+                    - id: 00000000-0000-0000-0000-000000000001
+                      name: 週五爵士之夜
+                      barId: null
+                      barName: 藍調酒吧
+                      location: 台北市大安區
+                      startAt: '2024-06-07T19:00:00.000Z'
+                      endAt: '2024-06-07T23:00:00.000Z'
+                      maxPeople: 30
+                      imageUrl: null
+                      price: 200
+                      tags:
+                        - music
+                      participantCount: 12
+                  meta:
+                    page: 1
+                    limit: 10
+                    total: 1
+                    totalPages: 1
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags:
+        - Event
+      summary: 建立活動
+      description: 需 JWT。任何已登入使用者皆可建立活動，hostUser 自動設為當前使用者。若提供 tags 陣列，tag name 不存在則回傳 400。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - barName
+                - location
+                - startAt
+                - endAt
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: 週五爵士之夜
+                description:
+                  type: string
+                  example: 每週五爵士樂現場演出
+                barId:
+                  type: string
+                  format: uuid
+                barName:
+                  type: string
+                  maxLength: 300
+                  example: 藍調酒吧
+                location:
+                  type: string
+                  maxLength: 300
+                  example: 台北市大安區
+                startAt:
+                  type: string
+                  format: date-time
+                  example: '2024-06-07T19:00:00Z'
+                endAt:
+                  type: string
+                  format: date-time
+                  example: '2024-06-07T23:00:00Z'
+                maxPeople:
+                  type: integer
+                  minimum: 1
+                  example: 30
+                imageUrl:
+                  type: string
+                  format: uri
+                price:
+                  type: integer
+                  minimum: 0
+                  example: 200
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - music
+      responses:
+        '201':
+          description: 建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  '/events/{id}':
+    get:
+      tags:
+        - Event
+      summary: 取得活動詳情
+      description: 公開端點，無需登入。回傳活動完整資料，含標籤陣列與已報名人數。
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  id: 00000000-0000-0000-0000-000000000001
+                  name: 週五爵士之夜
+                  description: 每週五爵士樂現場演出
+                  barId: null
+                  barName: 藍調酒吧
+                  location: 台北市大安區
+                  startAt: '2024-06-07T19:00:00.000Z'
+                  endAt: '2024-06-07T23:00:00.000Z'
+                  maxPeople: 30
+                  imageUrl: null
+                  price: 200
+                  hostUser: 00000000-0000-0000-0000-000000000099
+                  tags:
+                    - music
+                  participantCount: 12
+                  createdAt: '2024-01-01T00:00:00.000Z'
+                  updatedAt: '2024-01-01T00:00:00.000Z'
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - Event
+      summary: 更新活動
+      description: 需 JWT。僅 ADMIN 或活動主辦人（hostUser）可更新。至少需提供一個欄位。若提供 tags 則整體覆寫 EventTag。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                description:
+                  type: string
+                barId:
+                  type: string
+                  format: uuid
+                barName:
+                  type: string
+                  maxLength: 300
+                location:
+                  type: string
+                  maxLength: 300
+                startAt:
+                  type: string
+                  format: date-time
+                endAt:
+                  type: string
+                  format: date-time
+                maxPeople:
+                  type: integer
+                  minimum: 1
+                imageUrl:
+                  type: string
+                  format: uri
+                price:
+                  type: integer
+                  minimum: 0
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Event
+      summary: 刪除活動
+      description: 需 JWT。僅 ADMIN 或活動主辦人（hostUser）可刪除。對活動執行軟刪除（設定 deletedAt）。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 刪除成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/events/{id}/join':
+    post:
+      tags:
+        - Event
+      summary: 報名活動
+      description: 需 JWT。建立 EventParticipation 記錄。若活動已滿或已報名則回傳 409。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: 報名成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: 活動已滿（EVENT_FULL）或已報名（ALREADY_JOINED）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Event
+      summary: 退出活動
+      description: 需 JWT。刪除 EventParticipation 記錄。若未報名則回傳 404。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 退出成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/events/{id}/messages':
+    get:
+      tags:
+        - Event
+      summary: 列出活動留言
+      description: 公開端點，無需登入。回傳活動所有未軟刪除留言，依 createdAt 升冪排列。
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  messages:
+                    - id: 00000000-0000-0000-0000-000000000010
+                      content: 很期待這個活動！
+                      userId: 00000000-0000-0000-0000-000000000099
+                      createdAt: '2024-06-01T10:00:00.000Z'
+                timestamp: '2024-01-01T00:00:00.000Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Event
+      summary: 發布留言
+      description: 需 JWT。在指定活動下發布留言，content 不得為空字串。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  example: 很期待這個活動！
+      responses:
+        '201':
+          description: 留言成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/events/{id}/messages/{messageId}':
+    delete:
+      tags:
+        - Event
+      summary: 刪除留言
+      description: 需 JWT。對留言執行軟刪除（設定 deletedAt）。僅留言本人或 ADMIN 可刪除。
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 刪除成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/tags:
+    get:
+      tags:
+        - Tag
+      summary: 取得標籤清單
+      description: 公開端點，無需登入。回傳所有可用 Tag（id + name），供前端渲染篩選選項。
+      security: []
+      responses:
+        '200':
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  tags:
+                    - id: 00000000-0000-0000-0000-000000000011
+                      name: music
+                    - id: 00000000-0000-0000-0000-000000000012
+                      name: sport
+                timestamp: '2024-01-01T00:00:00.000Z'

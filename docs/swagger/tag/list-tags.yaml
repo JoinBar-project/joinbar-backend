@@ -1,0 +1,20 @@
+tags: [Tag]
+summary: 取得標籤清單
+description: 公開端點，無需登入。回傳所有可用 Tag（id + name），供前端渲染篩選選項。
+security: []
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            tags:
+              - id: 00000000-0000-0000-0000-000000000011
+                name: music
+              - id: 00000000-0000-0000-0000-000000000012
+                name: sport
+          timestamp: '2024-01-01T00:00:00.000Z'
