@@ -27,7 +27,7 @@ auth / user / bar 模組已完成，Hexagonal 架構已確立：adapter/in → a
 
 ### D2：update / delete 授權策略
 
-使用「ADMIN 或 hostUser === 當前使用者 ID」雙重條件。在 service 層做業務規則判斷（取出 event.hostUser 比對），不在 guard 層做，保持 guard 職責單一（only JWT validity）。若不符合條件拋 `ForbiddenException`。
+使用「ADMIN 或 hostUser === 當前使用者 ID」雙重條件。在 service 層做業務規則判斷（取出 event.hostUser 比對），不在 guard 層做，保持 guard 職責單一（only JWT validity）。若不符合條件拋 `ForbiddenOperationException`（domain exception，由 GlobalExceptionFilter 對應至 403）。
 
 ### D3：EventTag 更新策略
 
@@ -39,12 +39,12 @@ auth / user / bar 模組已完成，Hexagonal 架構已確立：adapter/in → a
 
 ### D5：maxPeople 報名上限檢查
 
-`JoinEventService` 在報名前用 `COUNT(EventParticipation WHERE eventId)` 比對 `maxPeople`，若 maxPeople 為 null 則不限制。並發衝突由 DB unique constraint（`@@unique([userId, eventId])`）兜底，重複報名回傳 409。
+`JoinEventService` 在報名前檢查 `maxPeople`，若 maxPeople 為 null 則不限制（直接呼叫 `create`）。若有上限，呼叫 `createWithCapacityCheck`，在 Serializable isolation 的 `$transaction` 內做 count + create，防止 TOCTOU 並發超額問題；若 Prisma 拋 P2034（序列化衝突）一律視為額滿拋 `EventFullException`。重複報名由 DB unique constraint（`@@unique([userId, eventId])`）兜底，回傳 409。
 
 ## Risks / Trade-offs
 
-- [Tag 為靜態資料] → Tag 需在 DB seed 階段預先建立，service 層用名稱查 ID，若 tag name 不存在則拋 BadRequest。
-- [並發超額報名] → 先 count 再 create 有 TOCTOU 問題；maxPeople 限制是 best-effort，不做悲觀鎖定，接受輕微超額。
+- [Tag 為靜態資料] → Tag 需在 DB seed 階段預先建立，service 層用名稱查 ID，若 tag name 不存在則拋 `InvalidTagException`（domain exception，由 GlobalExceptionFilter 對應至 400）。
+- [並發超額報名] → 透過 Serializable `$transaction` 解決 TOCTOU；P2034 序列化衝突一律視為額滿，回傳 409。
 - [留言無分頁] → 初版採無限滾動（全量回傳），若留言數量大後續需補分頁。
 
 ## Migration Plan

@@ -6,7 +6,9 @@
 - [x] 1.4 新增 `src/domain/exception/AlreadyJoinedException.ts`
 - [x] 1.5 新增 `src/domain/exception/ParticipationNotFoundException.ts`
 - [x] 1.6 新增 `src/domain/exception/MessageNotFoundException.ts`
-- [x] 1.7 在 `GlobalExceptionFilter` 新增上述所有 exception → HTTP 狀態碼對應
+- [x] 1.7 新增 `src/domain/exception/ForbiddenOperationException.ts`（替代 service 層直接拋 NestJS ForbiddenException）
+- [x] 1.8 新增 `src/domain/exception/InvalidTagException.ts`（替代 service 層直接拋 NestJS BadRequestException）
+- [x] 1.9 在 `GlobalExceptionFilter` 新增上述所有 exception → HTTP 狀態碼對應
 
 ## 2. Port/in（Use Case 介面）
 
@@ -28,7 +30,7 @@
 - [x] 3.2 新增 `SaveEventPort`（create、update、softDelete）
 - [x] 3.3 新增 `FindTagPort`（findAll、findByNames）
 - [x] 3.4 新增 `FindParticipationPort`（findByUserAndEvent）
-- [x] 3.5 新增 `SaveParticipationPort`（create、delete）
+- [x] 3.5 新增 `SaveParticipationPort`（create、createWithCapacityCheck、delete）
 - [x] 3.6 新增 `FindMessagePort`（findByEventId、findById）
 - [x] 3.7 新增 `SaveMessagePort`（create、softDelete）
 
@@ -43,10 +45,10 @@
 
 - [x] 5.1 新增 `ListEventsService` + spec（getPagination → findMany + count → buildPaginationMeta）
 - [x] 5.2 新增 `GetEventService` + spec（findById → EventNotFoundException if null）
-- [x] 5.3 新增 `CreateEventService` + spec（驗證 tags 存在 → create → findById 回傳完整資料）
+- [x] 5.3 新增 `CreateEventService` + spec（驗證 tags 存在 → create 直接回傳完整 EventData）
 - [x] 5.4 新增 `UpdateEventService` + spec（findById → 檢查 ADMIN/hostUser → 驗證 tags → update）
 - [x] 5.5 新增 `DeleteEventService` + spec（findById → 檢查 ADMIN/hostUser → softDelete）
-- [x] 5.6 新增 `JoinEventService` + spec（findById → countParticipants → 檢查 maxPeople → create）
+- [x] 5.6 新增 `JoinEventService` + spec（findById → 若 maxPeople 為 null 直接 create；有上限則呼叫 createWithCapacityCheck，在 Serializable transaction 內做 count + create）
 - [x] 5.7 新增 `LeaveEventService` + spec（findByUserAndEvent → ParticipationNotFoundException → delete）
 - [x] 5.8 新增 `ListMessagesService` + spec（findById event → findByEventId messages）
 - [x] 5.9 新增 `CreateMessageService` + spec（findById event → create message）
@@ -66,7 +68,7 @@
 - [x] 7.5 新增 `EventResponse` DTO（完整活動欄位含 tags、participantCount）
 - [x] 7.6 新增 `EventListResponse` DTO（items: EventListItem[]、meta: PaginationMeta）
 - [x] 7.7 新增 `MessageResponse` DTO
-- [x] 7.8 新增 `EventController`（11 個端點：GET /events、GET /events/:id、POST /events、PATCH /events/:id、DELETE /events/:id、POST /events/:id/join、DELETE /events/:id/join、GET /events/:id/messages、POST /events/:id/messages、DELETE /events/:id/messages/:messageId、GET /tags）
+- [x] 7.8 新增 `EventController`（11 個端點：GET /events、GET /events/tags、GET /events/:id、POST /events、PATCH /events/:id、DELETE /events/:id、POST /events/:id/join、DELETE /events/:id/join、GET /events/:id/messages、POST /events/:id/messages、DELETE /events/:id/messages/:messageId）
 
 ## 8. Module 配線
 
@@ -86,7 +88,7 @@
 - [x] 9.9 新增 `docs/swagger/event/create-message.yaml`
 - [x] 9.10 新增 `docs/swagger/event/delete-message.yaml`
 - [x] 9.11 新增 `docs/swagger/tag/list-tags.yaml`
-- [x] 9.12 在 `docs/swagger/openapi.yaml` 新增 /events、/events/{id}、/events/{id}/join、/events/{id}/messages、/events/{id}/messages/{messageId}、/tags 路徑
+- [x] 9.12 在 `docs/swagger/openapi.yaml` 新增 /events、/events/{id}、/events/{id}/join、/events/{id}/messages、/events/{id}/messages/{messageId}、/events/tags 路徑
 - [x] 9.13 執行 `npm run swagger:bundle` 驗證通過
 
 ## 10. E2E 測試

@@ -36,9 +36,9 @@
 
 ### Requirement: 取得可用標籤清單
 
-系統 SHALL 提供公開端點（GET /tags）回傳所有 Tag 記錄（id + name），供前端渲染篩選選項。
+系統 SHALL 提供公開端點（GET /events/tags）回傳所有 Tag 記錄（id + name），供前端渲染篩選選項。
 
 #### Scenario: 取得標籤列表
 
-- **WHEN** 使用者呼叫 GET /tags
+- **WHEN** 使用者呼叫 GET /events/tags
 - **THEN** 系統回傳 200 與所有 Tag（id、name）

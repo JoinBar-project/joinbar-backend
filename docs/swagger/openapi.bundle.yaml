@@ -1064,7 +1064,7 @@ paths:
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
+            default: 10
         - name: keyword
           in: query
           description: 對 name、location 做模糊搜尋
@@ -1120,7 +1120,7 @@ paths:
                       participantCount: 12
                   meta:
                     page: 1
-                    limit: 20
+                    limit: 10
                     total: 1
                     totalPages: 1
                 timestamp: '2024-01-01T00:00:00.000Z'
@@ -1475,7 +1475,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /tags:
+  /events/tags:
     get:
       tags:
         - Tag
