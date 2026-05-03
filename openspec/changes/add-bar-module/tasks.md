@@ -15,7 +15,7 @@
 
 ## 3. Persistence Adapter
 
-- [ ] 3.1 建立 `src/adapter/out/persistence/bar/PrismaBarRepository.ts`，實作 FindBarPort + SaveBarPort（findById 含 BarTag、findMany 支援 keyword/tags/offset 分頁、count、create + BarTag upsert、update + BarTag upsert、softDelete）
+- [x] 3.1 建立 `src/adapter/out/persistence/bar/PrismaBarRepository.ts`，實作 FindBarPort + SaveBarPort（findById 含 BarTag、findMany 支援 keyword/tags/offset 分頁、count、create + BarTag upsert、update + BarTag upsert、softDelete）
 
 ## 4. Gemini Adapter
 
