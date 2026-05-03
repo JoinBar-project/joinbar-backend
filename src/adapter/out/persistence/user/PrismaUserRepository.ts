@@ -220,7 +220,6 @@ export class PrismaUserRepository
       id: record.id,
       email: record.email ?? '',
       roleName: record.role as string,
-      permissions: [],
       status: record.deletedAt === null,
       lastPasswordChange: record.lastPasswordChange,
     };

@@ -142,7 +142,6 @@ describe('JwtAuthGuard', () => {
       sub: TEST_UUID,
       email: 'u@e.com',
       roleName: 'admin',
-      permissions: ['user.view'],
       status: true,
       lastPasswordChange: null,
     });
@@ -166,7 +165,6 @@ describe('JwtAuthGuard', () => {
       id: TEST_UUID,
       email: 'u@e.com',
       roleName: 'admin',
-      permissions: ['user.view'],
       status: true,
       lastPasswordChange: null,
     });

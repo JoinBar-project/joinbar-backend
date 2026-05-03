@@ -123,7 +123,6 @@ export class JwtAuthGuard implements CanActivate, OnModuleInit {
       sub: data.id,
       email: data.email,
       roleName: data.roleName,
-      permissions: data.permissions,
       status: data.status,
       lastPasswordChange: data.lastPasswordChange
         ? data.lastPasswordChange.toISOString()
