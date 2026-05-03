@@ -42,6 +42,18 @@ reCAPTCHA 是否啟用實際驗證改由 `NODE_ENV === 'production'` 判斷，�
 - 之前以 `GOOGLE_RECAPTCHA_IS_PRODUCTION=false` 在 production 暫時關閉驗證的部署，會立即啟用驗證。應改用 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED=false`。
 - production 啟動會檢查 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED && !GOOGLE_RECAPTCHA_SECRET`，缺 secret 直接退出。
 
+## BarModule 需同時 import AuthModule + JwtModule
+
+`JwtAuthGuard` 依賴 `JwtService`（來自 `JwtModule`），與 `UserModule` 相同。
+只 import `AuthModule` 不夠，E2E 啟動時會拋 "JwtService not available in BarModule"。
+所有掛 `JwtAuthGuard` 的 feature module 都需要 `imports: [AuthModule, JwtModule]`。
+
+## BarListResponse.items 型別需對齊 UseCase 回傳型別
+
+列表 DTO（`BarListResponse`）的 items 型別直接 import `BarListItem`（port/in 層）而非 `BarResponse`，
+避免 `BarListItem` 缺少 `googlePlaceId / createdAt / updatedAt` 造成 TypeScript 型別不相容。
+規則：response DTO 的型別應與 use case 回傳結構對齊，不要強制轉型成 controller-layer class。
+
 ## E2E mock：mockPrisma 需含 $transaction
 
 `PrismaUserRepository.updatePassword` 使用 `$transaction`（陣列形式）。

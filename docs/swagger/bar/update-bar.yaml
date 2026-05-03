@@ -1,0 +1,67 @@
+tags: [Bar]
+summary: 更新酒吧
+description: |
+  需 JWT。部分更新酒吧資料，至少需提供一個欄位。
+  若帶 tags 則整體覆寫 BarTag（upsert）。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            minLength: 1
+            maxLength: 100
+          address:
+            type: string
+            maxLength: 255
+          phone:
+            type: string
+            maxLength: 20
+          website:
+            type: string
+            format: uri
+          imageUrl:
+            type: string
+            format: uri
+          latitude:
+            type: number
+          longitude:
+            type: number
+          googlePlaceId:
+            type: string
+          tags:
+            type: object
+            properties:
+              sport: { type: boolean }
+              music: { type: boolean }
+              student: { type: boolean }
+              bistro: { type: boolean }
+              drink: { type: boolean }
+              joy: { type: boolean }
+              romantic: { type: boolean }
+              oldschool: { type: boolean }
+              highlevel: { type: boolean }
+              easy: { type: boolean }
+responses:
+  '200':
+    description: 更新成功，回傳更新後酒吧資料
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

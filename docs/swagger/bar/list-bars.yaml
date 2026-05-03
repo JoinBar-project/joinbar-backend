@@ -1,0 +1,60 @@
+tags: [Bar]
+summary: 列出酒吧
+description: |
+  公開端點，無需登入。
+  支援標籤篩選（OR 邏輯）與關鍵字搜尋，回傳分頁結果。
+security: []
+parameters:
+  - name: page
+    in: query
+    schema:
+      type: integer
+      minimum: 1
+      default: 1
+  - name: limit
+    in: query
+    schema:
+      type: integer
+      minimum: 1
+      maximum: 100
+      default: 20
+  - name: keyword
+    in: query
+    description: 對 name、address 做模糊搜尋
+    schema:
+      type: string
+      example: 台北
+  - name: tags
+    in: query
+    description: '逗號分隔的標籤名稱，合法值：sport, music, student, bistro, drink, joy, romantic, oldschool, highlevel, easy'
+    schema:
+      type: string
+      example: 'sport,music'
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            items:
+              - id: 00000000-0000-0000-0000-000000000001
+                name: 運動酒吧
+                address: 台北市信義區
+                phone: '02-1234-5678'
+                website: null
+                imageUrl: null
+                latitude: 25.033
+                longitude: 121.565
+                tags: [sport, drink]
+            meta:
+              page: 1
+              limit: 20
+              total: 1
+              totalPages: 1
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'

@@ -60,19 +60,18 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 
 ---
 
-### bar 模組
+### bar 模組 ✅ 已完成
 
-- [ ] Domain Model：`Bar`（id、name、description、location、images、ownerId、status）
-- [ ] Port/in：`CreateBarUseCase`、`GetBarUseCase`、`UpdateBarUseCase`、`DeleteBarUseCase`、`ListBarsUseCase`、`AiDescribeBarUseCase`
-- [ ] Port/out：`FindBarByIdPort`、`SaveBarPort`、`ListBarsPort`、`GeminiGeneratePort`
-- [ ] Service：`CreateBarService`、`GetBarService`、`UpdateBarService`、`ListBarsService`、`AiDescribeBarService`（含 `geminiEnabled`）
-- [ ] Facade：`BarFacade`
-- [ ] Controller + DTO：`BarController`（`/api/bars/*`，含 `@ApiProperty`）
-- [ ] Swagger：`@ApiOperation` / `@ApiResponse`，執行 `npm run swagger:bundle` 驗證
-- [ ] Persistence Adapter：`PrismaBarRepository`
-- [ ] Module 配線：`bar.module.ts`
-- [ ] Feature Flags 接線：`geminiEnabled`
-- [ ] 測試：各 Service.spec、bar.e2e-spec
+- [x] Port/in：6 個 use case（ListBars / GetBar / CreateBar / UpdateBar / DeleteBar / AiDescribeBar）
+- [x] Port/out：FindBarPort、SaveBarPort、GeminiPort（shared）
+- [x] Persistence：PrismaBarRepository（keyword/tags 篩選、BarTag upsert、Decimal 轉換）
+- [x] Gemini Adapter：GeminiAdapter（`@google/generative-ai`，GEMINI_API_KEY 缺失 warn log）
+- [x] Service：6 個 service + spec，共 16 unit tests
+- [x] Facade：BarFacade
+- [x] Controller + DTO：BarController（GET 公開 @Public()、POST/PATCH/DELETE/describe 需 JWT）
+- [x] Swagger：6 個 YAML + openapi.yaml，swagger:bundle 通過
+- [x] Module 配線：bar.module.ts（imports: AuthModule + JwtModule）
+- [x] 測試：230 unit tests + 15 E2E tests 全過
 
 ---
 
@@ -189,3 +188,4 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 
 - **add-auth-module**（2026-05-01 完成）：完整 auth 模組，含 8 個端點、15 E2E tests、202 unit tests。
 - **add-user-module**（2026-05-03 完成）：完整 user 模組，含 6 個端點（含頭像上傳/刪除）、11 E2E tests、214 unit tests。
+- **add-bar-module**（2026-05-03 完成）：完整 bar 模組，含 6 個端點（含 Gemini AI 描述）、15 E2E tests、230 unit tests。

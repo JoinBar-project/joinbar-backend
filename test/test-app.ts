@@ -9,12 +9,14 @@ import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
 import { RedisService } from '../src/infrastructure/redis/redis.service';
 import { SAVE_SYSTEM_LOG_PORT } from '../src/application/port/out/shared/SaveSystemLogPort';
 import { FILE_STORAGE_PORT } from '../src/application/port/out/shared/FileStoragePort';
+import { GEMINI_PORT } from '../src/application/port/out/shared/GeminiPort';
 
 export interface TestAppOverrides {
   prisma?: Record<string, unknown>;
   redis?: ReturnType<typeof createMockRedis>;
   saveSystemLog?: Record<string, unknown>;
   fileStorage?: Record<string, unknown>;
+  gemini?: Record<string, unknown>;
 }
 
 /**
@@ -47,6 +49,11 @@ export const createMockFileStorage = () => ({
   delete: jest.fn().mockResolvedValue(undefined),
 });
 
+/** 每次呼叫回傳全新的 GeminiPort mock 實例 */
+export const createMockGemini = () => ({
+  generate: jest.fn().mockResolvedValue('這是 AI 生成的酒吧描述文字'),
+});
+
 /**
  * 建立 NestExpressApplication 測試實例。
  * 集中管理 global prefix 等共用設定，避免各 E2E spec 重複撰寫。
@@ -65,6 +72,7 @@ export async function createE2EApp(overrides: TestAppOverrides = {}): Promise<{
   const mockRedis = overrides.redis ?? createMockRedis();
   const mockLog = overrides.saveSystemLog ?? createMockSaveSystemLog();
   const mockFileStorage = overrides.fileStorage ?? createMockFileStorage();
+  const mockGemini = overrides.gemini ?? createMockGemini();
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
@@ -77,6 +85,8 @@ export async function createE2EApp(overrides: TestAppOverrides = {}): Promise<{
     .useValue(mockLog)
     .overrideProvider(FILE_STORAGE_PORT)
     .useValue(mockFileStorage)
+    .overrideProvider(GEMINI_PORT)
+    .useValue(mockGemini)
     .compile();
 
   const app = moduleRef.createNestApplication<NestExpressApplication>(

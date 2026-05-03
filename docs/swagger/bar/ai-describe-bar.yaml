@@ -1,0 +1,39 @@
+tags: [Bar]
+summary: AI 生成酒吧描述
+description: |
+  需 JWT。呼叫 Gemini API 依酒吧名稱、地址、標籤生成自然語言介紹文字。
+  `geminiEnabled=false` 或 Gemini API 失敗時回傳 503。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '200':
+    description: 生成成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            description: 這是一間充滿活力的運動酒吧，位於台北市信義區，以體育賽事直播和精釀啤酒聞名。
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'
+  '503':
+    description: AI 服務不可用（功能未啟用或 Gemini API 錯誤）
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/ErrorResponse'
+        example:
+          success: false
+          message: AI 描述功能目前未啟用
+          code: SERVICE_UNAVAILABLE
+          timestamp: '2024-01-01T00:00:00.000Z'

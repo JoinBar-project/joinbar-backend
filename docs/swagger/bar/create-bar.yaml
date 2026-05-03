@@ -1,0 +1,80 @@
+tags: [Bar]
+summary: 建立酒吧
+description: 需 JWT。建立酒吧記錄，可選附帶 BarTag。
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+            minLength: 1
+            maxLength: 100
+            example: 新潮酒吧
+          address:
+            type: string
+            maxLength: 255
+            example: 台北市大安區忠孝東路
+          phone:
+            type: string
+            maxLength: 20
+            example: '02-8765-4321'
+          website:
+            type: string
+            format: uri
+            example: 'https://bar.example.com'
+          imageUrl:
+            type: string
+            format: uri
+          latitude:
+            type: number
+            example: 25.041
+          longitude:
+            type: number
+            example: 121.545
+          googlePlaceId:
+            type: string
+            example: ChIJexampleplaceid
+          tags:
+            type: object
+            properties:
+              sport: { type: boolean }
+              music: { type: boolean }
+              student: { type: boolean }
+              bistro: { type: boolean }
+              drink: { type: boolean }
+              joy: { type: boolean }
+              romantic: { type: boolean }
+              oldschool: { type: boolean }
+              highlevel: { type: boolean }
+              easy: { type: boolean }
+responses:
+  '201':
+    description: 建立成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            id: 00000000-0000-0000-0000-000000000002
+            name: 新潮酒吧
+            address: 台北市大安區忠孝東路
+            phone: '02-8765-4321'
+            website: 'https://bar.example.com'
+            imageUrl: null
+            latitude: 25.041
+            longitude: 121.545
+            googlePlaceId: ChIJexampleplaceid
+            tags: [music, romantic]
+            createdAt: '2024-01-01T00:00:00.000Z'
+            updatedAt: '2024-01-01T00:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
