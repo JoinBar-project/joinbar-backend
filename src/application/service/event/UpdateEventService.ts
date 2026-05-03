@@ -49,14 +49,19 @@ export class UpdateEventService implements UpdateEventUseCase {
       tagIds = found.map((t) => t.id);
     }
 
-    const {
-      eventId,
-      actorId: _actorId,
-      actorRole: _actorRole,
-      tags: _tags,
-      ...rest
-    } = command;
-    const updated = await this.saveEvent.update(eventId, { ...rest, tagIds });
+    const updated = await this.saveEvent.update(command.eventId, {
+      name: command.name,
+      description: command.description,
+      barId: command.barId,
+      barName: command.barName,
+      location: command.location,
+      startAt: command.startAt,
+      endAt: command.endAt,
+      maxPeople: command.maxPeople,
+      imageUrl: command.imageUrl,
+      price: command.price,
+      tagIds,
+    });
 
     return {
       id: updated.id,

@@ -91,11 +91,11 @@
 
 ## 10. E2E 測試
 
-- [ ] 10.1 新增 `test/event.e2e-spec.ts`（覆蓋：list、detail、create、update、delete、join、leave、messages CRUD）
-- [ ] 10.2 執行 `npm run test:e2e` 全部通過
+- [x] 10.1 新增 `test/event.e2e-spec.ts`（覆蓋：list、detail、create、update、delete、join、leave、messages CRUD）
+- [x] 10.2 執行 `npm run test:e2e` 全部通過
 
 ## 11. 品質驗證
 
-- [ ] 11.1 `npx tsc --noEmit` 無錯誤
-- [ ] 11.2 `npm run lint` 無警告/錯誤
-- [ ] 11.3 `npm run test` 全部通過
+- [x] 11.1 `npx tsc --noEmit` 無錯誤
+- [x] 11.2 `npm run lint` 無警告/錯誤
+- [x] 11.3 `npm run test` 全部通過
