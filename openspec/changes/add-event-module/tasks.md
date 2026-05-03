@@ -55,7 +55,7 @@
 
 ## 6. Facade
 
-- [ ] 6.1 新增 `EventFacade`（代理 11 個 use case）
+- [x] 6.1 新增 `EventFacade`（代理 11 個 use case）
 
 ## 7. Controller & DTOs
 
