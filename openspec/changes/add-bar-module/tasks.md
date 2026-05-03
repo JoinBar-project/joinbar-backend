@@ -38,7 +38,7 @@
 
 ## 6. Facade
 
-- [ ] 6.1 建立 `src/application/facade/BarFacade.ts`，彙整六個 use case
+- [x] 6.1 建立 `src/application/facade/BarFacade.ts`，彙整六個 use case
 
 ## 7. Controller & DTO
 
