@@ -6,18 +6,24 @@ import {
   UserWithPassword,
   LineProviderData,
   EmailVerifyTokenData,
+  UserProfileData,
 } from '../../../../application/port/out/user/FindUserPort';
 import { SaveUserPort } from '../../../../application/port/out/user/SaveUserPort';
 import {
   LoadUserContextPort,
   UserContextData,
 } from '../../../../application/port/out/user/LoadUserContextPort';
+import {
+  UpdateUserPort,
+  UpdateProfileData,
+  UpdateAvatarData,
+} from '../../../../application/port/out/user/UpdateUserPort';
 import { User } from '../../../../domain/model/User';
 import { RoleName } from '../../../../domain/value-object/Role';
 
 @Injectable()
 export class PrismaUserRepository
-  implements FindUserPort, SaveUserPort, LoadUserContextPort
+  implements FindUserPort, SaveUserPort, LoadUserContextPort, UpdateUserPort
 {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -77,6 +83,36 @@ export class PrismaUserRepository
       select: { userId: true, verifyExpires: true },
     });
     return provider ?? null;
+  }
+
+  async findProfileById(userId: string): Promise<UserProfileData | null> {
+    const record = await this.prisma.userRecord.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        nickname: true,
+        role: true,
+        birthday: true,
+        avatarUrl: true,
+        avatarKey: true,
+        createdAt: true,
+      },
+    });
+    if (!record) return null;
+
+    return {
+      id: record.id,
+      email: record.email,
+      username: record.username,
+      nickname: record.nickname,
+      role: record.role as string,
+      birthday: record.birthday,
+      avatarUrl: record.avatarUrl,
+      avatarKey: record.avatarKey,
+      createdAt: record.createdAt,
+    };
   }
 
   // ─── SaveUserPort ────────────────────────────────────────────────────
@@ -223,6 +259,48 @@ export class PrismaUserRepository
       status: record.deletedAt === null,
       lastPasswordChange: record.lastPasswordChange,
     };
+  }
+
+  // ─── UpdateUserPort ─────────────────────────────────────────────────
+
+  async updateProfile(userId: string, data: UpdateProfileData): Promise<void> {
+    await this.prisma.userRecord.update({
+      where: { id: userId },
+      data: {
+        ...(data.username !== undefined && { username: data.username }),
+        ...(data.nickname !== undefined && { nickname: data.nickname }),
+        ...(data.birthday !== undefined && { birthday: data.birthday }),
+      },
+    });
+  }
+
+  async softDelete(userId: string): Promise<void> {
+    await this.prisma.userRecord.update({
+      where: { id: userId },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  async updateAvatar(userId: string, data: UpdateAvatarData): Promise<void> {
+    await this.prisma.userRecord.update({
+      where: { id: userId },
+      data: {
+        avatarUrl: data.avatarUrl,
+        avatarKey: data.avatarKey,
+        avatarLastUpdated: data.avatarLastUpdated,
+      },
+    });
+  }
+
+  async clearAvatar(userId: string): Promise<void> {
+    await this.prisma.userRecord.update({
+      where: { id: userId },
+      data: {
+        avatarUrl: null,
+        avatarKey: null,
+        avatarLastUpdated: new Date(),
+      },
+    });
   }
 
   // ─── 私有工具 ────────────────────────────────────────────────────────

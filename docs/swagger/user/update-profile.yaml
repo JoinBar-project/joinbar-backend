@@ -1,0 +1,48 @@
+tags: [User]
+summary: 更新個人資料
+description: |
+  更新 username、nickname、birthday（三者皆為可選）。
+  至少需提供一個欄位，否則回傳 400。
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          username:
+            type: string
+            minLength: 1
+            maxLength: 100
+            example: alice
+          nickname:
+            type: string
+            maxLength: 100
+            example: 小愛
+          birthday:
+            type: string
+            format: date
+            example: '1990-01-01'
+responses:
+  '200':
+    description: 更新成功，回傳更新後 profile
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            id: 00000000-0000-0000-0000-000000000001
+            email: user@example.com
+            username: alice
+            nickname: 小愛
+            role: USER
+            birthday: '1990-01-01T00:00:00.000Z'
+            avatarUrl: null
+            createdAt: '2024-01-01T00:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'

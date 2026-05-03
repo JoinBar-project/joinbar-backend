@@ -16,6 +16,7 @@ import { FirebaseModule } from './modules/firebase.module';
 import { RecaptchaModule } from './modules/recaptcha.module';
 import { StorageModule } from './modules/storage.module';
 import { AuthModule } from './modules/auth.module';
+import { UserModule } from './modules/user.module';
 import { HealthController } from './adapter/in/web/HealthController';
 import { GlobalExceptionFilter } from './adapter/in/web/filter/GlobalExceptionFilter';
 import { LoggingInterceptor } from './adapter/in/web/interceptor/LoggingInterceptor';
@@ -114,6 +115,7 @@ import { getEnv } from './infrastructure/validate-env';
     RecaptchaModule,
     StorageModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [HealthController],
   providers: [

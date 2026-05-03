@@ -21,6 +21,20 @@ export interface EmailVerifyTokenData {
   verifyExpires: Date | null;
 }
 
+/** user 模組查詢完整 profile 所需的資料結構 */
+export interface UserProfileData {
+  id: string;
+  email: string | null;
+  username: string;
+  nickname: string | null;
+  role: string;
+  birthday: Date | null;
+  avatarUrl: string | null;
+  /** Firebase Storage 路徑，用於刪除舊頭像 */
+  avatarKey: string | null;
+  createdAt: Date;
+}
+
 export const FIND_USER_PORT = 'FIND_USER_PORT';
 
 export interface FindUserPort {
@@ -37,4 +51,6 @@ export interface FindUserPort {
   existsByEmail(email: string): Promise<boolean>;
   /** Email 驗證 token 查詢（VerifyEmail 用） */
   findByEmailVerifyToken(token: string): Promise<EmailVerifyTokenData | null>;
+  /** 查詢完整 profile（含 birthday / avatarUrl / avatarKey） */
+  findProfileById(userId: string): Promise<UserProfileData | null>;
 }

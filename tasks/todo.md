@@ -45,20 +45,18 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 
 ---
 
-### user 模組
+### user 模組 ✅ 已完成
 
-參考：atago `src/adapter/in/web/member/`、`src/application/service/member/`（member → user 重命名）
-
-- [ ] Domain Model：`User`（完整欄位，含 profile、status、roles）
-- [ ] Port/in：`GetUserUseCase`、`UpdateUserUseCase`、`ChangePasswordUseCase`、`DeleteUserUseCase`
-- [ ] Port/out：`FindUserByIdPort`、`UpdateUserPort`（實作 `LoadUserContextPort`）
-- [ ] Service：`GetUserService`、`UpdateUserService`、`ChangePasswordService`、`DeleteUserService`
-- [ ] Facade：`MemberFacade`（或 `UserFacade`）
-- [ ] Controller + DTO：`UserController`（`/api/users/*`，含 `@ApiProperty`）
-- [ ] Swagger：`@ApiOperation` / `@ApiResponse`，執行 `npm run swagger:bundle` 驗證
-- [ ] Persistence Adapter：`PrismaUserRepository`
-- [ ] Module 配線：`user.module.ts`
-- [ ] 測試：各 Service.spec、user.e2e-spec
+- [x] Port/in：`GetUserUseCase`、`UpdateUserUseCase`、`ChangePasswordUseCase`、`DeleteUserUseCase`、`UpdateAvatarUseCase`、`DeleteAvatarUseCase`
+- [x] Port/out：`UpdateUserPort`（updateProfile / softDelete / updateAvatar / clearAvatar）；`FindUserPort` 擴充 `findProfileById`
+- [x] Domain exception：`NoEmailProviderException` → GlobalExceptionFilter 422
+- [x] Service：`GetUserService`、`UpdateUserService`、`ChangePasswordService`、`DeleteUserService`、`UpdateAvatarService`、`DeleteAvatarService`（共 214 unit tests）
+- [x] Facade：`UserFacade`
+- [x] Controller + DTO：`UserController`（`/api/users/*`，6 個端點，Zod 驗證，Multer 頭像上傳）
+- [x] Swagger：YAML 靜態文件（`docs/swagger/user/*.yaml`），`npm run swagger:bundle` 驗證通過
+- [x] Persistence Adapter：`PrismaUserRepository` 新增 UpdateUserPort 實作
+- [x] Module 配線：`user.module.ts`，已注入 `app.module.ts`
+- [x] 測試：11 E2E tests 全過
 
 ---
 
@@ -190,3 +188,4 @@ Domain Model → Port/in → Port/out（Repository） → Service → Facade →
 ## 已完成
 
 - **add-auth-module**（2026-05-01 完成）：完整 auth 模組，含 8 個端點、15 E2E tests、202 unit tests。
+- **add-user-module**（2026-05-03 完成）：完整 user 模組，含 6 個端點（含頭像上傳/刪除）、11 E2E tests、214 unit tests。
