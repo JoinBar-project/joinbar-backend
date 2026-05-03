@@ -62,10 +62,7 @@ import { getEnv } from './infrastructure/validate-env';
 
 const loadSwaggerDocument = (): object => {
   try {
-    const swaggerPath = join(
-      process.cwd(),
-      'openspec/swagger/openapi.bundle.yaml',
-    );
+    const swaggerPath = join(process.cwd(), 'docs/swagger/openapi.bundle.yaml');
     return yaml.load(readFileSync(swaggerPath, 'utf8')) as object;
   } catch {
     return {
