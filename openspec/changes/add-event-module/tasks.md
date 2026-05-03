@@ -70,8 +70,8 @@
 
 ## 8. Module 配線
 
-- [ ] 8.1 新增 `src/modules/event.module.ts`（注入所有 repository、services、facade、RolesGuard）
-- [ ] 8.2 在 `src/app.module.ts` 引入 EventModule
+- [x] 8.1 新增 `src/modules/event.module.ts`（注入所有 repository、services、facade、RolesGuard）
+- [x] 8.2 在 `src/app.module.ts` 引入 EventModule
 
 ## 9. Swagger 文件
 
