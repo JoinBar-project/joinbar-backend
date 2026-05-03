@@ -44,8 +44,8 @@
 
 ## 7. Module 配線
 
-- [ ] 7.1 建立 `src/modules/user.module.ts`（imports: AuthModule, StorageModule；providers: services + facade + UpdateUserPort；controllers: UserController）
-- [ ] 7.2 在 `src/app.module.ts` 引入 `UserModule`
+- [x] 7.1 建立 `src/modules/user.module.ts`（imports: AuthModule, StorageModule；providers: services + facade + UpdateUserPort；controllers: UserController）
+- [x] 7.2 在 `src/app.module.ts` 引入 `UserModule`
 
 ## 8. Swagger 文件
 
