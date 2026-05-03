@@ -42,14 +42,14 @@
 
 ## 7. Controller & DTO
 
-- [ ] 7.1 建立 `src/adapter/in/web/bar/dto/BarTagsDto.ts`（10 個 boolean 欄位，Zod schema）
-- [ ] 7.2 建立 `src/adapter/in/web/bar/dto/BarResponse.ts`（完整酒吧資料，tags 為字串陣列）
-- [ ] 7.3 建立 `src/adapter/in/web/bar/dto/BarListResponse.ts`（items: BarResponse[]、meta: PaginationMeta）
-- [ ] 7.4 建立 `src/adapter/in/web/bar/dto/ListBarsRequest.ts`（Zod schema：page、limit、keyword、tags 逗號分隔字串）
-- [ ] 7.5 建立 `src/adapter/in/web/bar/dto/CreateBarRequest.ts`（Zod schema，name 必填）
-- [ ] 7.6 建立 `src/adapter/in/web/bar/dto/UpdateBarRequest.ts`（Zod schema，全選填，.refine 至少一欄位）
-- [ ] 7.7 建立 `src/adapter/in/web/bar/dto/AiDescribeResponse.ts`（description: string）
-- [ ] 7.8 建立 `src/adapter/in/web/bar/BarController.ts`（@Controller('bars')，class-level @UseGuards(JwtAuthGuard)；GET / 與 GET /:id 加 @Public()；POST /、PATCH /:id、DELETE /:id、POST /:id/describe）
+- [x] 7.1 建立 `src/adapter/in/web/bar/dto/BarTagsDto.ts`（10 個 boolean 欄位，Zod schema）
+- [x] 7.2 建立 `src/adapter/in/web/bar/dto/BarResponse.ts`（完整酒吧資料，tags 為字串陣列）
+- [x] 7.3 建立 `src/adapter/in/web/bar/dto/BarListResponse.ts`（items: BarListItem[]、meta: PaginationMeta）
+- [x] 7.4 建立 `src/adapter/in/web/bar/dto/ListBarsRequest.ts`（Zod schema：page、limit、keyword、tags 逗號分隔字串）
+- [x] 7.5 建立 `src/adapter/in/web/bar/dto/CreateBarRequest.ts`（Zod schema，name 必填）
+- [x] 7.6 建立 `src/adapter/in/web/bar/dto/UpdateBarRequest.ts`（Zod schema，全選填，.refine 至少一欄位）
+- [x] 7.7 建立 `src/adapter/in/web/bar/dto/AiDescribeResponse.ts`（description: string）
+- [x] 7.8 建立 `src/adapter/in/web/bar/BarController.ts`（@Controller('bars')，class-level @UseGuards(JwtAuthGuard)；GET / 與 GET /:id 加 @Public()；POST /、PATCH /:id、DELETE /:id、POST /:id/describe）
 
 ## 8. Module 配線
 
