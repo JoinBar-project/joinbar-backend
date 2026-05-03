@@ -23,7 +23,7 @@ const makeDeps = (overrides?: { emailVerificationEnabled?: boolean }) => {
     findByProviderUid: jest.fn(),
     findById: jest.fn(),
     findByEmailVerifyToken: jest.fn(),
-  findProfileById: jest.fn(),
+    findProfileById: jest.fn(),
   };
   const saveUser = {
     createWithEmailProvider: jest.fn().mockResolvedValue(undefined),

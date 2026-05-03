@@ -70,6 +70,7 @@ export class UserController {
   }
 
   @Post('me/avatar')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('file'))
   async uploadAvatar(
     @CurrentUser() actor: UserContext,

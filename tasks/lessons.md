@@ -42,6 +42,23 @@ reCAPTCHA 是否啟用實際驗證改由 `NODE_ENV === 'production'` 判斷，�
 - 之前以 `GOOGLE_RECAPTCHA_IS_PRODUCTION=false` 在 production 暫時關閉驗證的部署，會立即啟用驗證。應改用 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED=false`。
 - production 啟動會檢查 `APPLICATION_GOOGLE_RECAPTCHA_ENABLED && !GOOGLE_RECAPTCHA_SECRET`，缺 secret 直接退出。
 
+## E2E mock：mockPrisma 需含 $transaction
+
+`PrismaUserRepository.updatePassword` 使用 `$transaction`（陣列形式）。
+E2E 的 `mockPrisma` 若缺少此方法，ChangePassword 端點會拋 500。
+修法：`$transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops))`
+
+## E2E mock：FULL_USER_RECORD 需包含所有欄位
+
+`JwtAuthGuard.loadUserContext` 讀取 `userRecord.findUnique` 的結果，
+會判斷 `deletedAt`、`lockedAt`、`failedLoginCount` 等欄位。
+若 mock 物件缺欄位（undefined），條件判斷結果不同，會產生非預期的 403/401。
+建議：E2E 只建一個 `FULL_USER_RECORD` 含全欄位，局部覆寫用 spread。
+
+## @Post() endpoint 回傳 201，openspec 要求 200 時需加 @HttpCode
+
+NestJS `@Post()` 預設 HTTP 201，若規格定義 200 需明確加 `@HttpCode(HttpStatus.OK)`。
+
 ## CORS_ORIGIN production 預設值防呆
 
 `CORS_ORIGIN` 改為陣列（逗號分隔），預設含 `http://localhost:5173,http://localhost:3000`。production 額外阻擋：

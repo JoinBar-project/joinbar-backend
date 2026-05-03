@@ -55,11 +55,11 @@
 
 ## 9. 測試
 
-- [ ] 9.1 建立 `test/user.e2e-spec.ts`，涵蓋：查詢 profile、更新 profile、換密碼成功/舊密碼錯誤、刪除帳號後 403、上傳頭像、刪除頭像
+- [x] 9.1 建立 `test/user.e2e-spec.ts`，涵蓋：查詢 profile、更新 profile、換密碼成功/舊密碼錯誤、刪除帳號後 403、上傳頭像、刪除頭像
 
 ## 10. 品質驗證
 
-- [ ] 10.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
-- [ ] 10.2 執行 `npm run lint`，修正所有 lint 警告
-- [ ] 10.3 執行 `npm run test`，確認所有單元測試通過
-- [ ] 10.4 執行 `npm run test:e2e`，確認 E2E 測試通過
+- [x] 10.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
+- [x] 10.2 執行 `npm run lint`，修正所有 lint 警告
+- [x] 10.3 執行 `npm run test`，確認所有單元測試通過
+- [x] 10.4 執行 `npm run test:e2e`，確認 E2E 測試通過
