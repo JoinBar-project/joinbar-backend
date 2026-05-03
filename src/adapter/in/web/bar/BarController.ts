@@ -15,7 +15,7 @@ import { BarFacade } from '../../../../application/facade/BarFacade';
 import { ZodValidationPipe } from '../../../../infrastructure/zod-validation.pipe';
 import { JwtAuthGuard } from '../guard/JwtAuthGuard';
 import { Public } from '../decorator/public.decorator';
-import { CurrentUser, UserContext } from '../decorator/current-user.decorator';
+
 import { ListBarsRequest, listBarsSchema } from './dto/ListBarsRequest';
 import { CreateBarRequest, createBarSchema } from './dto/CreateBarRequest';
 import { UpdateBarRequest, updateBarSchema } from './dto/UpdateBarRequest';
@@ -64,10 +64,7 @@ export class BarController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteBar(
-    @Param('id') id: string,
-    @CurrentUser() _actor: UserContext,
-  ): Promise<void> {
+  deleteBar(@Param('id') id: string): Promise<void> {
     return this.barFacade.deleteBar({ barId: id });
   }
 

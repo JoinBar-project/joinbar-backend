@@ -73,7 +73,7 @@
 
 ## 11. 品質驗證
 
-- [ ] 11.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
-- [ ] 11.2 執行 `npm run lint`，修正所有 lint 警告
-- [ ] 11.3 執行 `npm run test`，確認所有單元測試通過
-- [ ] 11.4 執行 `npm run test:e2e`，確認 E2E 測試通過
+- [x] 11.1 執行 `npx tsc --noEmit`，修正所有型別錯誤
+- [x] 11.2 執行 `npm run lint`，修正所有 lint 警告
+- [x] 11.3 執行 `npm run test`，確認所有單元測試通過
+- [x] 11.4 執行 `npm run test:e2e`，確認 E2E 測試通過
