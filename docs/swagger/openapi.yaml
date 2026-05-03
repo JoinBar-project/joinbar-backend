@@ -173,4 +173,40 @@ paths:
     post:
       $ref: './bar/ai-describe-bar.yaml'
 
+  # ─── Event ────────────────────────────────
+  /events:
+    get:
+      $ref: './event/list-events.yaml'
+    post:
+      $ref: './event/create-event.yaml'
+
+  /events/{id}:
+    get:
+      $ref: './event/get-event.yaml'
+    patch:
+      $ref: './event/update-event.yaml'
+    delete:
+      $ref: './event/delete-event.yaml'
+
+  /events/{id}/join:
+    post:
+      $ref: './event/join-event.yaml'
+    delete:
+      $ref: './event/leave-event.yaml'
+
+  /events/{id}/messages:
+    get:
+      $ref: './event/list-messages.yaml'
+    post:
+      $ref: './event/create-message.yaml'
+
+  /events/{id}/messages/{messageId}:
+    delete:
+      $ref: './event/delete-message.yaml'
+
+  # ─── Tag ──────────────────────────────────
+  /tags:
+    get:
+      $ref: './tag/list-tags.yaml'
+
   # ─── 其他模組（尚未實作）────────────────────

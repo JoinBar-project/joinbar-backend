@@ -1,0 +1,19 @@
+tags: [Event]
+summary: 刪除活動
+description: 需 JWT。僅 ADMIN 或活動主辦人（hostUser）可刪除。對活動執行軟刪除（設定 deletedAt）。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '204':
+    description: 刪除成功
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '403':
+    $ref: '../openapi.yaml#/components/responses/Forbidden'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

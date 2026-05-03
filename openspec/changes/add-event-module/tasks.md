@@ -75,19 +75,19 @@
 
 ## 9. Swagger 文件
 
-- [ ] 9.1 新增 `docs/swagger/event/list-events.yaml`
-- [ ] 9.2 新增 `docs/swagger/event/get-event.yaml`
-- [ ] 9.3 新增 `docs/swagger/event/create-event.yaml`
-- [ ] 9.4 新增 `docs/swagger/event/update-event.yaml`
-- [ ] 9.5 新增 `docs/swagger/event/delete-event.yaml`
-- [ ] 9.6 新增 `docs/swagger/event/join-event.yaml`
-- [ ] 9.7 新增 `docs/swagger/event/leave-event.yaml`
-- [ ] 9.8 新增 `docs/swagger/event/list-messages.yaml`
-- [ ] 9.9 新增 `docs/swagger/event/create-message.yaml`
-- [ ] 9.10 新增 `docs/swagger/event/delete-message.yaml`
-- [ ] 9.11 新增 `docs/swagger/tag/list-tags.yaml`
-- [ ] 9.12 在 `docs/swagger/openapi.yaml` 新增 /events、/events/{id}、/events/{id}/join、/events/{id}/messages、/events/{id}/messages/{messageId}、/tags 路徑
-- [ ] 9.13 執行 `npm run swagger:bundle` 驗證通過
+- [x] 9.1 新增 `docs/swagger/event/list-events.yaml`
+- [x] 9.2 新增 `docs/swagger/event/get-event.yaml`
+- [x] 9.3 新增 `docs/swagger/event/create-event.yaml`
+- [x] 9.4 新增 `docs/swagger/event/update-event.yaml`
+- [x] 9.5 新增 `docs/swagger/event/delete-event.yaml`
+- [x] 9.6 新增 `docs/swagger/event/join-event.yaml`
+- [x] 9.7 新增 `docs/swagger/event/leave-event.yaml`
+- [x] 9.8 新增 `docs/swagger/event/list-messages.yaml`
+- [x] 9.9 新增 `docs/swagger/event/create-message.yaml`
+- [x] 9.10 新增 `docs/swagger/event/delete-message.yaml`
+- [x] 9.11 新增 `docs/swagger/tag/list-tags.yaml`
+- [x] 9.12 在 `docs/swagger/openapi.yaml` 新增 /events、/events/{id}、/events/{id}/join、/events/{id}/messages、/events/{id}/messages/{messageId}、/tags 路徑
+- [x] 9.13 執行 `npm run swagger:bundle` 驗證通過
 
 ## 10. E2E 測試
 

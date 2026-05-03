@@ -1,0 +1,35 @@
+tags: [Event]
+summary: 發布留言
+description: 需 JWT。在指定活動下發布留言，content 不得為空字串。
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [content]
+        properties:
+          content:
+            type: string
+            minLength: 1
+            example: 很期待這個活動！
+responses:
+  '201':
+    description: 留言成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+  '400':
+    $ref: '../openapi.yaml#/components/responses/BadRequest'
+  '401':
+    $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'

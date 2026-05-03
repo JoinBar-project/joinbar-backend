@@ -1,0 +1,29 @@
+tags: [Event]
+summary: 列出活動留言
+description: 公開端點，無需登入。回傳活動所有未軟刪除留言，依 createdAt 升冪排列。
+security: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: string
+      format: uuid
+responses:
+  '200':
+    description: 查詢成功
+    content:
+      application/json:
+        schema:
+          $ref: '../openapi.yaml#/components/schemas/SuccessResponse'
+        example:
+          success: true
+          data:
+            messages:
+              - id: 00000000-0000-0000-0000-000000000010
+                content: 很期待這個活動！
+                userId: 00000000-0000-0000-0000-000000000099
+                createdAt: '2024-06-01T10:00:00.000Z'
+          timestamp: '2024-01-01T00:00:00.000Z'
+  '404':
+    $ref: '../openapi.yaml#/components/responses/NotFound'
