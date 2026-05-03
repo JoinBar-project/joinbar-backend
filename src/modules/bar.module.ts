@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth.module';
+import { JwtModule } from './jwt.module';
 import { BarController } from '../adapter/in/web/bar/BarController';
 import { BarFacade } from '../application/facade/BarFacade';
 import { ListBarsService } from '../application/service/bar/ListBarsService';
@@ -21,7 +22,7 @@ import { SAVE_BAR_PORT } from '../application/port/out/bar/SaveBarPort';
 import { GEMINI_PORT } from '../application/port/out/shared/GeminiPort';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, JwtModule],
   controllers: [BarController],
   providers: [
     // ─── Persistence Adapter ─────────────────────────────────────────
