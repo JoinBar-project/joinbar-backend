@@ -32,7 +32,7 @@
 
 ## 5. Facade
 
-- [ ] 5.1 建立 `src/application/facade/UserFacade.ts`，彙整六個 use case
+- [x] 5.1 建立 `src/application/facade/UserFacade.ts`，彙整六個 use case
 
 ## 6. Controller & DTO
 
