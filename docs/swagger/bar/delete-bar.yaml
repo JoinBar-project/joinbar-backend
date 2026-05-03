@@ -1,6 +1,6 @@
 tags: [Bar]
 summary: 刪除酒吧
-description: 需 JWT。對酒吧執行軟刪除（設定 deletedAt）。
+description: 需 JWT 且具備 ADMIN 角色。對酒吧執行軟刪除（設定 deletedAt）。
 parameters:
   - name: id
     in: path
@@ -13,5 +13,7 @@ responses:
     description: 刪除成功
   '401':
     $ref: '../openapi.yaml#/components/responses/Unauthorized'
+  '403':
+    $ref: '../openapi.yaml#/components/responses/Forbidden'
   '404':
     $ref: '../openapi.yaml#/components/responses/NotFound'
