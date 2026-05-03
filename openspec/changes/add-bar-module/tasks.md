@@ -9,9 +9,9 @@
 
 ## 2. Port/out — Repository 與外部服務介面
 
-- [ ] 2.1 建立 `src/application/port/out/bar/FindBarPort.ts`（findById、findMany 含篩選與分頁參數、count）
-- [ ] 2.2 建立 `src/application/port/out/bar/SaveBarPort.ts`（create、update、softDelete）
-- [ ] 2.3 建立 `src/application/port/out/shared/GeminiPort.ts`（generate(prompt: string): Promise<string>）
+- [x] 2.1 建立 `src/application/port/out/bar/FindBarPort.ts`（findById、findMany 含篩選與分頁參數、count）
+- [x] 2.2 建立 `src/application/port/out/bar/SaveBarPort.ts`（create、update、softDelete）
+- [x] 2.3 建立 `src/application/port/out/shared/GeminiPort.ts`（generate(prompt: string): Promise<string>）
 
 ## 3. Persistence Adapter
 
